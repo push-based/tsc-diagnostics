@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Component: Aggregate Notes Grid</title>
+<link rel="stylesheet" href="../design-tokens.css" />
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<style type="text/tailwindcss">
+  @theme {
+    --font-sans: var(--pb-font-family);
+    --font-pb-sans: var(--pb-font-family);
+
+    --color-pb-neutral-900: var(--pb-neutral-900);
+    --color-pb-neutral-500: var(--pb-neutral-500);
+    --color-pb-neutral-200: var(--pb-neutral-200);
+    --color-pb-neutral-200-alt: var(--pb-neutral-200-alt);
+    --color-pb-neutral-50: var(--pb-neutral-50);
+    --color-pb-black: var(--pb-black);
+    --color-pb-white: var(--pb-white);
+
+    --color-pb-primary-700: var(--pb-primary-700);
+    --color-pb-primary-600: var(--pb-primary-600);
+    --color-pb-primary-400: var(--pb-primary-400);
+    --color-pb-primary-50: var(--pb-primary-50);
+
+    --color-pb-secondary-700: var(--pb-secondary-700);
+    --color-pb-secondary-600: var(--pb-secondary-600);
+    --color-pb-secondary-400: var(--pb-secondary-400);
+    --color-pb-secondary-50: var(--pb-secondary-50);
+
+    --color-pb-success-700: var(--pb-success-700);
+    --color-pb-success-500: var(--pb-success-500);
+    --color-pb-success-50: var(--pb-success-50);
+
+    --color-pb-warning-600: var(--pb-warning-600);
+    --color-pb-warning-400: var(--pb-warning-400);
+    --color-pb-warning-50: var(--pb-warning-50);
+
+    --color-pb-text: var(--pb-text);
+    --color-pb-text-inverse: var(--pb-text-inverse);
+    --color-pb-text-muted: var(--pb-text-muted);
+    --color-pb-border: var(--pb-border);
+    --color-pb-link: var(--pb-link);
+
+    --color-pb-emphasis-purple: var(--pb-emphasis-purple);
+    --color-pb-emphasis-red: var(--pb-emphasis-red);
+    --color-pb-emphasis-green: var(--pb-emphasis-green);
+    --color-pb-emphasis-amber: var(--pb-emphasis-amber);
+
+    --color-pb-state-bad: var(--pb-state-bad);
+    --color-pb-state-good: var(--pb-state-good);
+    --color-pb-state-mid: var(--pb-state-mid);
+
+    --color-pb-panel-bg: var(--pb-panel-bg);
+    --color-pb-panel-border: var(--pb-panel-border);
+    --color-pb-panel-hover: var(--pb-panel-hover);
+
+    --text-pb-big-min: var(--pb-font-size-big-min);
+    --text-pb-big-max: var(--pb-font-size-big-max);
+    --text-pb-h1: var(--pb-font-size-h1);
+    --text-pb-h2: var(--pb-font-size-h2);
+    --text-pb-h3: var(--pb-font-size-h3);
+    --text-pb-body: var(--pb-font-size-body);
+    --text-pb-detail: var(--pb-font-size-detail);
+    --text-pb-hint: var(--pb-font-size-hint);
+    --text-pb-footer: var(--pb-font-size-footer);
+    --text-pb-card-value: var(--pb-font-size-card-value);
+
+    --radius-pb-none: var(--pb-radius-none);
+    --radius-pb-base: var(--pb-radius-base);
+    --shadow-pb-card: var(--pb-shadow-card);
+
+    --background-image-pb-radial: var(--pb-gradient-bg-radial);
+    --background-image-pb-card-linear: var(--pb-gradient-card-linear);
+  }
+  @layer base {
+    body { @apply min-h-screen bg-pb-neutral-900 text-pb-text-inverse antialiased; }
+    button, select, input { @apply outline-none; }
+  }
+  .pb-eyebrow { @apply mb-3 flex flex-wrap items-center gap-2 text-pb-h3 font-bold uppercase tracking-[0.16em] text-pb-secondary-400; }
+  .pb-eyebrow-tag { @apply rounded-full border border-pb-secondary-400/35 bg-pb-secondary-700/10 px-3 py-1; }
+  .pb-eyebrow-note { @apply font-normal normal-case tracking-normal text-pb-text-muted; }
+  .pb-h1 { @apply font-bold text-pb-h1 text-pb-text-inverse tracking-tight; }
+  .pb-subtitle { @apply mt-3 max-w-3xl text-pb-detail leading-relaxed text-pb-text-muted; }
+  .pb-mono { @apply font-mono text-pb-primary-400; }
+  .pb-header-row { @apply flex flex-col gap-5 border-b border-pb-panel-border pb-7 mb-7 lg:flex-row lg:items-end lg:justify-between; }
+  .pb-actions { @apply flex flex-wrap gap-2; }
+  .pb-card { @apply rounded-pb-base border border-pb-panel-border bg-pb-panel-bg shadow-pb-card p-5; }
+  .pb-card-label { @apply text-pb-h3 font-bold uppercase tracking-[0.14em] text-pb-text-muted; }
+  .pb-card-value { @apply mt-2 block text-pb-card-value font-extrabold text-pb-text-inverse; }
+  .pb-card-hint { @apply mt-1.5 block text-pb-hint text-pb-text-muted; }
+  .pb-card--good { @apply border-pb-success-700/35; }
+  .pb-card--bad { @apply border-pb-secondary-700/35; }
+  .pb-card--mid { @apply border-pb-warning-600/35; }
+  .pb-card--info { @apply border-pb-primary-600/35; }
+  .pb-badge { @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide; }
+  .pb-badge--error, .pb-badge--bad { @apply bg-pb-secondary-700/20 text-pb-secondary-400; }
+  .pb-badge--warn, .pb-badge--mid { @apply bg-pb-warning-600/20 text-pb-warning-400; }
+  .pb-badge--info { @apply bg-pb-text-inverse/10 text-pb-text-inverse; }
+  .pb-badge--pass, .pb-badge--good { @apply bg-pb-success-700/20 text-pb-success-500; }
+  .pb-badge--baseline { @apply bg-pb-primary-600/20 text-pb-primary-400 text-[0.65rem]; }
+  .pb-delta-good { @apply text-pb-success-500; }
+  .pb-delta-bad { @apply text-pb-secondary-400; }
+  .pb-delta-flat { @apply text-pb-text-muted; }
+  .pb-btn { @apply inline-flex items-center justify-center gap-1.5 rounded-xl border border-pb-panel-border bg-pb-panel-bg px-4 py-2 text-sm font-bold text-pb-text-inverse transition hover:bg-pb-panel-hover; }
+  .pb-btn--primary { @apply border-transparent bg-pb-secondary-400 text-pb-neutral-900 hover:bg-pb-secondary-700 hover:text-pb-text-inverse; }
+  .pb-link { @apply text-pb-link underline; }
+  .pb-table { @apply w-full border-collapse text-sm; }
+  .pb-table th, .pb-table td { @apply border-b border-pb-panel-border px-3 py-2.5 text-left align-top; }
+  .pb-table th { @apply text-xs font-bold uppercase tracking-wide text-pb-text-muted; }
+  .pb-table tr:hover td { @apply bg-pb-panel-hover; }
+  .pb-chart { @apply overflow-hidden rounded-pb-base border border-pb-panel-border bg-pb-panel-bg p-4 pb-2 shadow-pb-card; }
+  .pb-chart-title { @apply mb-2 ml-2 text-pb-h2 font-bold text-pb-text-inverse; }
+  .pb-plot-root { @apply w-full overflow-x-auto; }
+  .pb-plot-root figure, .pb-plot-root svg { display: block; margin: 0 auto; max-width: 100%; background: transparent !important; }
+  .pb-footer { @apply mt-8 flex flex-wrap items-center justify-between gap-2 border-t border-pb-panel-border pt-5 text-pb-footer text-pb-text-muted; }
+</style>
+<style>body { padding: 32px; }</style>
+</head>
+<body class="pb-page">
+<section id="notes" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(260px,1fr)); gap:14px; max-width: 1100px;"></section>
+
+<script>
+  const notes = [
+    "Embedded data from ts-diagnostics aggregate output.",
+    "Reports included: 14.",
+    "Generated from a clean, single-threaded compiler run — repeat for stable medians."
+  ];
+  document.getElementById("notes").innerHTML = notes.map((n) =>
+    `<div class="pb-card" style="color: var(--pb-text-muted); line-height: 1.5;">${n}</div>`
+  ).join("");
+</script>
+</body>
+</html>

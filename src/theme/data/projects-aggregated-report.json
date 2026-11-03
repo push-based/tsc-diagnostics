@@ -1,0 +1,3563 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-13T02:15:00.000Z",
+  "reportCount": 20,
+  "reports": [
+    {
+      "schemaVersion": 1,
+      "mode": "extendedDiagnostics",
+      "targetRoot": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/projects/test-lib-1",
+      "targetName": "test-lib-1",
+      "project": "tsconfig.slow.json",
+      "generatedAt": "2026-07-12T23:14:09.331Z",
+      "command": [
+        "/Users/michael_hladky/.nvm/versions/node/v24.1.0/bin/node",
+        "/Users/michael_hladky/WebstormProjects/ts-perf-ws/node_modules/typescript/bin/tsc",
+        "--project",
+        "tsconfig.slow.json",
+        "--extendedDiagnostics",
+        "--pretty",
+        "false"
+      ],
+      "cwd": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/projects/test-lib-1",
+      "startedAt": "2026-07-12T23:14:06.406Z",
+      "finishedAt": "2026-07-12T23:14:09.331Z",
+      "durationMs": 2925.00325,
+      "exitCode": 2,
+      "signal": null,
+      "metrics": {
+        "srcExamples09WorkspacePackageAsSourceConsumerExampleTs833": {
+          "raw": "error TS2307: Cannot find module '@workspace/config' or its corresponding type declarations.",
+          "value": "error TS2307: Cannot find module '@workspace/config' or its corresponding type declarations."
+        },
+        "files": {
+          "raw": "871",
+          "value": 871,
+          "unit": "count"
+        },
+        "linesOfLibrary": {
+          "raw": "9894",
+          "value": 9894,
+          "unit": "count"
+        },
+        "linesOfDefinitions": {
+          "raw": "113104",
+          "value": 113104,
+          "unit": "count"
+        },
+        "linesOfTypeScript": {
+          "raw": "11534",
+          "value": 11534,
+          "unit": "count"
+        },
+        "linesOfJavaScript": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfJSON": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfOther": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "identifiers": {
+          "raw": "131584",
+          "value": 131584,
+          "unit": "count"
+        },
+        "symbols": {
+          "raw": "1017925",
+          "value": 1017925,
+          "unit": "count"
+        },
+        "types": {
+          "raw": "550780",
+          "value": 550780,
+          "unit": "count"
+        },
+        "instantiations": {
+          "raw": "740895",
+          "value": 740895,
+          "unit": "count"
+        },
+        "memoryUsed": {
+          "raw": "704070K",
+          "value": 704070,
+          "unit": "KiB"
+        },
+        "assignabilityCacheSize": {
+          "raw": "242528",
+          "value": 242528,
+          "unit": "count"
+        },
+        "identityCacheSize": {
+          "raw": "140",
+          "value": 140,
+          "unit": "count"
+        },
+        "subtypeCacheSize": {
+          "raw": "21",
+          "value": 21,
+          "unit": "count"
+        },
+        "strictSubtypeCacheSize": {
+          "raw": "531",
+          "value": 531,
+          "unit": "count"
+        },
+        "iOReadTime": {
+          "raw": "0.12s",
+          "value": 0.12,
+          "unit": "seconds"
+        },
+        "parseTime": {
+          "raw": "0.19s",
+          "value": 0.19,
+          "unit": "seconds"
+        },
+        "resolveModuleTime": {
+          "raw": "0.07s",
+          "value": 0.07,
+          "unit": "seconds"
+        },
+        "resolveTypeReferenceTime": {
+          "raw": "0.00s",
+          "value": 0,
+          "unit": "seconds"
+        },
+        "resolveLibraryTime": {
+          "raw": "0.00s",
+          "value": 0,
+          "unit": "seconds"
+        },
+        "programTime": {
+          "raw": "0.43s",
+          "value": 0.43,
+          "unit": "seconds"
+        },
+        "bindTime": {
+          "raw": "0.10s",
+          "value": 0.1,
+          "unit": "seconds"
+        },
+        "checkTime": {
+          "raw": "2.13s",
+          "value": 2.13,
+          "unit": "seconds"
+        },
+        "transformTimeTime": {
+          "raw": "0.04s",
+          "value": 0.04,
+          "unit": "seconds"
+        },
+        "sourceMapTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "commentTimeTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "iOWriteTime": {
+          "raw": "0.07s",
+          "value": 0.07,
+          "unit": "seconds"
+        },
+        "printTimeTime": {
+          "raw": "0.16s",
+          "value": 0.16,
+          "unit": "seconds"
+        },
+        "emitTime": {
+          "raw": "0.16s",
+          "value": 0.16,
+          "unit": "seconds"
+        },
+        "totalTime": {
+          "raw": "2.82s",
+          "value": 2.82,
+          "unit": "seconds"
+        }
+      },
+      "stdout": "src/examples/09-workspace-package-as-source/consumer-example.ts(8,33): error TS2307: Cannot find module '@workspace/config' or its corresponding type declarations.\nFiles:                         871\nLines of Library:             9894\nLines of Definitions:       113104\nLines of TypeScript:         11534\nLines of JavaScript:             0\nLines of JSON:                   0\nLines of Other:                  0\nIdentifiers:                131584\nSymbols:                   1017925\nTypes:                      550780\nInstantiations:             740895\nMemory used:               704070K\nAssignability cache size:   242528\nIdentity cache size:           140\nSubtype cache size:             21\nStrict subtype cache size:     531\nI/O Read time:               0.12s\nParse time:                  0.19s\nResolveModule time:          0.07s\nResolveTypeReference time:   0.00s\nResolveLibrary time:         0.00s\nProgram time:                0.43s\nBind time:                   0.10s\nCheck time:                  2.13s\ntransformTime time:          0.04s\nSource Map time:             0.01s\ncommentTime time:            0.01s\nI/O Write time:              0.07s\nprintTime time:              0.16s\nEmit time:                   0.16s\nTotal time:                  2.82s\n",
+      "stderr": ""
+    },
+    {
+      "schemaVersion": 1,
+      "mode": "diagnostics",
+      "targetRoot": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/projects/test-lib-2",
+      "targetName": "test-lib-2",
+      "generatedAt": "2026-07-11T21:10:21.325Z",
+      "command": [
+        "/Users/michael_hladky/.nvm/versions/node/v24.1.0/bin/node",
+        "/Users/michael_hladky/WebstormProjects/ts-perf-ws/node_modules/typescript/bin/tsc",
+        "--diagnostics",
+        "--pretty",
+        "false"
+      ],
+      "cwd": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/projects/test-lib-2",
+      "startedAt": "2026-07-11T21:10:20.955Z",
+      "finishedAt": "2026-07-11T21:10:21.325Z",
+      "durationMs": 370.60875,
+      "exitCode": 0,
+      "signal": null,
+      "metrics": {
+        "files": {
+          "raw": "165",
+          "value": 165,
+          "unit": "count"
+        },
+        "lines": {
+          "raw": "68264",
+          "value": 68264,
+          "unit": "count"
+        },
+        "identifiers": {
+          "raw": "74310",
+          "value": 74310,
+          "unit": "count"
+        },
+        "symbols": {
+          "raw": "44550",
+          "value": 44550,
+          "unit": "count"
+        },
+        "types": {
+          "raw": "124",
+          "value": 124,
+          "unit": "count"
+        },
+        "instantiations": {
+          "raw": "3",
+          "value": 3,
+          "unit": "count"
+        },
+        "memoryUsed": {
+          "raw": "96764K",
+          "value": 96764,
+          "unit": "KiB"
+        },
+        "iORead": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "iOWrite": {
+          "raw": "0.00s",
+          "value": 0,
+          "unit": "seconds"
+        },
+        "parseTime": {
+          "raw": "0.15s",
+          "value": 0.15,
+          "unit": "seconds"
+        },
+        "bindTime": {
+          "raw": "0.10s",
+          "value": 0.1,
+          "unit": "seconds"
+        },
+        "checkTime": {
+          "raw": "0.02s",
+          "value": 0.02,
+          "unit": "seconds"
+        },
+        "emitTime": {
+          "raw": "0.02s",
+          "value": 0.02,
+          "unit": "seconds"
+        },
+        "totalTime": {
+          "raw": "0.29s",
+          "value": 0.29,
+          "unit": "seconds"
+        }
+      },
+      "stdout": "Files:             165\nLines:           68264\nIdentifiers:     74310\nSymbols:         44550\nTypes:             124\nInstantiations:      3\nMemory used:    96764K\nI/O read:        0.01s\nI/O write:       0.00s\nParse time:      0.15s\nBind time:       0.10s\nCheck time:      0.02s\nEmit time:       0.02s\nTotal time:      0.29s\n",
+      "stderr": ""
+    },
+    {
+      "schemaVersion": 1,
+      "mode": "extendedDiagnostics",
+      "targetRoot": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/tools/tsc-diagnostics",
+      "targetName": "tsc-diagnostics",
+      "project": "tsconfig.json",
+      "generatedAt": "2026-07-13T01:10:42.055Z",
+      "command": [
+        "/Users/michael_hladky/.nvm/versions/node/v24.1.0/bin/node",
+        "/Users/michael_hladky/WebstormProjects/ts-perf-ws/node_modules/typescript/bin/tsc",
+        "--project",
+        "tsconfig.json",
+        "--extendedDiagnostics",
+        "--pretty",
+        "false"
+      ],
+      "cwd": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/tools/tsc-diagnostics",
+      "startedAt": "2026-07-13T01:10:41.545Z",
+      "finishedAt": "2026-07-13T01:10:42.055Z",
+      "durationMs": 509.428417,
+      "exitCode": 0,
+      "signal": null,
+      "metrics": {
+        "files": {
+          "raw": "178",
+          "value": 178,
+          "unit": "count"
+        },
+        "linesOfLibrary": {
+          "raw": "10247",
+          "value": 10247,
+          "unit": "count"
+        },
+        "linesOfDefinitions": {
+          "raw": "58345",
+          "value": 58345,
+          "unit": "count"
+        },
+        "linesOfTypeScript": {
+          "raw": "2870",
+          "value": 2870,
+          "unit": "count"
+        },
+        "linesOfJavaScript": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfJSON": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfOther": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "identifiers": {
+          "raw": "77957",
+          "value": 77957,
+          "unit": "count"
+        },
+        "symbols": {
+          "raw": "49269",
+          "value": 49269,
+          "unit": "count"
+        },
+        "types": {
+          "raw": "3065",
+          "value": 3065,
+          "unit": "count"
+        },
+        "instantiations": {
+          "raw": "2580",
+          "value": 2580,
+          "unit": "count"
+        },
+        "memoryUsed": {
+          "raw": "102459K",
+          "value": 102459,
+          "unit": "KiB"
+        },
+        "assignabilityCacheSize": {
+          "raw": "361",
+          "value": 361,
+          "unit": "count"
+        },
+        "identityCacheSize": {
+          "raw": "48",
+          "value": 48,
+          "unit": "count"
+        },
+        "subtypeCacheSize": {
+          "raw": "141",
+          "value": 141,
+          "unit": "count"
+        },
+        "strictSubtypeCacheSize": {
+          "raw": "13",
+          "value": 13,
+          "unit": "count"
+        },
+        "iOReadTime": {
+          "raw": "0.03s",
+          "value": 0.03,
+          "unit": "seconds"
+        },
+        "parseTime": {
+          "raw": "0.12s",
+          "value": 0.12,
+          "unit": "seconds"
+        },
+        "resolveModuleTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "resolveTypeReferenceTime": {
+          "raw": "0.00s",
+          "value": 0,
+          "unit": "seconds"
+        },
+        "resolveLibraryTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "programTime": {
+          "raw": "0.19s",
+          "value": 0.19,
+          "unit": "seconds"
+        },
+        "bindTime": {
+          "raw": "0.09s",
+          "value": 0.09,
+          "unit": "seconds"
+        },
+        "checkTime": {
+          "raw": "0.11s",
+          "value": 0.11,
+          "unit": "seconds"
+        },
+        "transformTimeTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "sourceMapTime": {
+          "raw": "0.00s",
+          "value": 0,
+          "unit": "seconds"
+        },
+        "commentTimeTime": {
+          "raw": "0.00s",
+          "value": 0,
+          "unit": "seconds"
+        },
+        "iOWriteTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "printTimeTime": {
+          "raw": "0.06s",
+          "value": 0.06,
+          "unit": "seconds"
+        },
+        "emitTime": {
+          "raw": "0.06s",
+          "value": 0.06,
+          "unit": "seconds"
+        },
+        "totalTime": {
+          "raw": "0.45s",
+          "value": 0.45,
+          "unit": "seconds"
+        }
+      },
+      "stdout": "Files:                         178\nLines of Library:            10247\nLines of Definitions:        58345\nLines of TypeScript:          2870\nLines of JavaScript:             0\nLines of JSON:                   0\nLines of Other:                  0\nIdentifiers:                 77957\nSymbols:                     49269\nTypes:                        3065\nInstantiations:               2580\nMemory used:               102459K\nAssignability cache size:      361\nIdentity cache size:            48\nSubtype cache size:            141\nStrict subtype cache size:      13\nI/O Read time:               0.03s\nParse time:                  0.12s\nResolveModule time:          0.01s\nResolveTypeReference time:   0.00s\nResolveLibrary time:         0.01s\nProgram time:                0.19s\nBind time:                   0.09s\nCheck time:                  0.11s\ntransformTime time:          0.01s\nSource Map time:             0.00s\ncommentTime time:            0.00s\nI/O Write time:              0.01s\nprintTime time:              0.06s\nEmit time:                   0.06s\nTotal time:                  0.45s\n",
+      "stderr": ""
+    },
+    {
+      "schemaVersion": 1,
+      "mode": "extendedDiagnostics",
+      "targetRoot": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/ui-components",
+      "targetName": "ui-components",
+      "project": "tsconfig.json",
+      "generatedAt": "2026-07-13T02:00:02.947Z",
+      "command": [
+        "/Users/michael_hladky/.nvm/versions/node/v24.1.0/bin/node",
+        "/Users/michael_hladky/WebstormProjects/ts-perf-ws/node_modules/typescript/bin/tsc",
+        "--project",
+        "tsconfig.json",
+        "--extendedDiagnostics",
+        "--pretty",
+        "false"
+      ],
+      "cwd": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/ui-components",
+      "startedAt": "2026-07-13T02:00:00.000Z",
+      "finishedAt": "2026-07-13T02:00:02.917Z",
+      "durationMs": 2917,
+      "exitCode": 0,
+      "signal": null,
+      "metrics": {
+        "files": {
+          "raw": "587",
+          "value": 587,
+          "unit": "count"
+        },
+        "linesOfLibrary": {
+          "raw": "10009",
+          "value": 10009,
+          "unit": "count"
+        },
+        "linesOfDefinitions": {
+          "raw": "112001",
+          "value": 112001,
+          "unit": "count"
+        },
+        "linesOfTypeScript": {
+          "raw": "33399",
+          "value": 33399,
+          "unit": "count"
+        },
+        "linesOfJavaScript": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfJSON": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfOther": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "identifiers": {
+          "raw": "156950",
+          "value": 156950,
+          "unit": "count"
+        },
+        "symbols": {
+          "raw": "96674",
+          "value": 96674,
+          "unit": "count"
+        },
+        "types": {
+          "raw": "16612",
+          "value": 16612,
+          "unit": "count"
+        },
+        "instantiations": {
+          "raw": "65386",
+          "value": 65386,
+          "unit": "count"
+        },
+        "memoryUsed": {
+          "raw": "284351K",
+          "value": 284351,
+          "unit": "KiB"
+        },
+        "assignabilityCacheSize": {
+          "raw": "6461",
+          "value": 6461,
+          "unit": "count"
+        },
+        "identityCacheSize": {
+          "raw": "54",
+          "value": 54,
+          "unit": "count"
+        },
+        "subtypeCacheSize": {
+          "raw": "159",
+          "value": 159,
+          "unit": "count"
+        },
+        "strictSubtypeCacheSize": {
+          "raw": "45",
+          "value": 45,
+          "unit": "count"
+        },
+        "iOReadTime": {
+          "raw": "0.03s",
+          "value": 0.03,
+          "unit": "seconds"
+        },
+        "parseTime": {
+          "raw": "0.11s",
+          "value": 0.11,
+          "unit": "seconds"
+        },
+        "resolveModuleTime": {
+          "raw": "0.05s",
+          "value": 0.05,
+          "unit": "seconds"
+        },
+        "resolveTypeReferenceTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "resolveLibraryTime": {
+          "raw": "0.03s",
+          "value": 0.03,
+          "unit": "seconds"
+        },
+        "programTime": {
+          "raw": "0.10s",
+          "value": 0.1,
+          "unit": "seconds"
+        },
+        "bindTime": {
+          "raw": "0.12s",
+          "value": 0.12,
+          "unit": "seconds"
+        },
+        "checkTime": {
+          "raw": "2.02s",
+          "value": 2.02,
+          "unit": "seconds"
+        },
+        "transformTimeTime": {
+          "raw": "0.00s",
+          "value": 0,
+          "unit": "seconds"
+        },
+        "sourceMapTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "commentTimeTime": {
+          "raw": "0.00s",
+          "value": 0,
+          "unit": "seconds"
+        },
+        "iOWriteTime": {
+          "raw": "0.03s",
+          "value": 0.03,
+          "unit": "seconds"
+        },
+        "printTimeTime": {
+          "raw": "0.03s",
+          "value": 0.03,
+          "unit": "seconds"
+        },
+        "emitTime": {
+          "raw": "0.06s",
+          "value": 0.06,
+          "unit": "seconds"
+        },
+        "totalTime": {
+          "raw": "2.60s",
+          "value": 2.6,
+          "unit": "seconds"
+        }
+      },
+      "stdout": "Files:                         587\nLines of Library:             10009\nLines of Definitions:       112001\nLines of TypeScript:         33399\nLines of JavaScript:             0\nLines of JSON:                   0\nLines of Other:                  0\nIdentifiers:                156950\nSymbols:                   96674\nTypes:                      16612\nInstantiations:             65386\nMemory used:               284351K\nAssignability cache size:   6461\nIdentity cache size:           54\nSubtype cache size:             159\nStrict subtype cache size:     45\nI/O Read time:               0.03s\nParse time:                  0.11s\nResolveModule time:          0.05s\nResolveTypeReference time:   0.01s\nResolveLibrary time:         0.03s\nProgram time:                0.10s\nBind time:                   0.12s\nCheck time:                  2.02s\ntransformTime time:          0.00s\nSource Map time:             0.01s\ncommentTime time:            0.00s\nI/O Write time:              0.03s\nprintTime time:              0.03s\nEmit time:                   0.06s\nTotal time:                  2.60s\n",
+      "stderr": ""
+    },
+    {
+      "schemaVersion": 1,
+      "mode": "extendedDiagnostics",
+      "targetRoot": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/design-system",
+      "targetName": "design-system",
+      "project": "tsconfig.json",
+      "generatedAt": "2026-07-13T02:00:46.856Z",
+      "command": [
+        "/Users/michael_hladky/.nvm/versions/node/v24.1.0/bin/node",
+        "/Users/michael_hladky/WebstormProjects/ts-perf-ws/node_modules/typescript/bin/tsc",
+        "--project",
+        "tsconfig.json",
+        "--extendedDiagnostics",
+        "--pretty",
+        "false"
+      ],
+      "cwd": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/design-system",
+      "startedAt": "2026-07-13T02:00:45.000Z",
+      "finishedAt": "2026-07-13T02:00:46.826Z",
+      "durationMs": 1826,
+      "exitCode": 0,
+      "signal": null,
+      "metrics": {
+        "files": {
+          "raw": "523",
+          "value": 523,
+          "unit": "count"
+        },
+        "linesOfLibrary": {
+          "raw": "10528",
+          "value": 10528,
+          "unit": "count"
+        },
+        "linesOfDefinitions": {
+          "raw": "29107",
+          "value": 29107,
+          "unit": "count"
+        },
+        "linesOfTypeScript": {
+          "raw": "16541",
+          "value": 16541,
+          "unit": "count"
+        },
+        "linesOfJavaScript": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfJSON": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfOther": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "identifiers": {
+          "raw": "98435",
+          "value": 98435,
+          "unit": "count"
+        },
+        "symbols": {
+          "raw": "77312",
+          "value": 77312,
+          "unit": "count"
+        },
+        "types": {
+          "raw": "19372",
+          "value": 19372,
+          "unit": "count"
+        },
+        "instantiations": {
+          "raw": "57621",
+          "value": 57621,
+          "unit": "count"
+        },
+        "memoryUsed": {
+          "raw": "64921K",
+          "value": 64921,
+          "unit": "KiB"
+        },
+        "assignabilityCacheSize": {
+          "raw": "4273",
+          "value": 4273,
+          "unit": "count"
+        },
+        "identityCacheSize": {
+          "raw": "114",
+          "value": 114,
+          "unit": "count"
+        },
+        "subtypeCacheSize": {
+          "raw": "109",
+          "value": 109,
+          "unit": "count"
+        },
+        "strictSubtypeCacheSize": {
+          "raw": "15",
+          "value": 15,
+          "unit": "count"
+        },
+        "iOReadTime": {
+          "raw": "0.06s",
+          "value": 0.06,
+          "unit": "seconds"
+        },
+        "parseTime": {
+          "raw": "0.11s",
+          "value": 0.11,
+          "unit": "seconds"
+        },
+        "resolveModuleTime": {
+          "raw": "0.03s",
+          "value": 0.03,
+          "unit": "seconds"
+        },
+        "resolveTypeReferenceTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "resolveLibraryTime": {
+          "raw": "0.04s",
+          "value": 0.04,
+          "unit": "seconds"
+        },
+        "programTime": {
+          "raw": "0.30s",
+          "value": 0.3,
+          "unit": "seconds"
+        },
+        "bindTime": {
+          "raw": "0.07s",
+          "value": 0.07,
+          "unit": "seconds"
+        },
+        "checkTime": {
+          "raw": "0.72s",
+          "value": 0.72,
+          "unit": "seconds"
+        },
+        "transformTimeTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "sourceMapTime": {
+          "raw": "0.00s",
+          "value": 0,
+          "unit": "seconds"
+        },
+        "commentTimeTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "iOWriteTime": {
+          "raw": "0.06s",
+          "value": 0.06,
+          "unit": "seconds"
+        },
+        "printTimeTime": {
+          "raw": "0.14s",
+          "value": 0.14,
+          "unit": "seconds"
+        },
+        "emitTime": {
+          "raw": "0.21s",
+          "value": 0.21,
+          "unit": "seconds"
+        },
+        "totalTime": {
+          "raw": "1.77s",
+          "value": 1.77,
+          "unit": "seconds"
+        }
+      },
+      "stdout": "Files:                         523\nLines of Library:             10528\nLines of Definitions:       29107\nLines of TypeScript:         16541\nLines of JavaScript:             0\nLines of JSON:                   0\nLines of Other:                  0\nIdentifiers:                98435\nSymbols:                   77312\nTypes:                      19372\nInstantiations:             57621\nMemory used:               64921K\nAssignability cache size:   4273\nIdentity cache size:           114\nSubtype cache size:             109\nStrict subtype cache size:     15\nI/O Read time:               0.06s\nParse time:                  0.11s\nResolveModule time:          0.03s\nResolveTypeReference time:   0.01s\nResolveLibrary time:         0.04s\nProgram time:                0.30s\nBind time:                   0.07s\nCheck time:                  0.72s\ntransformTime time:          0.01s\nSource Map time:             0.00s\ncommentTime time:            0.01s\nI/O Write time:              0.06s\nprintTime time:              0.14s\nEmit time:                   0.21s\nTotal time:                  1.77s\n",
+      "stderr": ""
+    },
+    {
+      "schemaVersion": 1,
+      "mode": "extendedDiagnostics",
+      "targetRoot": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/api-client",
+      "targetName": "api-client",
+      "project": "tsconfig.json",
+      "generatedAt": "2026-07-13T02:01:32.717Z",
+      "command": [
+        "/Users/michael_hladky/.nvm/versions/node/v24.1.0/bin/node",
+        "/Users/michael_hladky/WebstormProjects/ts-perf-ws/node_modules/typescript/bin/tsc",
+        "--project",
+        "tsconfig.json",
+        "--extendedDiagnostics",
+        "--pretty",
+        "false"
+      ],
+      "cwd": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/api-client",
+      "startedAt": "2026-07-13T02:01:30.000Z",
+      "finishedAt": "2026-07-13T02:01:32.687Z",
+      "durationMs": 2687,
+      "exitCode": 0,
+      "signal": null,
+      "metrics": {
+        "files": {
+          "raw": "899",
+          "value": 899,
+          "unit": "count"
+        },
+        "linesOfLibrary": {
+          "raw": "8412",
+          "value": 8412,
+          "unit": "count"
+        },
+        "linesOfDefinitions": {
+          "raw": "122960",
+          "value": 122960,
+          "unit": "count"
+        },
+        "linesOfTypeScript": {
+          "raw": "50226",
+          "value": 50226,
+          "unit": "count"
+        },
+        "linesOfJavaScript": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfJSON": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfOther": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "identifiers": {
+          "raw": "223193",
+          "value": 223193,
+          "unit": "count"
+        },
+        "symbols": {
+          "raw": "69080",
+          "value": 69080,
+          "unit": "count"
+        },
+        "types": {
+          "raw": "21819",
+          "value": 21819,
+          "unit": "count"
+        },
+        "instantiations": {
+          "raw": "68718",
+          "value": 68718,
+          "unit": "count"
+        },
+        "memoryUsed": {
+          "raw": "217159K",
+          "value": 217159,
+          "unit": "KiB"
+        },
+        "assignabilityCacheSize": {
+          "raw": "12215",
+          "value": 12215,
+          "unit": "count"
+        },
+        "identityCacheSize": {
+          "raw": "20",
+          "value": 20,
+          "unit": "count"
+        },
+        "subtypeCacheSize": {
+          "raw": "131",
+          "value": 131,
+          "unit": "count"
+        },
+        "strictSubtypeCacheSize": {
+          "raw": "56",
+          "value": 56,
+          "unit": "count"
+        },
+        "iOReadTime": {
+          "raw": "0.03s",
+          "value": 0.03,
+          "unit": "seconds"
+        },
+        "parseTime": {
+          "raw": "0.26s",
+          "value": 0.26,
+          "unit": "seconds"
+        },
+        "resolveModuleTime": {
+          "raw": "0.02s",
+          "value": 0.02,
+          "unit": "seconds"
+        },
+        "resolveTypeReferenceTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "resolveLibraryTime": {
+          "raw": "0.04s",
+          "value": 0.04,
+          "unit": "seconds"
+        },
+        "programTime": {
+          "raw": "0.15s",
+          "value": 0.15,
+          "unit": "seconds"
+        },
+        "bindTime": {
+          "raw": "0.22s",
+          "value": 0.22,
+          "unit": "seconds"
+        },
+        "checkTime": {
+          "raw": "1.37s",
+          "value": 1.37,
+          "unit": "seconds"
+        },
+        "transformTimeTime": {
+          "raw": "0.05s",
+          "value": 0.05,
+          "unit": "seconds"
+        },
+        "sourceMapTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "commentTimeTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "iOWriteTime": {
+          "raw": "0.03s",
+          "value": 0.03,
+          "unit": "seconds"
+        },
+        "printTimeTime": {
+          "raw": "0.13s",
+          "value": 0.13,
+          "unit": "seconds"
+        },
+        "emitTime": {
+          "raw": "0.08s",
+          "value": 0.08,
+          "unit": "seconds"
+        },
+        "totalTime": {
+          "raw": "2.41s",
+          "value": 2.41,
+          "unit": "seconds"
+        }
+      },
+      "stdout": "Files:                         899\nLines of Library:             8412\nLines of Definitions:       122960\nLines of TypeScript:         50226\nLines of JavaScript:             0\nLines of JSON:                   0\nLines of Other:                  0\nIdentifiers:                223193\nSymbols:                   69080\nTypes:                      21819\nInstantiations:             68718\nMemory used:               217159K\nAssignability cache size:   12215\nIdentity cache size:           20\nSubtype cache size:             131\nStrict subtype cache size:     56\nI/O Read time:               0.03s\nParse time:                  0.26s\nResolveModule time:          0.02s\nResolveTypeReference time:   0.01s\nResolveLibrary time:         0.04s\nProgram time:                0.15s\nBind time:                   0.22s\nCheck time:                  1.37s\ntransformTime time:          0.05s\nSource Map time:             0.01s\ncommentTime time:            0.01s\nI/O Write time:              0.03s\nprintTime time:              0.13s\nEmit time:                   0.08s\nTotal time:                  2.41s\n",
+      "stderr": ""
+    },
+    {
+      "schemaVersion": 1,
+      "mode": "extendedDiagnostics",
+      "targetRoot": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/auth-service",
+      "targetName": "auth-service",
+      "project": "tsconfig.json",
+      "generatedAt": "2026-07-13T02:02:17.951Z",
+      "command": [
+        "/Users/michael_hladky/.nvm/versions/node/v24.1.0/bin/node",
+        "/Users/michael_hladky/WebstormProjects/ts-perf-ws/node_modules/typescript/bin/tsc",
+        "--project",
+        "tsconfig.json",
+        "--extendedDiagnostics",
+        "--pretty",
+        "false"
+      ],
+      "cwd": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/auth-service",
+      "startedAt": "2026-07-13T02:02:15.000Z",
+      "finishedAt": "2026-07-13T02:02:17.921Z",
+      "durationMs": 2921,
+      "exitCode": 0,
+      "signal": null,
+      "metrics": {
+        "files": {
+          "raw": "309",
+          "value": 309,
+          "unit": "count"
+        },
+        "linesOfLibrary": {
+          "raw": "10085",
+          "value": 10085,
+          "unit": "count"
+        },
+        "linesOfDefinitions": {
+          "raw": "110861",
+          "value": 110861,
+          "unit": "count"
+        },
+        "linesOfTypeScript": {
+          "raw": "17609",
+          "value": 17609,
+          "unit": "count"
+        },
+        "linesOfJavaScript": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfJSON": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfOther": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "identifiers": {
+          "raw": "140450",
+          "value": 140450,
+          "unit": "count"
+        },
+        "symbols": {
+          "raw": "117152",
+          "value": 117152,
+          "unit": "count"
+        },
+        "types": {
+          "raw": "26084",
+          "value": 26084,
+          "unit": "count"
+        },
+        "instantiations": {
+          "raw": "91259",
+          "value": 91259,
+          "unit": "count"
+        },
+        "memoryUsed": {
+          "raw": "133421K",
+          "value": 133421,
+          "unit": "KiB"
+        },
+        "assignabilityCacheSize": {
+          "raw": "6269",
+          "value": 6269,
+          "unit": "count"
+        },
+        "identityCacheSize": {
+          "raw": "141",
+          "value": 141,
+          "unit": "count"
+        },
+        "subtypeCacheSize": {
+          "raw": "60",
+          "value": 60,
+          "unit": "count"
+        },
+        "strictSubtypeCacheSize": {
+          "raw": "47",
+          "value": 47,
+          "unit": "count"
+        },
+        "iOReadTime": {
+          "raw": "0.07s",
+          "value": 0.07,
+          "unit": "seconds"
+        },
+        "parseTime": {
+          "raw": "0.08s",
+          "value": 0.08,
+          "unit": "seconds"
+        },
+        "resolveModuleTime": {
+          "raw": "0.05s",
+          "value": 0.05,
+          "unit": "seconds"
+        },
+        "resolveTypeReferenceTime": {
+          "raw": "0.02s",
+          "value": 0.02,
+          "unit": "seconds"
+        },
+        "resolveLibraryTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "programTime": {
+          "raw": "0.49s",
+          "value": 0.49,
+          "unit": "seconds"
+        },
+        "bindTime": {
+          "raw": "0.06s",
+          "value": 0.06,
+          "unit": "seconds"
+        },
+        "checkTime": {
+          "raw": "1.72s",
+          "value": 1.72,
+          "unit": "seconds"
+        },
+        "transformTimeTime": {
+          "raw": "0.03s",
+          "value": 0.03,
+          "unit": "seconds"
+        },
+        "sourceMapTime": {
+          "raw": "0.00s",
+          "value": 0,
+          "unit": "seconds"
+        },
+        "commentTimeTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "iOWriteTime": {
+          "raw": "0.02s",
+          "value": 0.02,
+          "unit": "seconds"
+        },
+        "printTimeTime": {
+          "raw": "0.14s",
+          "value": 0.14,
+          "unit": "seconds"
+        },
+        "emitTime": {
+          "raw": "0.09s",
+          "value": 0.09,
+          "unit": "seconds"
+        },
+        "totalTime": {
+          "raw": "2.79s",
+          "value": 2.79,
+          "unit": "seconds"
+        }
+      },
+      "stdout": "Files:                         309\nLines of Library:             10085\nLines of Definitions:       110861\nLines of TypeScript:         17609\nLines of JavaScript:             0\nLines of JSON:                   0\nLines of Other:                  0\nIdentifiers:                140450\nSymbols:                   117152\nTypes:                      26084\nInstantiations:             91259\nMemory used:               133421K\nAssignability cache size:   6269\nIdentity cache size:           141\nSubtype cache size:             60\nStrict subtype cache size:     47\nI/O Read time:               0.07s\nParse time:                  0.08s\nResolveModule time:          0.05s\nResolveTypeReference time:   0.02s\nResolveLibrary time:         0.01s\nProgram time:                0.49s\nBind time:                   0.06s\nCheck time:                  1.72s\ntransformTime time:          0.03s\nSource Map time:             0.00s\ncommentTime time:            0.01s\nI/O Write time:              0.02s\nprintTime time:              0.14s\nEmit time:                   0.09s\nTotal time:                  2.79s\n",
+      "stderr": ""
+    },
+    {
+      "schemaVersion": 1,
+      "mode": "extendedDiagnostics",
+      "targetRoot": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/billing-service",
+      "targetName": "billing-service",
+      "project": "tsconfig.json",
+      "generatedAt": "2026-07-13T02:03:02.281Z",
+      "command": [
+        "/Users/michael_hladky/.nvm/versions/node/v24.1.0/bin/node",
+        "/Users/michael_hladky/WebstormProjects/ts-perf-ws/node_modules/typescript/bin/tsc",
+        "--project",
+        "tsconfig.json",
+        "--extendedDiagnostics",
+        "--pretty",
+        "false"
+      ],
+      "cwd": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/billing-service",
+      "startedAt": "2026-07-13T02:03:00.000Z",
+      "finishedAt": "2026-07-13T02:03:02.251Z",
+      "durationMs": 2251,
+      "exitCode": 0,
+      "signal": null,
+      "metrics": {
+        "files": {
+          "raw": "612",
+          "value": 612,
+          "unit": "count"
+        },
+        "linesOfLibrary": {
+          "raw": "10377",
+          "value": 10377,
+          "unit": "count"
+        },
+        "linesOfDefinitions": {
+          "raw": "47818",
+          "value": 47818,
+          "unit": "count"
+        },
+        "linesOfTypeScript": {
+          "raw": "50926",
+          "value": 50926,
+          "unit": "count"
+        },
+        "linesOfJavaScript": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfJSON": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfOther": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "identifiers": {
+          "raw": "283749",
+          "value": 283749,
+          "unit": "count"
+        },
+        "symbols": {
+          "raw": "107494",
+          "value": 107494,
+          "unit": "count"
+        },
+        "types": {
+          "raw": "51863",
+          "value": 51863,
+          "unit": "count"
+        },
+        "instantiations": {
+          "raw": "131390",
+          "value": 131390,
+          "unit": "count"
+        },
+        "memoryUsed": {
+          "raw": "57524K",
+          "value": 57524,
+          "unit": "KiB"
+        },
+        "assignabilityCacheSize": {
+          "raw": "25671",
+          "value": 25671,
+          "unit": "count"
+        },
+        "identityCacheSize": {
+          "raw": "129",
+          "value": 129,
+          "unit": "count"
+        },
+        "subtypeCacheSize": {
+          "raw": "158",
+          "value": 158,
+          "unit": "count"
+        },
+        "strictSubtypeCacheSize": {
+          "raw": "54",
+          "value": 54,
+          "unit": "count"
+        },
+        "iOReadTime": {
+          "raw": "0.02s",
+          "value": 0.02,
+          "unit": "seconds"
+        },
+        "parseTime": {
+          "raw": "0.23s",
+          "value": 0.23,
+          "unit": "seconds"
+        },
+        "resolveModuleTime": {
+          "raw": "0.05s",
+          "value": 0.05,
+          "unit": "seconds"
+        },
+        "resolveTypeReferenceTime": {
+          "raw": "0.00s",
+          "value": 0,
+          "unit": "seconds"
+        },
+        "resolveLibraryTime": {
+          "raw": "0.00s",
+          "value": 0,
+          "unit": "seconds"
+        },
+        "programTime": {
+          "raw": "0.38s",
+          "value": 0.38,
+          "unit": "seconds"
+        },
+        "bindTime": {
+          "raw": "0.16s",
+          "value": 0.16,
+          "unit": "seconds"
+        },
+        "checkTime": {
+          "raw": "0.74s",
+          "value": 0.74,
+          "unit": "seconds"
+        },
+        "transformTimeTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "sourceMapTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "commentTimeTime": {
+          "raw": "0.00s",
+          "value": 0,
+          "unit": "seconds"
+        },
+        "iOWriteTime": {
+          "raw": "0.03s",
+          "value": 0.03,
+          "unit": "seconds"
+        },
+        "printTimeTime": {
+          "raw": "0.20s",
+          "value": 0.2,
+          "unit": "seconds"
+        },
+        "emitTime": {
+          "raw": "0.13s",
+          "value": 0.13,
+          "unit": "seconds"
+        },
+        "totalTime": {
+          "raw": "1.96s",
+          "value": 1.96,
+          "unit": "seconds"
+        }
+      },
+      "stdout": "Files:                         612\nLines of Library:             10377\nLines of Definitions:       47818\nLines of TypeScript:         50926\nLines of JavaScript:             0\nLines of JSON:                   0\nLines of Other:                  0\nIdentifiers:                283749\nSymbols:                   107494\nTypes:                      51863\nInstantiations:             131390\nMemory used:               57524K\nAssignability cache size:   25671\nIdentity cache size:           129\nSubtype cache size:             158\nStrict subtype cache size:     54\nI/O Read time:               0.02s\nParse time:                  0.23s\nResolveModule time:          0.05s\nResolveTypeReference time:   0.00s\nResolveLibrary time:         0.00s\nProgram time:                0.38s\nBind time:                   0.16s\nCheck time:                  0.74s\ntransformTime time:          0.01s\nSource Map time:             0.01s\ncommentTime time:            0.00s\nI/O Write time:              0.03s\nprintTime time:              0.20s\nEmit time:                   0.13s\nTotal time:                  1.96s\n",
+      "stderr": ""
+    },
+    {
+      "schemaVersion": 1,
+      "mode": "extendedDiagnostics",
+      "targetRoot": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/notification-service",
+      "targetName": "notification-service",
+      "project": "tsconfig.json",
+      "generatedAt": "2026-07-13T02:03:47.532Z",
+      "command": [
+        "/Users/michael_hladky/.nvm/versions/node/v24.1.0/bin/node",
+        "/Users/michael_hladky/WebstormProjects/ts-perf-ws/node_modules/typescript/bin/tsc",
+        "--project",
+        "tsconfig.json",
+        "--extendedDiagnostics",
+        "--pretty",
+        "false"
+      ],
+      "cwd": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/notification-service",
+      "startedAt": "2026-07-13T02:03:45.000Z",
+      "finishedAt": "2026-07-13T02:03:47.502Z",
+      "durationMs": 2502,
+      "exitCode": 0,
+      "signal": null,
+      "metrics": {
+        "files": {
+          "raw": "189",
+          "value": 189,
+          "unit": "count"
+        },
+        "linesOfLibrary": {
+          "raw": "8878",
+          "value": 8878,
+          "unit": "count"
+        },
+        "linesOfDefinitions": {
+          "raw": "76438",
+          "value": 76438,
+          "unit": "count"
+        },
+        "linesOfTypeScript": {
+          "raw": "7607",
+          "value": 7607,
+          "unit": "count"
+        },
+        "linesOfJavaScript": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfJSON": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfOther": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "identifiers": {
+          "raw": "42437",
+          "value": 42437,
+          "unit": "count"
+        },
+        "symbols": {
+          "raw": "23792",
+          "value": 23792,
+          "unit": "count"
+        },
+        "types": {
+          "raw": "25276",
+          "value": 25276,
+          "unit": "count"
+        },
+        "instantiations": {
+          "raw": "108023",
+          "value": 108023,
+          "unit": "count"
+        },
+        "memoryUsed": {
+          "raw": "160606K",
+          "value": 160606,
+          "unit": "KiB"
+        },
+        "assignabilityCacheSize": {
+          "raw": "8454",
+          "value": 8454,
+          "unit": "count"
+        },
+        "identityCacheSize": {
+          "raw": "180",
+          "value": 180,
+          "unit": "count"
+        },
+        "subtypeCacheSize": {
+          "raw": "62",
+          "value": 62,
+          "unit": "count"
+        },
+        "strictSubtypeCacheSize": {
+          "raw": "30",
+          "value": 30,
+          "unit": "count"
+        },
+        "iOReadTime": {
+          "raw": "0.05s",
+          "value": 0.05,
+          "unit": "seconds"
+        },
+        "parseTime": {
+          "raw": "0.21s",
+          "value": 0.21,
+          "unit": "seconds"
+        },
+        "resolveModuleTime": {
+          "raw": "0.06s",
+          "value": 0.06,
+          "unit": "seconds"
+        },
+        "resolveTypeReferenceTime": {
+          "raw": "0.00s",
+          "value": 0,
+          "unit": "seconds"
+        },
+        "resolveLibraryTime": {
+          "raw": "0.02s",
+          "value": 0.02,
+          "unit": "seconds"
+        },
+        "programTime": {
+          "raw": "0.22s",
+          "value": 0.22,
+          "unit": "seconds"
+        },
+        "bindTime": {
+          "raw": "0.09s",
+          "value": 0.09,
+          "unit": "seconds"
+        },
+        "checkTime": {
+          "raw": "1.62s",
+          "value": 1.62,
+          "unit": "seconds"
+        },
+        "transformTimeTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "sourceMapTime": {
+          "raw": "0.00s",
+          "value": 0,
+          "unit": "seconds"
+        },
+        "commentTimeTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "iOWriteTime": {
+          "raw": "0.03s",
+          "value": 0.03,
+          "unit": "seconds"
+        },
+        "printTimeTime": {
+          "raw": "0.04s",
+          "value": 0.04,
+          "unit": "seconds"
+        },
+        "emitTime": {
+          "raw": "0.08s",
+          "value": 0.08,
+          "unit": "seconds"
+        },
+        "totalTime": {
+          "raw": "2.44s",
+          "value": 2.44,
+          "unit": "seconds"
+        }
+      },
+      "stdout": "Files:                         189\nLines of Library:             8878\nLines of Definitions:       76438\nLines of TypeScript:         7607\nLines of JavaScript:             0\nLines of JSON:                   0\nLines of Other:                  0\nIdentifiers:                42437\nSymbols:                   23792\nTypes:                      25276\nInstantiations:             108023\nMemory used:               160606K\nAssignability cache size:   8454\nIdentity cache size:           180\nSubtype cache size:             62\nStrict subtype cache size:     30\nI/O Read time:               0.05s\nParse time:                  0.21s\nResolveModule time:          0.06s\nResolveTypeReference time:   0.00s\nResolveLibrary time:         0.02s\nProgram time:                0.22s\nBind time:                   0.09s\nCheck time:                  1.62s\ntransformTime time:          0.01s\nSource Map time:             0.00s\ncommentTime time:            0.01s\nI/O Write time:              0.03s\nprintTime time:              0.04s\nEmit time:                   0.08s\nTotal time:                  2.44s\n",
+      "stderr": ""
+    },
+    {
+      "schemaVersion": 1,
+      "mode": "extendedDiagnostics",
+      "targetRoot": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/search-service",
+      "targetName": "search-service",
+      "project": "tsconfig.json",
+      "generatedAt": "2026-07-13T02:04:33.312Z",
+      "command": [
+        "/Users/michael_hladky/.nvm/versions/node/v24.1.0/bin/node",
+        "/Users/michael_hladky/WebstormProjects/ts-perf-ws/node_modules/typescript/bin/tsc",
+        "--project",
+        "tsconfig.json",
+        "--extendedDiagnostics",
+        "--pretty",
+        "false"
+      ],
+      "cwd": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/search-service",
+      "startedAt": "2026-07-13T02:04:30.000Z",
+      "finishedAt": "2026-07-13T02:04:33.282Z",
+      "durationMs": 3282,
+      "exitCode": 0,
+      "signal": null,
+      "metrics": {
+        "files": {
+          "raw": "566",
+          "value": 566,
+          "unit": "count"
+        },
+        "linesOfLibrary": {
+          "raw": "9140",
+          "value": 9140,
+          "unit": "count"
+        },
+        "linesOfDefinitions": {
+          "raw": "66747",
+          "value": 66747,
+          "unit": "count"
+        },
+        "linesOfTypeScript": {
+          "raw": "24033",
+          "value": 24033,
+          "unit": "count"
+        },
+        "linesOfJavaScript": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfJSON": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfOther": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "identifiers": {
+          "raw": "164583",
+          "value": 164583,
+          "unit": "count"
+        },
+        "symbols": {
+          "raw": "139497",
+          "value": 139497,
+          "unit": "count"
+        },
+        "types": {
+          "raw": "48758",
+          "value": 48758,
+          "unit": "count"
+        },
+        "instantiations": {
+          "raw": "142202",
+          "value": 142202,
+          "unit": "count"
+        },
+        "memoryUsed": {
+          "raw": "95848K",
+          "value": 95848,
+          "unit": "KiB"
+        },
+        "assignabilityCacheSize": {
+          "raw": "26673",
+          "value": 26673,
+          "unit": "count"
+        },
+        "identityCacheSize": {
+          "raw": "108",
+          "value": 108,
+          "unit": "count"
+        },
+        "subtypeCacheSize": {
+          "raw": "152",
+          "value": 152,
+          "unit": "count"
+        },
+        "strictSubtypeCacheSize": {
+          "raw": "54",
+          "value": 54,
+          "unit": "count"
+        },
+        "iOReadTime": {
+          "raw": "0.04s",
+          "value": 0.04,
+          "unit": "seconds"
+        },
+        "parseTime": {
+          "raw": "0.09s",
+          "value": 0.09,
+          "unit": "seconds"
+        },
+        "resolveModuleTime": {
+          "raw": "0.06s",
+          "value": 0.06,
+          "unit": "seconds"
+        },
+        "resolveTypeReferenceTime": {
+          "raw": "0.02s",
+          "value": 0.02,
+          "unit": "seconds"
+        },
+        "resolveLibraryTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "programTime": {
+          "raw": "0.26s",
+          "value": 0.26,
+          "unit": "seconds"
+        },
+        "bindTime": {
+          "raw": "0.13s",
+          "value": 0.13,
+          "unit": "seconds"
+        },
+        "checkTime": {
+          "raw": "2.36s",
+          "value": 2.36,
+          "unit": "seconds"
+        },
+        "transformTimeTime": {
+          "raw": "0.02s",
+          "value": 0.02,
+          "unit": "seconds"
+        },
+        "sourceMapTime": {
+          "raw": "0.02s",
+          "value": 0.02,
+          "unit": "seconds"
+        },
+        "commentTimeTime": {
+          "raw": "0.02s",
+          "value": 0.02,
+          "unit": "seconds"
+        },
+        "iOWriteTime": {
+          "raw": "0.06s",
+          "value": 0.06,
+          "unit": "seconds"
+        },
+        "printTimeTime": {
+          "raw": "0.03s",
+          "value": 0.03,
+          "unit": "seconds"
+        },
+        "emitTime": {
+          "raw": "0.03s",
+          "value": 0.03,
+          "unit": "seconds"
+        },
+        "totalTime": {
+          "raw": "3.15s",
+          "value": 3.15,
+          "unit": "seconds"
+        }
+      },
+      "stdout": "Files:                         566\nLines of Library:             9140\nLines of Definitions:       66747\nLines of TypeScript:         24033\nLines of JavaScript:             0\nLines of JSON:                   0\nLines of Other:                  0\nIdentifiers:                164583\nSymbols:                   139497\nTypes:                      48758\nInstantiations:             142202\nMemory used:               95848K\nAssignability cache size:   26673\nIdentity cache size:           108\nSubtype cache size:             152\nStrict subtype cache size:     54\nI/O Read time:               0.04s\nParse time:                  0.09s\nResolveModule time:          0.06s\nResolveTypeReference time:   0.02s\nResolveLibrary time:         0.01s\nProgram time:                0.26s\nBind time:                   0.13s\nCheck time:                  2.36s\ntransformTime time:          0.02s\nSource Map time:             0.02s\ncommentTime time:            0.02s\nI/O Write time:              0.06s\nprintTime time:              0.03s\nEmit time:                   0.03s\nTotal time:                  3.15s\n",
+      "stderr": ""
+    },
+    {
+      "schemaVersion": 1,
+      "mode": "extendedDiagnostics",
+      "targetRoot": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/data-pipeline",
+      "targetName": "data-pipeline",
+      "project": "tsconfig.json",
+      "generatedAt": "2026-07-13T02:05:16.387Z",
+      "command": [
+        "/Users/michael_hladky/.nvm/versions/node/v24.1.0/bin/node",
+        "/Users/michael_hladky/WebstormProjects/ts-perf-ws/node_modules/typescript/bin/tsc",
+        "--project",
+        "tsconfig.json",
+        "--extendedDiagnostics",
+        "--pretty",
+        "false"
+      ],
+      "cwd": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/data-pipeline",
+      "startedAt": "2026-07-13T02:05:15.000Z",
+      "finishedAt": "2026-07-13T02:05:16.357Z",
+      "durationMs": 1357,
+      "exitCode": 0,
+      "signal": null,
+      "metrics": {
+        "files": {
+          "raw": "501",
+          "value": 501,
+          "unit": "count"
+        },
+        "linesOfLibrary": {
+          "raw": "10974",
+          "value": 10974,
+          "unit": "count"
+        },
+        "linesOfDefinitions": {
+          "raw": "100818",
+          "value": 100818,
+          "unit": "count"
+        },
+        "linesOfTypeScript": {
+          "raw": "35370",
+          "value": 35370,
+          "unit": "count"
+        },
+        "linesOfJavaScript": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfJSON": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfOther": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "identifiers": {
+          "raw": "256924",
+          "value": 256924,
+          "unit": "count"
+        },
+        "symbols": {
+          "raw": "174443",
+          "value": 174443,
+          "unit": "count"
+        },
+        "types": {
+          "raw": "50267",
+          "value": 50267,
+          "unit": "count"
+        },
+        "instantiations": {
+          "raw": "260951",
+          "value": 260951,
+          "unit": "count"
+        },
+        "memoryUsed": {
+          "raw": "213838K",
+          "value": 213838,
+          "unit": "KiB"
+        },
+        "assignabilityCacheSize": {
+          "raw": "17113",
+          "value": 17113,
+          "unit": "count"
+        },
+        "identityCacheSize": {
+          "raw": "92",
+          "value": 92,
+          "unit": "count"
+        },
+        "subtypeCacheSize": {
+          "raw": "159",
+          "value": 159,
+          "unit": "count"
+        },
+        "strictSubtypeCacheSize": {
+          "raw": "41",
+          "value": 41,
+          "unit": "count"
+        },
+        "iOReadTime": {
+          "raw": "0.03s",
+          "value": 0.03,
+          "unit": "seconds"
+        },
+        "parseTime": {
+          "raw": "0.33s",
+          "value": 0.33,
+          "unit": "seconds"
+        },
+        "resolveModuleTime": {
+          "raw": "0.06s",
+          "value": 0.06,
+          "unit": "seconds"
+        },
+        "resolveTypeReferenceTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "resolveLibraryTime": {
+          "raw": "0.04s",
+          "value": 0.04,
+          "unit": "seconds"
+        },
+        "programTime": {
+          "raw": "0.16s",
+          "value": 0.16,
+          "unit": "seconds"
+        },
+        "bindTime": {
+          "raw": "0.10s",
+          "value": 0.1,
+          "unit": "seconds"
+        },
+        "checkTime": {
+          "raw": "0.10s",
+          "value": 0.1,
+          "unit": "seconds"
+        },
+        "transformTimeTime": {
+          "raw": "0.00s",
+          "value": 0,
+          "unit": "seconds"
+        },
+        "sourceMapTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "commentTimeTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "iOWriteTime": {
+          "raw": "0.08s",
+          "value": 0.08,
+          "unit": "seconds"
+        },
+        "printTimeTime": {
+          "raw": "0.18s",
+          "value": 0.18,
+          "unit": "seconds"
+        },
+        "emitTime": {
+          "raw": "0.11s",
+          "value": 0.11,
+          "unit": "seconds"
+        },
+        "totalTime": {
+          "raw": "1.22s",
+          "value": 1.22,
+          "unit": "seconds"
+        }
+      },
+      "stdout": "Files:                         501\nLines of Library:             10974\nLines of Definitions:       100818\nLines of TypeScript:         35370\nLines of JavaScript:             0\nLines of JSON:                   0\nLines of Other:                  0\nIdentifiers:                256924\nSymbols:                   174443\nTypes:                      50267\nInstantiations:             260951\nMemory used:               213838K\nAssignability cache size:   17113\nIdentity cache size:           92\nSubtype cache size:             159\nStrict subtype cache size:     41\nI/O Read time:               0.03s\nParse time:                  0.33s\nResolveModule time:          0.06s\nResolveTypeReference time:   0.01s\nResolveLibrary time:         0.04s\nProgram time:                0.16s\nBind time:                   0.10s\nCheck time:                  0.10s\ntransformTime time:          0.00s\nSource Map time:             0.01s\ncommentTime time:            0.01s\nI/O Write time:              0.08s\nprintTime time:              0.18s\nEmit time:                   0.11s\nTotal time:                  1.22s\n",
+      "stderr": ""
+    },
+    {
+      "schemaVersion": 1,
+      "mode": "extendedDiagnostics",
+      "targetRoot": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/shared-utils",
+      "targetName": "shared-utils",
+      "project": "tsconfig.json",
+      "generatedAt": "2026-07-13T02:06:02.142Z",
+      "command": [
+        "/Users/michael_hladky/.nvm/versions/node/v24.1.0/bin/node",
+        "/Users/michael_hladky/WebstormProjects/ts-perf-ws/node_modules/typescript/bin/tsc",
+        "--project",
+        "tsconfig.json",
+        "--extendedDiagnostics",
+        "--pretty",
+        "false"
+      ],
+      "cwd": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/shared-utils",
+      "startedAt": "2026-07-13T02:06:00.000Z",
+      "finishedAt": "2026-07-13T02:06:02.112Z",
+      "durationMs": 2112,
+      "exitCode": 0,
+      "signal": null,
+      "metrics": {
+        "files": {
+          "raw": "172",
+          "value": 172,
+          "unit": "count"
+        },
+        "linesOfLibrary": {
+          "raw": "8143",
+          "value": 8143,
+          "unit": "count"
+        },
+        "linesOfDefinitions": {
+          "raw": "24975",
+          "value": 24975,
+          "unit": "count"
+        },
+        "linesOfTypeScript": {
+          "raw": "7978",
+          "value": 7978,
+          "unit": "count"
+        },
+        "linesOfJavaScript": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfJSON": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfOther": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "identifiers": {
+          "raw": "41198",
+          "value": 41198,
+          "unit": "count"
+        },
+        "symbols": {
+          "raw": "23260",
+          "value": 23260,
+          "unit": "count"
+        },
+        "types": {
+          "raw": "34255",
+          "value": 34255,
+          "unit": "count"
+        },
+        "instantiations": {
+          "raw": "152094",
+          "value": 152094,
+          "unit": "count"
+        },
+        "memoryUsed": {
+          "raw": "265296K",
+          "value": 265296,
+          "unit": "KiB"
+        },
+        "assignabilityCacheSize": {
+          "raw": "17604",
+          "value": 17604,
+          "unit": "count"
+        },
+        "identityCacheSize": {
+          "raw": "43",
+          "value": 43,
+          "unit": "count"
+        },
+        "subtypeCacheSize": {
+          "raw": "122",
+          "value": 122,
+          "unit": "count"
+        },
+        "strictSubtypeCacheSize": {
+          "raw": "31",
+          "value": 31,
+          "unit": "count"
+        },
+        "iOReadTime": {
+          "raw": "0.04s",
+          "value": 0.04,
+          "unit": "seconds"
+        },
+        "parseTime": {
+          "raw": "0.19s",
+          "value": 0.19,
+          "unit": "seconds"
+        },
+        "resolveModuleTime": {
+          "raw": "0.05s",
+          "value": 0.05,
+          "unit": "seconds"
+        },
+        "resolveTypeReferenceTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "resolveLibraryTime": {
+          "raw": "0.02s",
+          "value": 0.02,
+          "unit": "seconds"
+        },
+        "programTime": {
+          "raw": "0.22s",
+          "value": 0.22,
+          "unit": "seconds"
+        },
+        "bindTime": {
+          "raw": "0.06s",
+          "value": 0.06,
+          "unit": "seconds"
+        },
+        "checkTime": {
+          "raw": "1.24s",
+          "value": 1.24,
+          "unit": "seconds"
+        },
+        "transformTimeTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "sourceMapTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "commentTimeTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "iOWriteTime": {
+          "raw": "0.06s",
+          "value": 0.06,
+          "unit": "seconds"
+        },
+        "printTimeTime": {
+          "raw": "0.10s",
+          "value": 0.1,
+          "unit": "seconds"
+        },
+        "emitTime": {
+          "raw": "0.05s",
+          "value": 0.05,
+          "unit": "seconds"
+        },
+        "totalTime": {
+          "raw": "2.07s",
+          "value": 2.07,
+          "unit": "seconds"
+        }
+      },
+      "stdout": "Files:                         172\nLines of Library:             8143\nLines of Definitions:       24975\nLines of TypeScript:         7978\nLines of JavaScript:             0\nLines of JSON:                   0\nLines of Other:                  0\nIdentifiers:                41198\nSymbols:                   23260\nTypes:                      34255\nInstantiations:             152094\nMemory used:               265296K\nAssignability cache size:   17604\nIdentity cache size:           43\nSubtype cache size:             122\nStrict subtype cache size:     31\nI/O Read time:               0.04s\nParse time:                  0.19s\nResolveModule time:          0.05s\nResolveTypeReference time:   0.01s\nResolveLibrary time:         0.02s\nProgram time:                0.22s\nBind time:                   0.06s\nCheck time:                  1.24s\ntransformTime time:          0.01s\nSource Map time:             0.01s\ncommentTime time:            0.01s\nI/O Write time:              0.06s\nprintTime time:              0.10s\nEmit time:                   0.05s\nTotal time:                  2.07s\n",
+      "stderr": ""
+    },
+    {
+      "schemaVersion": 1,
+      "mode": "extendedDiagnostics",
+      "targetRoot": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/feature-flags",
+      "targetName": "feature-flags",
+      "project": "tsconfig.json",
+      "generatedAt": "2026-07-13T02:06:47.808Z",
+      "command": [
+        "/Users/michael_hladky/.nvm/versions/node/v24.1.0/bin/node",
+        "/Users/michael_hladky/WebstormProjects/ts-perf-ws/node_modules/typescript/bin/tsc",
+        "--project",
+        "tsconfig.json",
+        "--extendedDiagnostics",
+        "--pretty",
+        "false"
+      ],
+      "cwd": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/feature-flags",
+      "startedAt": "2026-07-13T02:06:45.000Z",
+      "finishedAt": "2026-07-13T02:06:47.778Z",
+      "durationMs": 2778,
+      "exitCode": 0,
+      "signal": null,
+      "metrics": {
+        "files": {
+          "raw": "175",
+          "value": 175,
+          "unit": "count"
+        },
+        "linesOfLibrary": {
+          "raw": "10612",
+          "value": 10612,
+          "unit": "count"
+        },
+        "linesOfDefinitions": {
+          "raw": "16454",
+          "value": 16454,
+          "unit": "count"
+        },
+        "linesOfTypeScript": {
+          "raw": "15154",
+          "value": 15154,
+          "unit": "count"
+        },
+        "linesOfJavaScript": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfJSON": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfOther": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "identifiers": {
+          "raw": "86705",
+          "value": 86705,
+          "unit": "count"
+        },
+        "symbols": {
+          "raw": "52151",
+          "value": 52151,
+          "unit": "count"
+        },
+        "types": {
+          "raw": "6198",
+          "value": 6198,
+          "unit": "count"
+        },
+        "instantiations": {
+          "raw": "31109",
+          "value": 31109,
+          "unit": "count"
+        },
+        "memoryUsed": {
+          "raw": "70035K",
+          "value": 70035,
+          "unit": "KiB"
+        },
+        "assignabilityCacheSize": {
+          "raw": "2158",
+          "value": 2158,
+          "unit": "count"
+        },
+        "identityCacheSize": {
+          "raw": "50",
+          "value": 50,
+          "unit": "count"
+        },
+        "subtypeCacheSize": {
+          "raw": "128",
+          "value": 128,
+          "unit": "count"
+        },
+        "strictSubtypeCacheSize": {
+          "raw": "34",
+          "value": 34,
+          "unit": "count"
+        },
+        "iOReadTime": {
+          "raw": "0.02s",
+          "value": 0.02,
+          "unit": "seconds"
+        },
+        "parseTime": {
+          "raw": "0.34s",
+          "value": 0.34,
+          "unit": "seconds"
+        },
+        "resolveModuleTime": {
+          "raw": "0.07s",
+          "value": 0.07,
+          "unit": "seconds"
+        },
+        "resolveTypeReferenceTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "resolveLibraryTime": {
+          "raw": "0.04s",
+          "value": 0.04,
+          "unit": "seconds"
+        },
+        "programTime": {
+          "raw": "0.32s",
+          "value": 0.32,
+          "unit": "seconds"
+        },
+        "bindTime": {
+          "raw": "0.18s",
+          "value": 0.18,
+          "unit": "seconds"
+        },
+        "checkTime": {
+          "raw": "1.29s",
+          "value": 1.29,
+          "unit": "seconds"
+        },
+        "transformTimeTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "sourceMapTime": {
+          "raw": "0.00s",
+          "value": 0,
+          "unit": "seconds"
+        },
+        "commentTimeTime": {
+          "raw": "0.00s",
+          "value": 0,
+          "unit": "seconds"
+        },
+        "iOWriteTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "printTimeTime": {
+          "raw": "0.07s",
+          "value": 0.07,
+          "unit": "seconds"
+        },
+        "emitTime": {
+          "raw": "0.15s",
+          "value": 0.15,
+          "unit": "seconds"
+        },
+        "totalTime": {
+          "raw": "2.51s",
+          "value": 2.51,
+          "unit": "seconds"
+        }
+      },
+      "stdout": "Files:                         175\nLines of Library:             10612\nLines of Definitions:       16454\nLines of TypeScript:         15154\nLines of JavaScript:             0\nLines of JSON:                   0\nLines of Other:                  0\nIdentifiers:                86705\nSymbols:                   52151\nTypes:                      6198\nInstantiations:             31109\nMemory used:               70035K\nAssignability cache size:   2158\nIdentity cache size:           50\nSubtype cache size:             128\nStrict subtype cache size:     34\nI/O Read time:               0.02s\nParse time:                  0.34s\nResolveModule time:          0.07s\nResolveTypeReference time:   0.01s\nResolveLibrary time:         0.04s\nProgram time:                0.32s\nBind time:                   0.18s\nCheck time:                  1.29s\ntransformTime time:          0.01s\nSource Map time:             0.00s\ncommentTime time:            0.00s\nI/O Write time:              0.01s\nprintTime time:              0.07s\nEmit time:                   0.15s\nTotal time:                  2.51s\n",
+      "stderr": ""
+    },
+    {
+      "schemaVersion": 1,
+      "mode": "extendedDiagnostics",
+      "targetRoot": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/analytics-sdk",
+      "targetName": "analytics-sdk",
+      "project": "tsconfig.json",
+      "generatedAt": "2026-07-13T02:07:33.579Z",
+      "command": [
+        "/Users/michael_hladky/.nvm/versions/node/v24.1.0/bin/node",
+        "/Users/michael_hladky/WebstormProjects/ts-perf-ws/node_modules/typescript/bin/tsc",
+        "--project",
+        "tsconfig.json",
+        "--extendedDiagnostics",
+        "--pretty",
+        "false"
+      ],
+      "cwd": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/analytics-sdk",
+      "startedAt": "2026-07-13T02:07:30.000Z",
+      "finishedAt": "2026-07-13T02:07:33.549Z",
+      "durationMs": 3549,
+      "exitCode": 0,
+      "signal": null,
+      "metrics": {
+        "files": {
+          "raw": "551",
+          "value": 551,
+          "unit": "count"
+        },
+        "linesOfLibrary": {
+          "raw": "9190",
+          "value": 9190,
+          "unit": "count"
+        },
+        "linesOfDefinitions": {
+          "raw": "10700",
+          "value": 10700,
+          "unit": "count"
+        },
+        "linesOfTypeScript": {
+          "raw": "48818",
+          "value": 48818,
+          "unit": "count"
+        },
+        "linesOfJavaScript": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfJSON": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfOther": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "identifiers": {
+          "raw": "261242",
+          "value": 261242,
+          "unit": "count"
+        },
+        "symbols": {
+          "raw": "122909",
+          "value": 122909,
+          "unit": "count"
+        },
+        "types": {
+          "raw": "50036",
+          "value": 50036,
+          "unit": "count"
+        },
+        "instantiations": {
+          "raw": "172709",
+          "value": 172709,
+          "unit": "count"
+        },
+        "memoryUsed": {
+          "raw": "109316K",
+          "value": 109316,
+          "unit": "KiB"
+        },
+        "assignabilityCacheSize": {
+          "raw": "28907",
+          "value": 28907,
+          "unit": "count"
+        },
+        "identityCacheSize": {
+          "raw": "191",
+          "value": 191,
+          "unit": "count"
+        },
+        "subtypeCacheSize": {
+          "raw": "52",
+          "value": 52,
+          "unit": "count"
+        },
+        "strictSubtypeCacheSize": {
+          "raw": "31",
+          "value": 31,
+          "unit": "count"
+        },
+        "iOReadTime": {
+          "raw": "0.07s",
+          "value": 0.07,
+          "unit": "seconds"
+        },
+        "parseTime": {
+          "raw": "0.33s",
+          "value": 0.33,
+          "unit": "seconds"
+        },
+        "resolveModuleTime": {
+          "raw": "0.06s",
+          "value": 0.06,
+          "unit": "seconds"
+        },
+        "resolveTypeReferenceTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "resolveLibraryTime": {
+          "raw": "0.04s",
+          "value": 0.04,
+          "unit": "seconds"
+        },
+        "programTime": {
+          "raw": "0.22s",
+          "value": 0.22,
+          "unit": "seconds"
+        },
+        "bindTime": {
+          "raw": "0.12s",
+          "value": 0.12,
+          "unit": "seconds"
+        },
+        "checkTime": {
+          "raw": "1.81s",
+          "value": 1.81,
+          "unit": "seconds"
+        },
+        "transformTimeTime": {
+          "raw": "0.03s",
+          "value": 0.03,
+          "unit": "seconds"
+        },
+        "sourceMapTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "commentTimeTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "iOWriteTime": {
+          "raw": "0.05s",
+          "value": 0.05,
+          "unit": "seconds"
+        },
+        "printTimeTime": {
+          "raw": "0.19s",
+          "value": 0.19,
+          "unit": "seconds"
+        },
+        "emitTime": {
+          "raw": "0.22s",
+          "value": 0.22,
+          "unit": "seconds"
+        },
+        "totalTime": {
+          "raw": "3.17s",
+          "value": 3.17,
+          "unit": "seconds"
+        }
+      },
+      "stdout": "Files:                         551\nLines of Library:             9190\nLines of Definitions:       10700\nLines of TypeScript:         48818\nLines of JavaScript:             0\nLines of JSON:                   0\nLines of Other:                  0\nIdentifiers:                261242\nSymbols:                   122909\nTypes:                      50036\nInstantiations:             172709\nMemory used:               109316K\nAssignability cache size:   28907\nIdentity cache size:           191\nSubtype cache size:             52\nStrict subtype cache size:     31\nI/O Read time:               0.07s\nParse time:                  0.33s\nResolveModule time:          0.06s\nResolveTypeReference time:   0.01s\nResolveLibrary time:         0.04s\nProgram time:                0.22s\nBind time:                   0.12s\nCheck time:                  1.81s\ntransformTime time:          0.03s\nSource Map time:             0.01s\ncommentTime time:            0.01s\nI/O Write time:              0.05s\nprintTime time:              0.19s\nEmit time:                   0.22s\nTotal time:                  3.17s\n",
+      "stderr": ""
+    },
+    {
+      "schemaVersion": 1,
+      "mode": "extendedDiagnostics",
+      "targetRoot": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/payments-sdk",
+      "targetName": "payments-sdk",
+      "project": "tsconfig.json",
+      "generatedAt": "2026-07-13T02:08:18.041Z",
+      "command": [
+        "/Users/michael_hladky/.nvm/versions/node/v24.1.0/bin/node",
+        "/Users/michael_hladky/WebstormProjects/ts-perf-ws/node_modules/typescript/bin/tsc",
+        "--project",
+        "tsconfig.json",
+        "--extendedDiagnostics",
+        "--pretty",
+        "false"
+      ],
+      "cwd": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/payments-sdk",
+      "startedAt": "2026-07-13T02:08:15.000Z",
+      "finishedAt": "2026-07-13T02:08:18.011Z",
+      "durationMs": 3011,
+      "exitCode": 0,
+      "signal": null,
+      "metrics": {
+        "files": {
+          "raw": "321",
+          "value": 321,
+          "unit": "count"
+        },
+        "linesOfLibrary": {
+          "raw": "10594",
+          "value": 10594,
+          "unit": "count"
+        },
+        "linesOfDefinitions": {
+          "raw": "89486",
+          "value": 89486,
+          "unit": "count"
+        },
+        "linesOfTypeScript": {
+          "raw": "21794",
+          "value": 21794,
+          "unit": "count"
+        },
+        "linesOfJavaScript": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfJSON": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfOther": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "identifiers": {
+          "raw": "120900",
+          "value": 120900,
+          "unit": "count"
+        },
+        "symbols": {
+          "raw": "99955",
+          "value": 99955,
+          "unit": "count"
+        },
+        "types": {
+          "raw": "19222",
+          "value": 19222,
+          "unit": "count"
+        },
+        "instantiations": {
+          "raw": "102632",
+          "value": 102632,
+          "unit": "count"
+        },
+        "memoryUsed": {
+          "raw": "164510K",
+          "value": 164510,
+          "unit": "KiB"
+        },
+        "assignabilityCacheSize": {
+          "raw": "6456",
+          "value": 6456,
+          "unit": "count"
+        },
+        "identityCacheSize": {
+          "raw": "109",
+          "value": 109,
+          "unit": "count"
+        },
+        "subtypeCacheSize": {
+          "raw": "151",
+          "value": 151,
+          "unit": "count"
+        },
+        "strictSubtypeCacheSize": {
+          "raw": "37",
+          "value": 37,
+          "unit": "count"
+        },
+        "iOReadTime": {
+          "raw": "0.07s",
+          "value": 0.07,
+          "unit": "seconds"
+        },
+        "parseTime": {
+          "raw": "0.26s",
+          "value": 0.26,
+          "unit": "seconds"
+        },
+        "resolveModuleTime": {
+          "raw": "0.02s",
+          "value": 0.02,
+          "unit": "seconds"
+        },
+        "resolveTypeReferenceTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "resolveLibraryTime": {
+          "raw": "0.05s",
+          "value": 0.05,
+          "unit": "seconds"
+        },
+        "programTime": {
+          "raw": "0.29s",
+          "value": 0.29,
+          "unit": "seconds"
+        },
+        "bindTime": {
+          "raw": "0.08s",
+          "value": 0.08,
+          "unit": "seconds"
+        },
+        "checkTime": {
+          "raw": "1.53s",
+          "value": 1.53,
+          "unit": "seconds"
+        },
+        "transformTimeTime": {
+          "raw": "0.04s",
+          "value": 0.04,
+          "unit": "seconds"
+        },
+        "sourceMapTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "commentTimeTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "iOWriteTime": {
+          "raw": "0.02s",
+          "value": 0.02,
+          "unit": "seconds"
+        },
+        "printTimeTime": {
+          "raw": "0.17s",
+          "value": 0.17,
+          "unit": "seconds"
+        },
+        "emitTime": {
+          "raw": "0.20s",
+          "value": 0.2,
+          "unit": "seconds"
+        },
+        "totalTime": {
+          "raw": "2.76s",
+          "value": 2.76,
+          "unit": "seconds"
+        }
+      },
+      "stdout": "Files:                         321\nLines of Library:             10594\nLines of Definitions:       89486\nLines of TypeScript:         21794\nLines of JavaScript:             0\nLines of JSON:                   0\nLines of Other:                  0\nIdentifiers:                120900\nSymbols:                   99955\nTypes:                      19222\nInstantiations:             102632\nMemory used:               164510K\nAssignability cache size:   6456\nIdentity cache size:           109\nSubtype cache size:             151\nStrict subtype cache size:     37\nI/O Read time:               0.07s\nParse time:                  0.26s\nResolveModule time:          0.02s\nResolveTypeReference time:   0.01s\nResolveLibrary time:         0.05s\nProgram time:                0.29s\nBind time:                   0.08s\nCheck time:                  1.53s\ntransformTime time:          0.04s\nSource Map time:             0.01s\ncommentTime time:            0.01s\nI/O Write time:              0.02s\nprintTime time:              0.17s\nEmit time:                   0.20s\nTotal time:                  2.76s\n",
+      "stderr": ""
+    },
+    {
+      "schemaVersion": 1,
+      "mode": "extendedDiagnostics",
+      "targetRoot": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/graphql-gateway",
+      "targetName": "graphql-gateway",
+      "project": "tsconfig.json",
+      "generatedAt": "2026-07-13T02:09:01.808Z",
+      "command": [
+        "/Users/michael_hladky/.nvm/versions/node/v24.1.0/bin/node",
+        "/Users/michael_hladky/WebstormProjects/ts-perf-ws/node_modules/typescript/bin/tsc",
+        "--project",
+        "tsconfig.json",
+        "--extendedDiagnostics",
+        "--pretty",
+        "false"
+      ],
+      "cwd": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/graphql-gateway",
+      "startedAt": "2026-07-13T02:09:00.000Z",
+      "finishedAt": "2026-07-13T02:09:01.778Z",
+      "durationMs": 1778,
+      "exitCode": 0,
+      "signal": null,
+      "metrics": {
+        "files": {
+          "raw": "469",
+          "value": 469,
+          "unit": "count"
+        },
+        "linesOfLibrary": {
+          "raw": "10680",
+          "value": 10680,
+          "unit": "count"
+        },
+        "linesOfDefinitions": {
+          "raw": "68989",
+          "value": 68989,
+          "unit": "count"
+        },
+        "linesOfTypeScript": {
+          "raw": "16110",
+          "value": 16110,
+          "unit": "count"
+        },
+        "linesOfJavaScript": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfJSON": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfOther": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "identifiers": {
+          "raw": "107953",
+          "value": 107953,
+          "unit": "count"
+        },
+        "symbols": {
+          "raw": "59663",
+          "value": 59663,
+          "unit": "count"
+        },
+        "types": {
+          "raw": "26734",
+          "value": 26734,
+          "unit": "count"
+        },
+        "instantiations": {
+          "raw": "103922",
+          "value": 103922,
+          "unit": "count"
+        },
+        "memoryUsed": {
+          "raw": "245077K",
+          "value": 245077,
+          "unit": "KiB"
+        },
+        "assignabilityCacheSize": {
+          "raw": "10885",
+          "value": 10885,
+          "unit": "count"
+        },
+        "identityCacheSize": {
+          "raw": "13",
+          "value": 13,
+          "unit": "count"
+        },
+        "subtypeCacheSize": {
+          "raw": "34",
+          "value": 34,
+          "unit": "count"
+        },
+        "strictSubtypeCacheSize": {
+          "raw": "6",
+          "value": 6,
+          "unit": "count"
+        },
+        "iOReadTime": {
+          "raw": "0.02s",
+          "value": 0.02,
+          "unit": "seconds"
+        },
+        "parseTime": {
+          "raw": "0.16s",
+          "value": 0.16,
+          "unit": "seconds"
+        },
+        "resolveModuleTime": {
+          "raw": "0.08s",
+          "value": 0.08,
+          "unit": "seconds"
+        },
+        "resolveTypeReferenceTime": {
+          "raw": "0.02s",
+          "value": 0.02,
+          "unit": "seconds"
+        },
+        "resolveLibraryTime": {
+          "raw": "0.03s",
+          "value": 0.03,
+          "unit": "seconds"
+        },
+        "programTime": {
+          "raw": "0.13s",
+          "value": 0.13,
+          "unit": "seconds"
+        },
+        "bindTime": {
+          "raw": "0.04s",
+          "value": 0.04,
+          "unit": "seconds"
+        },
+        "checkTime": {
+          "raw": "0.69s",
+          "value": 0.69,
+          "unit": "seconds"
+        },
+        "transformTimeTime": {
+          "raw": "0.04s",
+          "value": 0.04,
+          "unit": "seconds"
+        },
+        "sourceMapTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "commentTimeTime": {
+          "raw": "0.02s",
+          "value": 0.02,
+          "unit": "seconds"
+        },
+        "iOWriteTime": {
+          "raw": "0.05s",
+          "value": 0.05,
+          "unit": "seconds"
+        },
+        "printTimeTime": {
+          "raw": "0.18s",
+          "value": 0.18,
+          "unit": "seconds"
+        },
+        "emitTime": {
+          "raw": "0.20s",
+          "value": 0.2,
+          "unit": "seconds"
+        },
+        "totalTime": {
+          "raw": "1.67s",
+          "value": 1.67,
+          "unit": "seconds"
+        }
+      },
+      "stdout": "Files:                         469\nLines of Library:             10680\nLines of Definitions:       68989\nLines of TypeScript:         16110\nLines of JavaScript:             0\nLines of JSON:                   0\nLines of Other:                  0\nIdentifiers:                107953\nSymbols:                   59663\nTypes:                      26734\nInstantiations:             103922\nMemory used:               245077K\nAssignability cache size:   10885\nIdentity cache size:           13\nSubtype cache size:             34\nStrict subtype cache size:     6\nI/O Read time:               0.02s\nParse time:                  0.16s\nResolveModule time:          0.08s\nResolveTypeReference time:   0.02s\nResolveLibrary time:         0.03s\nProgram time:                0.13s\nBind time:                   0.04s\nCheck time:                  0.69s\ntransformTime time:          0.04s\nSource Map time:             0.01s\ncommentTime time:            0.02s\nI/O Write time:              0.05s\nprintTime time:              0.18s\nEmit time:                   0.20s\nTotal time:                  1.67s\n",
+      "stderr": ""
+    },
+    {
+      "schemaVersion": 1,
+      "mode": "extendedDiagnostics",
+      "targetRoot": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/admin-dashboard",
+      "targetName": "admin-dashboard",
+      "project": "tsconfig.json",
+      "generatedAt": "2026-07-13T02:09:48.570Z",
+      "command": [
+        "/Users/michael_hladky/.nvm/versions/node/v24.1.0/bin/node",
+        "/Users/michael_hladky/WebstormProjects/ts-perf-ws/node_modules/typescript/bin/tsc",
+        "--project",
+        "tsconfig.json",
+        "--extendedDiagnostics",
+        "--pretty",
+        "false"
+      ],
+      "cwd": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/admin-dashboard",
+      "startedAt": "2026-07-13T02:09:45.000Z",
+      "finishedAt": "2026-07-13T02:09:48.540Z",
+      "durationMs": 3540,
+      "exitCode": 0,
+      "signal": null,
+      "metrics": {
+        "files": {
+          "raw": "131",
+          "value": 131,
+          "unit": "count"
+        },
+        "linesOfLibrary": {
+          "raw": "9441",
+          "value": 9441,
+          "unit": "count"
+        },
+        "linesOfDefinitions": {
+          "raw": "37256",
+          "value": 37256,
+          "unit": "count"
+        },
+        "linesOfTypeScript": {
+          "raw": "8860",
+          "value": 8860,
+          "unit": "count"
+        },
+        "linesOfJavaScript": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfJSON": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfOther": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "identifiers": {
+          "raw": "45318",
+          "value": 45318,
+          "unit": "count"
+        },
+        "symbols": {
+          "raw": "20669",
+          "value": 20669,
+          "unit": "count"
+        },
+        "types": {
+          "raw": "43311",
+          "value": 43311,
+          "unit": "count"
+        },
+        "instantiations": {
+          "raw": "145298",
+          "value": 145298,
+          "unit": "count"
+        },
+        "memoryUsed": {
+          "raw": "184348K",
+          "value": 184348,
+          "unit": "KiB"
+        },
+        "assignabilityCacheSize": {
+          "raw": "18917",
+          "value": 18917,
+          "unit": "count"
+        },
+        "identityCacheSize": {
+          "raw": "26",
+          "value": 26,
+          "unit": "count"
+        },
+        "subtypeCacheSize": {
+          "raw": "142",
+          "value": 142,
+          "unit": "count"
+        },
+        "strictSubtypeCacheSize": {
+          "raw": "41",
+          "value": 41,
+          "unit": "count"
+        },
+        "iOReadTime": {
+          "raw": "0.07s",
+          "value": 0.07,
+          "unit": "seconds"
+        },
+        "parseTime": {
+          "raw": "0.08s",
+          "value": 0.08,
+          "unit": "seconds"
+        },
+        "resolveModuleTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "resolveTypeReferenceTime": {
+          "raw": "0.00s",
+          "value": 0,
+          "unit": "seconds"
+        },
+        "resolveLibraryTime": {
+          "raw": "0.02s",
+          "value": 0.02,
+          "unit": "seconds"
+        },
+        "programTime": {
+          "raw": "0.20s",
+          "value": 0.2,
+          "unit": "seconds"
+        },
+        "bindTime": {
+          "raw": "0.07s",
+          "value": 0.07,
+          "unit": "seconds"
+        },
+        "checkTime": {
+          "raw": "2.38s",
+          "value": 2.38,
+          "unit": "seconds"
+        },
+        "transformTimeTime": {
+          "raw": "0.03s",
+          "value": 0.03,
+          "unit": "seconds"
+        },
+        "sourceMapTime": {
+          "raw": "0.02s",
+          "value": 0.02,
+          "unit": "seconds"
+        },
+        "commentTimeTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "iOWriteTime": {
+          "raw": "0.06s",
+          "value": 0.06,
+          "unit": "seconds"
+        },
+        "printTimeTime": {
+          "raw": "0.03s",
+          "value": 0.03,
+          "unit": "seconds"
+        },
+        "emitTime": {
+          "raw": "0.17s",
+          "value": 0.17,
+          "unit": "seconds"
+        },
+        "totalTime": {
+          "raw": "3.15s",
+          "value": 3.15,
+          "unit": "seconds"
+        }
+      },
+      "stdout": "Files:                         131\nLines of Library:             9441\nLines of Definitions:       37256\nLines of TypeScript:         8860\nLines of JavaScript:             0\nLines of JSON:                   0\nLines of Other:                  0\nIdentifiers:                45318\nSymbols:                   20669\nTypes:                      43311\nInstantiations:             145298\nMemory used:               184348K\nAssignability cache size:   18917\nIdentity cache size:           26\nSubtype cache size:             142\nStrict subtype cache size:     41\nI/O Read time:               0.07s\nParse time:                  0.08s\nResolveModule time:          0.01s\nResolveTypeReference time:   0.00s\nResolveLibrary time:         0.02s\nProgram time:                0.20s\nBind time:                   0.07s\nCheck time:                  2.38s\ntransformTime time:          0.03s\nSource Map time:             0.02s\ncommentTime time:            0.01s\nI/O Write time:              0.06s\nprintTime time:              0.03s\nEmit time:                   0.17s\nTotal time:                  3.15s\n",
+      "stderr": ""
+    },
+    {
+      "schemaVersion": 1,
+      "mode": "extendedDiagnostics",
+      "targetRoot": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/mobile-bridge",
+      "targetName": "mobile-bridge",
+      "project": "tsconfig.json",
+      "generatedAt": "2026-07-13T02:10:32.689Z",
+      "command": [
+        "/Users/michael_hladky/.nvm/versions/node/v24.1.0/bin/node",
+        "/Users/michael_hladky/WebstormProjects/ts-perf-ws/node_modules/typescript/bin/tsc",
+        "--project",
+        "tsconfig.json",
+        "--extendedDiagnostics",
+        "--pretty",
+        "false"
+      ],
+      "cwd": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/mobile-bridge",
+      "startedAt": "2026-07-13T02:10:30.000Z",
+      "finishedAt": "2026-07-13T02:10:32.659Z",
+      "durationMs": 2659,
+      "exitCode": 0,
+      "signal": null,
+      "metrics": {
+        "files": {
+          "raw": "382",
+          "value": 382,
+          "unit": "count"
+        },
+        "linesOfLibrary": {
+          "raw": "9515",
+          "value": 9515,
+          "unit": "count"
+        },
+        "linesOfDefinitions": {
+          "raw": "103829",
+          "value": 103829,
+          "unit": "count"
+        },
+        "linesOfTypeScript": {
+          "raw": "16146",
+          "value": 16146,
+          "unit": "count"
+        },
+        "linesOfJavaScript": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfJSON": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfOther": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "identifiers": {
+          "raw": "73504",
+          "value": 73504,
+          "unit": "count"
+        },
+        "symbols": {
+          "raw": "25689",
+          "value": 25689,
+          "unit": "count"
+        },
+        "types": {
+          "raw": "46421",
+          "value": 46421,
+          "unit": "count"
+        },
+        "instantiations": {
+          "raw": "133412",
+          "value": 133412,
+          "unit": "count"
+        },
+        "memoryUsed": {
+          "raw": "285648K",
+          "value": 285648,
+          "unit": "KiB"
+        },
+        "assignabilityCacheSize": {
+          "raw": "23993",
+          "value": 23993,
+          "unit": "count"
+        },
+        "identityCacheSize": {
+          "raw": "101",
+          "value": 101,
+          "unit": "count"
+        },
+        "subtypeCacheSize": {
+          "raw": "172",
+          "value": 172,
+          "unit": "count"
+        },
+        "strictSubtypeCacheSize": {
+          "raw": "11",
+          "value": 11,
+          "unit": "count"
+        },
+        "iOReadTime": {
+          "raw": "0.02s",
+          "value": 0.02,
+          "unit": "seconds"
+        },
+        "parseTime": {
+          "raw": "0.22s",
+          "value": 0.22,
+          "unit": "seconds"
+        },
+        "resolveModuleTime": {
+          "raw": "0.06s",
+          "value": 0.06,
+          "unit": "seconds"
+        },
+        "resolveTypeReferenceTime": {
+          "raw": "0.00s",
+          "value": 0,
+          "unit": "seconds"
+        },
+        "resolveLibraryTime": {
+          "raw": "0.04s",
+          "value": 0.04,
+          "unit": "seconds"
+        },
+        "programTime": {
+          "raw": "0.20s",
+          "value": 0.2,
+          "unit": "seconds"
+        },
+        "bindTime": {
+          "raw": "0.06s",
+          "value": 0.06,
+          "unit": "seconds"
+        },
+        "checkTime": {
+          "raw": "1.60s",
+          "value": 1.6,
+          "unit": "seconds"
+        },
+        "transformTimeTime": {
+          "raw": "0.03s",
+          "value": 0.03,
+          "unit": "seconds"
+        },
+        "sourceMapTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "commentTimeTime": {
+          "raw": "0.00s",
+          "value": 0,
+          "unit": "seconds"
+        },
+        "iOWriteTime": {
+          "raw": "0.07s",
+          "value": 0.07,
+          "unit": "seconds"
+        },
+        "printTimeTime": {
+          "raw": "0.11s",
+          "value": 0.11,
+          "unit": "seconds"
+        },
+        "emitTime": {
+          "raw": "0.17s",
+          "value": 0.17,
+          "unit": "seconds"
+        },
+        "totalTime": {
+          "raw": "2.59s",
+          "value": 2.59,
+          "unit": "seconds"
+        }
+      },
+      "stdout": "Files:                         382\nLines of Library:             9515\nLines of Definitions:       103829\nLines of TypeScript:         16146\nLines of JavaScript:             0\nLines of JSON:                   0\nLines of Other:                  0\nIdentifiers:                73504\nSymbols:                   25689\nTypes:                      46421\nInstantiations:             133412\nMemory used:               285648K\nAssignability cache size:   23993\nIdentity cache size:           101\nSubtype cache size:             172\nStrict subtype cache size:     11\nI/O Read time:               0.02s\nParse time:                  0.22s\nResolveModule time:          0.06s\nResolveTypeReference time:   0.00s\nResolveLibrary time:         0.04s\nProgram time:                0.20s\nBind time:                   0.06s\nCheck time:                  1.60s\ntransformTime time:          0.03s\nSource Map time:             0.01s\ncommentTime time:            0.00s\nI/O Write time:              0.07s\nprintTime time:              0.11s\nEmit time:                   0.17s\nTotal time:                  2.59s\n",
+      "stderr": ""
+    },
+    {
+      "schemaVersion": 1,
+      "mode": "extendedDiagnostics",
+      "targetRoot": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/e2e-tests",
+      "targetName": "e2e-tests",
+      "project": "tsconfig.json",
+      "generatedAt": "2026-07-13T02:11:17.597Z",
+      "command": [
+        "/Users/michael_hladky/.nvm/versions/node/v24.1.0/bin/node",
+        "/Users/michael_hladky/WebstormProjects/ts-perf-ws/node_modules/typescript/bin/tsc",
+        "--project",
+        "tsconfig.json",
+        "--extendedDiagnostics",
+        "--pretty",
+        "false"
+      ],
+      "cwd": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/e2e-tests",
+      "startedAt": "2026-07-13T02:11:15.000Z",
+      "finishedAt": "2026-07-13T02:11:17.567Z",
+      "durationMs": 2567,
+      "exitCode": 0,
+      "signal": null,
+      "metrics": {
+        "files": {
+          "raw": "911",
+          "value": 911,
+          "unit": "count"
+        },
+        "linesOfLibrary": {
+          "raw": "8141",
+          "value": 8141,
+          "unit": "count"
+        },
+        "linesOfDefinitions": {
+          "raw": "42641",
+          "value": 42641,
+          "unit": "count"
+        },
+        "linesOfTypeScript": {
+          "raw": "59053",
+          "value": 59053,
+          "unit": "count"
+        },
+        "linesOfJavaScript": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfJSON": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfOther": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "identifiers": {
+          "raw": "313281",
+          "value": 313281,
+          "unit": "count"
+        },
+        "symbols": {
+          "raw": "227809",
+          "value": 227809,
+          "unit": "count"
+        },
+        "types": {
+          "raw": "45732",
+          "value": 45732,
+          "unit": "count"
+        },
+        "instantiations": {
+          "raw": "86008",
+          "value": 86008,
+          "unit": "count"
+        },
+        "memoryUsed": {
+          "raw": "283636K",
+          "value": 283636,
+          "unit": "KiB"
+        },
+        "assignabilityCacheSize": {
+          "raw": "17484",
+          "value": 17484,
+          "unit": "count"
+        },
+        "identityCacheSize": {
+          "raw": "41",
+          "value": 41,
+          "unit": "count"
+        },
+        "subtypeCacheSize": {
+          "raw": "117",
+          "value": 117,
+          "unit": "count"
+        },
+        "strictSubtypeCacheSize": {
+          "raw": "30",
+          "value": 30,
+          "unit": "count"
+        },
+        "iOReadTime": {
+          "raw": "0.02s",
+          "value": 0.02,
+          "unit": "seconds"
+        },
+        "parseTime": {
+          "raw": "0.31s",
+          "value": 0.31,
+          "unit": "seconds"
+        },
+        "resolveModuleTime": {
+          "raw": "0.02s",
+          "value": 0.02,
+          "unit": "seconds"
+        },
+        "resolveTypeReferenceTime": {
+          "raw": "0.00s",
+          "value": 0,
+          "unit": "seconds"
+        },
+        "resolveLibraryTime": {
+          "raw": "0.05s",
+          "value": 0.05,
+          "unit": "seconds"
+        },
+        "programTime": {
+          "raw": "0.18s",
+          "value": 0.18,
+          "unit": "seconds"
+        },
+        "bindTime": {
+          "raw": "0.12s",
+          "value": 0.12,
+          "unit": "seconds"
+        },
+        "checkTime": {
+          "raw": "1.25s",
+          "value": 1.25,
+          "unit": "seconds"
+        },
+        "transformTimeTime": {
+          "raw": "0.03s",
+          "value": 0.03,
+          "unit": "seconds"
+        },
+        "sourceMapTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "commentTimeTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "iOWriteTime": {
+          "raw": "0.02s",
+          "value": 0.02,
+          "unit": "seconds"
+        },
+        "printTimeTime": {
+          "raw": "0.20s",
+          "value": 0.2,
+          "unit": "seconds"
+        },
+        "emitTime": {
+          "raw": "0.19s",
+          "value": 0.19,
+          "unit": "seconds"
+        },
+        "totalTime": {
+          "raw": "2.41s",
+          "value": 2.41,
+          "unit": "seconds"
+        }
+      },
+      "stdout": "Files:                         911\nLines of Library:             8141\nLines of Definitions:       42641\nLines of TypeScript:         59053\nLines of JavaScript:             0\nLines of JSON:                   0\nLines of Other:                  0\nIdentifiers:                313281\nSymbols:                   227809\nTypes:                      45732\nInstantiations:             86008\nMemory used:               283636K\nAssignability cache size:   17484\nIdentity cache size:           41\nSubtype cache size:             117\nStrict subtype cache size:     30\nI/O Read time:               0.02s\nParse time:                  0.31s\nResolveModule time:          0.02s\nResolveTypeReference time:   0.00s\nResolveLibrary time:         0.05s\nProgram time:                0.18s\nBind time:                   0.12s\nCheck time:                  1.25s\ntransformTime time:          0.03s\nSource Map time:             0.01s\ncommentTime time:            0.01s\nI/O Write time:              0.02s\nprintTime time:              0.20s\nEmit time:                   0.19s\nTotal time:                  2.41s\n",
+      "stderr": ""
+    },
+    {
+      "schemaVersion": 1,
+      "mode": "extendedDiagnostics",
+      "targetRoot": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/storybook-docs",
+      "targetName": "storybook-docs",
+      "project": "tsconfig.json",
+      "generatedAt": "2026-07-13T02:12:01.541Z",
+      "command": [
+        "/Users/michael_hladky/.nvm/versions/node/v24.1.0/bin/node",
+        "/Users/michael_hladky/WebstormProjects/ts-perf-ws/node_modules/typescript/bin/tsc",
+        "--project",
+        "tsconfig.json",
+        "--extendedDiagnostics",
+        "--pretty",
+        "false"
+      ],
+      "cwd": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/storybook-docs",
+      "startedAt": "2026-07-13T02:12:00.000Z",
+      "finishedAt": "2026-07-13T02:12:01.511Z",
+      "durationMs": 1511,
+      "exitCode": 0,
+      "signal": null,
+      "metrics": {
+        "files": {
+          "raw": "226",
+          "value": 226,
+          "unit": "count"
+        },
+        "linesOfLibrary": {
+          "raw": "9338",
+          "value": 9338,
+          "unit": "count"
+        },
+        "linesOfDefinitions": {
+          "raw": "100989",
+          "value": 100989,
+          "unit": "count"
+        },
+        "linesOfTypeScript": {
+          "raw": "13806",
+          "value": 13806,
+          "unit": "count"
+        },
+        "linesOfJavaScript": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfJSON": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfOther": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "identifiers": {
+          "raw": "82017",
+          "value": 82017,
+          "unit": "count"
+        },
+        "symbols": {
+          "raw": "37015",
+          "value": 37015,
+          "unit": "count"
+        },
+        "types": {
+          "raw": "30111",
+          "value": 30111,
+          "unit": "count"
+        },
+        "instantiations": {
+          "raw": "20822",
+          "value": 20822,
+          "unit": "count"
+        },
+        "memoryUsed": {
+          "raw": "283349K",
+          "value": 283349,
+          "unit": "KiB"
+        },
+        "assignabilityCacheSize": {
+          "raw": "10402",
+          "value": 10402,
+          "unit": "count"
+        },
+        "identityCacheSize": {
+          "raw": "88",
+          "value": 88,
+          "unit": "count"
+        },
+        "subtypeCacheSize": {
+          "raw": "49",
+          "value": 49,
+          "unit": "count"
+        },
+        "strictSubtypeCacheSize": {
+          "raw": "30",
+          "value": 30,
+          "unit": "count"
+        },
+        "iOReadTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "parseTime": {
+          "raw": "0.25s",
+          "value": 0.25,
+          "unit": "seconds"
+        },
+        "resolveModuleTime": {
+          "raw": "0.02s",
+          "value": 0.02,
+          "unit": "seconds"
+        },
+        "resolveTypeReferenceTime": {
+          "raw": "0.02s",
+          "value": 0.02,
+          "unit": "seconds"
+        },
+        "resolveLibraryTime": {
+          "raw": "0.04s",
+          "value": 0.04,
+          "unit": "seconds"
+        },
+        "programTime": {
+          "raw": "0.36s",
+          "value": 0.36,
+          "unit": "seconds"
+        },
+        "bindTime": {
+          "raw": "0.18s",
+          "value": 0.18,
+          "unit": "seconds"
+        },
+        "checkTime": {
+          "raw": "0.18s",
+          "value": 0.18,
+          "unit": "seconds"
+        },
+        "transformTimeTime": {
+          "raw": "0.03s",
+          "value": 0.03,
+          "unit": "seconds"
+        },
+        "sourceMapTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "commentTimeTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "iOWriteTime": {
+          "raw": "0.05s",
+          "value": 0.05,
+          "unit": "seconds"
+        },
+        "printTimeTime": {
+          "raw": "0.11s",
+          "value": 0.11,
+          "unit": "seconds"
+        },
+        "emitTime": {
+          "raw": "0.11s",
+          "value": 0.11,
+          "unit": "seconds"
+        },
+        "totalTime": {
+          "raw": "1.38s",
+          "value": 1.38,
+          "unit": "seconds"
+        }
+      },
+      "stdout": "Files:                         226\nLines of Library:             9338\nLines of Definitions:       100989\nLines of TypeScript:         13806\nLines of JavaScript:             0\nLines of JSON:                   0\nLines of Other:                  0\nIdentifiers:                82017\nSymbols:                   37015\nTypes:                      30111\nInstantiations:             20822\nMemory used:               283349K\nAssignability cache size:   10402\nIdentity cache size:           88\nSubtype cache size:             49\nStrict subtype cache size:     30\nI/O Read time:               0.01s\nParse time:                  0.25s\nResolveModule time:          0.02s\nResolveTypeReference time:   0.02s\nResolveLibrary time:         0.04s\nProgram time:                0.36s\nBind time:                   0.18s\nCheck time:                  0.18s\ntransformTime time:          0.03s\nSource Map time:             0.01s\ncommentTime time:            0.01s\nI/O Write time:              0.05s\nprintTime time:              0.11s\nEmit time:                   0.11s\nTotal time:                  1.38s\n",
+      "stderr": ""
+    }
+  ]
+}

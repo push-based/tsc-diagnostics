@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>tsc-diagnostics — UI Component Library</title>
+<style>
+  :root { --bg:#0b1020; --panel:#151b2f; --text:#eef2ff; --muted:#aab3cf; --border:#29314d; --accent:#7dd3fc; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: Inter, ui-sans-serif, system-ui, sans-serif; background: linear-gradient(180deg,#0b1020 0%,#0f172a 100%); color: var(--text); }
+  header { padding: 36px 28px 8px; max-width: 1100px; margin: 0 auto; }
+  h1 { margin: 0 0 8px; font-size: clamp(1.6rem, 3vw, 2.4rem); }
+  .subtitle { color: var(--muted); max-width: 760px; line-height: 1.5; }
+  main { max-width: 1100px; margin: 0 auto; padding: 12px 28px 60px; }
+  h2 { font-size: 1rem; text-transform: uppercase; letter-spacing: .06em; color: var(--accent); margin: 36px 0 14px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+  ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
+  li a {
+    display: block; padding: 14px 16px; background: rgba(21,27,47,.94); border: 1px solid var(--border);
+    border-radius: 12px; color: var(--text); text-decoration: none; transition: border-color .15s;
+  }
+  li a:hover { border-color: var(--accent); }
+  li .name { font-weight: 650; }
+  li .file { display:block; margin-top: 4px; font-size: .78rem; color: var(--muted); font-family: ui-monospace, monospace; }
+  code { color: #bae6fd; }
+</style>
+</head>
+<body>
+<header>
+  <h1>tsc-diagnostics — UI Component Library</h1>
+  <div class="subtitle">
+    One self-contained HTML file per UI component used across <code>aggregate-template.html</code>,
+    <code>report-template.html</code>, and <code>compare-template.html</code> — each with inline
+    styles/scripts and hardcoded demo data, matching the inventory in
+    <code>../../UI-COMPONENTS.md</code>. Entries under <code>container/</code> assemble several of
+    these components together (e.g. cards + table + badges) rather than rendering a single one.
+  </div>
+</header>
+<main>
+
+  <h2>Shared primitives</h2>
+  <ul>
+    <li><a href="card.html"><span class="name">Card</span><span class="file">card.html</span></a></li>
+    <li><a href="badge.html"><span class="name">Badge / Pill</span><span class="file">badge.html</span></a></li>
+    <li><a href="summary-cards.html"><span class="name">Summary card grid</span><span class="file">summary-cards.html</span></a></li>
+    <li><a href="chart-mount.html"><span class="name">Chart mount point</span><span class="file">chart-mount.html</span></a></li>
+  </ul>
+
+  <h2>aggregate-template.html</h2>
+  <ul>
+    <li><a href="../container/header-status.html"><span class="name">Header + status bar</span><span class="file">container/header-status.html</span></a></li>
+    <li><a href="summary-cards-plain.html"><span class="name">Summary cards</span><span class="file">summary-cards-plain.html</span></a></li>
+    <li><a href="chart-phases.html"><span class="name">Compiler phases by solution</span><span class="file">chart-phases.html</span></a></li>
+    <li><a href="chart-instantiations.html"><span class="name">Generic/type instantiations</span><span class="file">chart-instantiations.html</span></a></li>
+    <li><a href="chart-scatter.html"><span class="name">Scale profile (scatter)</span><span class="file">chart-scatter.html</span></a></li>
+    <li><a href="chart-e2e.html"><span class="name">E2E example</span><span class="file">chart-e2e.html</span></a></li>
+    <li><a href="notes.html"><span class="name">Notes grid</span><span class="file">notes.html</span></a></li>
+    <li><a href="../container/config-check.html"><span class="name">Tsconfig performance check</span><span class="file">container/config-check.html</span></a></li>
+  </ul>
+
+  <h2>report-template.html</h2>
+  <ul>
+    <li><a href="../container/header-actions.html"><span class="name">Header + actions</span><span class="file">container/header-actions.html</span></a></li>
+    <li><a href="summary-cards-toned.html"><span class="name">Summary cards (tone-colored)</span><span class="file">summary-cards-toned.html</span></a></li>
+    <li><a href="../container/phase-timing-chart.html"><span class="name">Compiler phase timings chart</span><span class="file">container/phase-timing-chart.html</span></a></li>
+    <li><a href="../container/source-composition.html"><span class="name">Source composition + legend</span><span class="file">container/source-composition.html</span></a></li>
+    <li><a href="insights-cards.html"><span class="name">Insights cards</span><span class="file">insights-cards.html</span></a></li>
+    <li><a href="run-metadata.html"><span class="name">Run metadata</span><span class="file">run-metadata.html</span></a></li>
+    <li><a href="collapsible-trace.html"><span class="name">Collapsible section (trace / metrics)</span><span class="file">collapsible-trace.html</span></a></li>
+    <li><a href="metrics-table.html"><span class="name">All metrics table</span><span class="file">metrics-table.html</span></a></li>
+    <li><a href="../container/overview.html"><span class="name">Metrics overview (grouped, draft — not wired in)</span><span class="file">container/overview.html</span></a></li>
+    <li><a href="footer.html"><span class="name">Footer</span><span class="file">footer.html</span></a></li>
+  </ul>
+
+  <h2>compare-template.html</h2>
+  <ul>
+    <li><a href="../container/header-import.html"><span class="name">Header + import + drop zone</span><span class="file">container/header-import.html</span></a></li>
+    <li><a href="empty-state.html"><span class="name">Empty state</span><span class="file">empty-state.html</span></a></li>
+    <li><a href="project-selector.html"><span class="name">Project selector (ARIA combobox)</span><span class="file">project-selector.html</span></a></li>
+    <li><a href="summary-cards-delta.html"><span class="name">Summary cards (delta-aware)</span><span class="file">summary-cards-delta.html</span></a></li>
+    <li><a href="../container/trend-chart.html"><span class="name">Performance over time (trend)</span><span class="file">container/trend-chart.html</span></a></li>
+    <li><a href="../container/comparison-chart.html"><span class="name">Selected run comparison (toggle)</span><span class="file">container/comparison-chart.html</span></a></li>
+    <li><a href="../container/insights-table.html"><span class="name">Impact against baseline (sortable table)</span><span class="file">container/insights-table.html</span></a></li>
+    <li><a href="../container/run-history-table.html"><span class="name">Run history table</span><span class="file">container/run-history-table.html</span></a></li>
+  </ul>
+
+</main>
+</body>
+</html>

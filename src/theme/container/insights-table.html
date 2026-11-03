@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Component: Impact Against Baseline (sortable/filterable table)</title>
+<link rel="stylesheet" href="../design-tokens.css" />
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<style type="text/tailwindcss">
+  @theme {
+    --font-sans: var(--pb-font-family);
+    --font-pb-sans: var(--pb-font-family);
+
+    --color-pb-neutral-900: var(--pb-neutral-900);
+    --color-pb-neutral-500: var(--pb-neutral-500);
+    --color-pb-neutral-200: var(--pb-neutral-200);
+    --color-pb-neutral-200-alt: var(--pb-neutral-200-alt);
+    --color-pb-neutral-50: var(--pb-neutral-50);
+    --color-pb-black: var(--pb-black);
+    --color-pb-white: var(--pb-white);
+
+    --color-pb-primary-700: var(--pb-primary-700);
+    --color-pb-primary-600: var(--pb-primary-600);
+    --color-pb-primary-400: var(--pb-primary-400);
+    --color-pb-primary-50: var(--pb-primary-50);
+
+    --color-pb-secondary-700: var(--pb-secondary-700);
+    --color-pb-secondary-600: var(--pb-secondary-600);
+    --color-pb-secondary-400: var(--pb-secondary-400);
+    --color-pb-secondary-50: var(--pb-secondary-50);
+
+    --color-pb-success-700: var(--pb-success-700);
+    --color-pb-success-500: var(--pb-success-500);
+    --color-pb-success-50: var(--pb-success-50);
+
+    --color-pb-warning-600: var(--pb-warning-600);
+    --color-pb-warning-400: var(--pb-warning-400);
+    --color-pb-warning-50: var(--pb-warning-50);
+
+    --color-pb-text: var(--pb-text);
+    --color-pb-text-inverse: var(--pb-text-inverse);
+    --color-pb-text-muted: var(--pb-text-muted);
+    --color-pb-border: var(--pb-border);
+    --color-pb-link: var(--pb-link);
+
+    --color-pb-emphasis-purple: var(--pb-emphasis-purple);
+    --color-pb-emphasis-red: var(--pb-emphasis-red);
+    --color-pb-emphasis-green: var(--pb-emphasis-green);
+    --color-pb-emphasis-amber: var(--pb-emphasis-amber);
+
+    --color-pb-state-bad: var(--pb-state-bad);
+    --color-pb-state-good: var(--pb-state-good);
+    --color-pb-state-mid: var(--pb-state-mid);
+
+    --color-pb-panel-bg: var(--pb-panel-bg);
+    --color-pb-panel-border: var(--pb-panel-border);
+    --color-pb-panel-hover: var(--pb-panel-hover);
+
+    --text-pb-big-min: var(--pb-font-size-big-min);
+    --text-pb-big-max: var(--pb-font-size-big-max);
+    --text-pb-h1: var(--pb-font-size-h1);
+    --text-pb-h2: var(--pb-font-size-h2);
+    --text-pb-h3: var(--pb-font-size-h3);
+    --text-pb-body: var(--pb-font-size-body);
+    --text-pb-detail: var(--pb-font-size-detail);
+    --text-pb-hint: var(--pb-font-size-hint);
+    --text-pb-footer: var(--pb-font-size-footer);
+    --text-pb-card-value: var(--pb-font-size-card-value);
+
+    --radius-pb-none: var(--pb-radius-none);
+    --radius-pb-base: var(--pb-radius-base);
+    --shadow-pb-card: var(--pb-shadow-card);
+
+    --background-image-pb-radial: var(--pb-gradient-bg-radial);
+    --background-image-pb-card-linear: var(--pb-gradient-card-linear);
+  }
+  @layer base {
+    body { @apply min-h-screen bg-pb-neutral-900 text-pb-text-inverse antialiased; }
+    button, select, input { @apply outline-none; }
+  }
+  .pb-eyebrow { @apply mb-3 flex flex-wrap items-center gap-2 text-pb-h3 font-bold uppercase tracking-[0.16em] text-pb-secondary-400; }
+  .pb-eyebrow-tag { @apply rounded-full border border-pb-secondary-400/35 bg-pb-secondary-700/10 px-3 py-1; }
+  .pb-eyebrow-note { @apply font-normal normal-case tracking-normal text-pb-text-muted; }
+  .pb-h1 { @apply font-bold text-pb-h1 text-pb-text-inverse tracking-tight; }
+  .pb-subtitle { @apply mt-3 max-w-3xl text-pb-detail leading-relaxed text-pb-text-muted; }
+  .pb-mono { @apply font-mono text-pb-primary-400; }
+  .pb-header-row { @apply flex flex-col gap-5 border-b border-pb-panel-border pb-7 mb-7 lg:flex-row lg:items-end lg:justify-between; }
+  .pb-actions { @apply flex flex-wrap gap-2; }
+  .pb-card { @apply rounded-pb-base border border-pb-panel-border bg-pb-panel-bg shadow-pb-card p-5; }
+  .pb-card-label { @apply text-pb-h3 font-bold uppercase tracking-[0.14em] text-pb-text-muted; }
+  .pb-card-value { @apply mt-2 block text-pb-card-value font-extrabold text-pb-text-inverse; }
+  .pb-card-hint { @apply mt-1.5 block text-pb-hint text-pb-text-muted; }
+  .pb-card--good { @apply border-pb-success-700/35; }
+  .pb-card--bad { @apply border-pb-secondary-700/35; }
+  .pb-card--mid { @apply border-pb-warning-600/35; }
+  .pb-card--info { @apply border-pb-primary-600/35; }
+  .pb-badge { @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide; }
+  .pb-badge--error, .pb-badge--bad { @apply bg-pb-secondary-700/20 text-pb-secondary-400; }
+  .pb-badge--warn, .pb-badge--mid { @apply bg-pb-warning-600/20 text-pb-warning-400; }
+  .pb-badge--info { @apply bg-pb-text-inverse/10 text-pb-text-inverse; }
+  .pb-badge--pass, .pb-badge--good { @apply bg-pb-success-700/20 text-pb-success-500; }
+  .pb-badge--baseline { @apply bg-pb-primary-600/20 text-pb-primary-400 text-[0.65rem]; }
+  .pb-delta-good { @apply text-pb-success-500; }
+  .pb-delta-bad { @apply text-pb-secondary-400; }
+  .pb-delta-flat { @apply text-pb-text-muted; }
+  .pb-btn { @apply inline-flex items-center justify-center gap-1.5 rounded-xl border border-pb-panel-border bg-pb-panel-bg px-4 py-2 text-sm font-bold text-pb-text-inverse transition hover:bg-pb-panel-hover; }
+  .pb-btn--primary { @apply border-transparent bg-pb-secondary-400 text-pb-neutral-900 hover:bg-pb-secondary-700 hover:text-pb-text-inverse; }
+  .pb-link { @apply text-pb-link underline; }
+  .pb-table { @apply w-full border-collapse text-sm; }
+  .pb-table th, .pb-table td { @apply border-b border-pb-panel-border px-3 py-2.5 text-left align-top; }
+  .pb-table th { @apply text-xs font-bold uppercase tracking-wide text-pb-text-muted; }
+  .pb-table tr:hover td { @apply bg-pb-panel-hover; }
+  .pb-chart { @apply overflow-hidden rounded-pb-base border border-pb-panel-border bg-pb-panel-bg p-4 pb-2 shadow-pb-card; }
+  .pb-chart-title { @apply mb-2 ml-2 text-pb-h2 font-bold text-pb-text-inverse; }
+  .pb-plot-root { @apply w-full overflow-x-auto; }
+  .pb-plot-root figure, .pb-plot-root svg { display: block; margin: 0 auto; max-width: 100%; background: transparent !important; }
+  .pb-footer { @apply mt-8 flex flex-wrap items-center justify-between gap-2 border-t border-pb-panel-border pt-5 text-pb-footer text-pb-text-muted; }
+</style>
+<style>body { padding: 32px; } main { max-width: 1200px; }</style>
+</head>
+<body class="pb-page">
+<main>
+  <article class="pb-card">
+    <div style="display:flex; flex-direction:column; gap:1rem; sm:flex-row; align-items:flex-start; justify-content:space-between;">
+      <div style="display:flex; flex-wrap:wrap; align-items:flex-start; justify-content:space-between; gap:1rem;">
+        <div>
+          <h2 style="font-size: var(--pb-font-size-h2); font-weight: var(--pb-font-weight-bold); color: var(--pb-text-inverse); margin:0;">Impact against baseline</h2>
+          <p class="pb-card-hint" style="margin-top:.25rem;">Every run is compared with the first (oldest) diagnostic, the baseline. Click a column header to sort.</p>
+        </div>
+        <div style="display:flex; flex-wrap:wrap; gap:.5rem;">
+          <button id="insightsPresetKey" type="button" class="pb-btn" style="padding:.375rem .625rem; font-size:.75rem;">Key metrics</button>
+          <button id="insightsPresetAll" type="button" class="pb-btn" style="padding:.375rem .625rem; font-size:.75rem;">All</button>
+          <button id="insightsPresetNone" type="button" class="pb-btn" style="padding:.375rem .625rem; font-size:.75rem;">None</button>
+        </div>
+      </div>
+    </div>
+    <div id="insightsFilters" style="margin-top:1rem; display:flex; flex-direction:column; gap:.5rem;"></div>
+    <div id="insights" style="margin-top:1rem;"></div>
+  </article>
+</main>
+
+<script src="../shared-report.js"></script>
+<script>
+const $ = s => document.querySelector(s);
+const esc = escapeHtml;
+
+const selected = [
+  { id: "r1", note: "Initial implementation", files: 165, linesOfLibrary: 9894, linesOfDefinitions: 58345, symbols: 44550, types: 38420, instantiations: 182000, memoryUsed: 152, checkTime: 1840, totalTime: 2710 },
+  { id: "r2", note: "Replace intersections with interfaces", files: 165, linesOfLibrary: 9894, linesOfDefinitions: 58345, symbols: 41100, types: 31500, instantiations: 124000, memoryUsed: 136, checkTime: 1110, totalTime: 1820 },
+  { id: "r3", note: "Simplify conditional types", files: 165, linesOfLibrary: 9894, linesOfDefinitions: 58345, symbols: 39400, types: 27800, instantiations: 95000, memoryUsed: 128, checkTime: 930, totalTime: 1560 },
+  { id: "r4", note: "Final optimized version", files: 165, linesOfLibrary: 9894, linesOfDefinitions: 58345, symbols: 37100, types: 21600, instantiations: 48000, memoryUsed: 113, checkTime: 670, totalTime: 1180 }
+];
+
+const insightGroups = [
+  { key: "scale", label: "Program scale", metrics: ["files", "linesOfLibrary", "linesOfDefinitions"] },
+  { key: "typesys", label: "Type system", metrics: ["symbols", "types", "instantiations"] },
+  { key: "timing", label: "Phase timings", metrics: ["checkTime", "totalTime"] },
+  { key: "cache", label: "Caches & memory", metrics: ["memoryUsed"] }
+];
+const insightMetricDefs = {
+  files: { label: "Files", unit: "count", getter: r => r.files },
+  linesOfLibrary: { label: "Lib lines", unit: "count", getter: r => r.linesOfLibrary },
+  linesOfDefinitions: { label: ".d.ts lines", unit: "count", getter: r => r.linesOfDefinitions },
+  symbols: { label: "Symbols", unit: "count", getter: r => r.symbols },
+  types: { label: "Types", unit: "count", getter: r => r.types },
+  instantiations: { label: "Instantiations", unit: "count", getter: r => r.instantiations },
+  memoryUsed: { label: "Memory", unit: "MiB", getter: r => r.memoryUsed },
+  checkTime: { label: "Check", unit: "ms", getter: r => r.checkTime },
+  totalTime: { label: "Total", unit: "ms", getter: r => r.totalTime }
+};
+const INSIGHT_DEFAULT_VISIBLE = ["types", "instantiations", "memoryUsed", "checkTime", "totalTime"];
+let insightVisible = new Set(INSIGHT_DEFAULT_VISIBLE);
+let insightSort = null;
+
+function renderInsightFilters() {
+  $("#insightsFilters").innerHTML = insightGroups.map(g => {
+    const chips = g.metrics.map(k => {
+      const active = insightVisible.has(k);
+      return `<button type="button" data-metric="${k}" style="border-radius:999px; padding:.25rem .625rem; font-family: ui-monospace, monospace; font-size:.75rem; transition: background-color .15s, border-color .15s; border:1px solid ${active ? "rgba(135,91,247,.4)" : "var(--pb-panel-border)"}; background:${active ? "rgba(135,91,247,.12)" : "rgba(0,0,0,.15)"}; color:${active ? "var(--pb-primary-400)" : "var(--pb-text-muted)"};">${esc(insightMetricDefs[k].label)}</button>`;
+    }).join("");
+    return `<div style="display:flex; flex-wrap:wrap; align-items:baseline; gap:.5rem;"><span style="width:8rem; flex-shrink:0; font-size:.625rem; text-transform:uppercase; letter-spacing:.06em; color: var(--pb-text-muted);">${esc(g.label)}</span><div style="display:flex; flex-wrap:wrap; gap:.375rem;">${chips}</div></div>`;
+  }).join("");
+
+  document.querySelectorAll("#insightsFilters [data-metric]").forEach(btn => {
+    btn.onclick = () => {
+      const k = btn.dataset.metric;
+      if (insightVisible.has(k)) insightVisible.delete(k); else insightVisible.add(k);
+      renderInsights();
+    };
+  });
+  $("#insightsPresetKey").onclick = () => { insightVisible = new Set(INSIGHT_DEFAULT_VISIBLE); renderInsights(); };
+  $("#insightsPresetAll").onclick = () => { insightVisible = new Set(Object.keys(insightMetricDefs)); renderInsights(); };
+  $("#insightsPresetNone").onclick = () => { insightVisible = new Set(); renderInsights(); };
+}
+
+function renderInsights() {
+  renderInsightFilters();
+  const baseline = selected[0];
+  const visibleMetrics = g => g.metrics.filter(k => insightVisible.has(k));
+
+  const sortIndicator = (k, variant) => {
+    if (insightSort && insightSort.metric === k && insightSort.variant === variant) return insightSort.dir === "asc" ? "▲" : "▼";
+    return "↕";
+  };
+  const sortStyle = (k, variant) => {
+    const active = insightSort && insightSort.metric === k && insightSort.variant === variant;
+    return `color:${active ? "var(--pb-secondary-400)" : "var(--pb-text-muted)"};`;
+  };
+
+  const groupRow = insightGroups.map(g => {
+    const count = visibleMetrics(g).length;
+    return count === 0 ? "" : `<th colspan="${count * 2}" style="white-space:nowrap; padding:.375rem .75rem; text-align:left; font-size:.625rem; font-weight:600; text-transform:uppercase; letter-spacing:.06em; color: var(--pb-text-muted);">${esc(g.label)}</th>`;
+  }).join("");
+
+  const metricRow = insightGroups.flatMap(g => visibleMetrics(g).map(k => {
+    const def = insightMetricDefs[k];
+    return `<th colspan="2" style="white-space:nowrap; padding:.375rem .75rem; text-align:left; font-size:.75rem; font-weight:600; color: var(--pb-text-inverse);">${esc(def.label)} <span style="font-weight:400; color: var(--pb-text-muted);">${esc(def.unit)}</span></th>`;
+  })).join("");
+
+  const subRow = insightGroups.flatMap(g => visibleMetrics(g).map(k =>
+    `<th data-metric="${k}" data-variant="value" style="cursor:pointer; user-select:none; white-space:nowrap; padding:.5rem .75rem; text-align:right; font-size:.75rem; font-weight:600; ${sortStyle(k, "value")}">value <span style="font-size:.5625rem;">${sortIndicator(k, "value")}</span></th>` +
+    `<th data-metric="${k}" data-variant="delta" style="cursor:pointer; user-select:none; white-space:nowrap; padding:.5rem .75rem; text-align:right; font-size:.75rem; font-weight:600; ${sortStyle(k, "delta")}">&Delta;% <span style="font-size:.5625rem;">${sortIndicator(k, "delta")}</span></th>`
+  )).join("");
+
+  let rows = [...selected];
+  if (insightSort) {
+    const { metric: mk, variant, dir } = insightSort, def = insightMetricDefs[mk], baseVal = def.getter(baseline);
+    rows.sort((a, b) => {
+      const av = variant === "value" ? def.getter(a) : delta(baseVal, def.getter(a));
+      const bv = variant === "value" ? def.getter(b) : delta(baseVal, def.getter(b));
+      if (av === null && bv === null) return 0;
+      if (av === null) return 1;
+      if (bv === null) return -1;
+      return dir === "asc" ? av - bv : bv - av;
+    });
+  }
+
+  const bodyRows = rows.map(r => {
+    const isBaseline = r.id === baseline.id, runIndex = selected.indexOf(r) + 1;
+    const cells = insightGroups.flatMap(g => visibleMetrics(g).map(k => {
+      const def = insightMetricDefs[k], v = def.getter(r), base = def.getter(baseline), d = isBaseline ? null : delta(base, v);
+      const deltaStyle = isBaseline ? "color: var(--pb-text-muted);" : "";
+      return `<td style="white-space:nowrap; padding:.5rem .75rem; text-align:right; color: var(--pb-text-inverse);">${formatValue(v, def.unit)}</td>` +
+             `<td class="${isBaseline ? "" : deltaClass(d)}" style="white-space:nowrap; padding:.5rem .75rem; text-align:right; font-size:.75rem; ${deltaStyle}">${isBaseline ? "—" : d === null ? "new" : `${d > 0 ? "+" : ""}${(d * 100).toFixed(1)}%`}</td>`;
+    })).join("");
+    return `<tr style="border-top:1px solid var(--pb-panel-border);">
+      <td style="white-space:nowrap; padding:.5rem .75rem;"><div style="font-size:.9rem; font-weight:600; color: var(--pb-text-inverse);">Run ${runIndex}${isBaseline ? ` <span class="${badgeClass('baseline')}">baseline</span>` : ""}</div><div style="font-size:.75rem; color: var(--pb-text-muted);">${esc(r.note)}</div></td>
+      ${cells}
+    </tr>`;
+  }).join("");
+
+  const colCount = insightGroups.reduce((n, g) => n + visibleMetrics(g).length, 0);
+  $("#insights").innerHTML = colCount === 0
+    ? '<p style="font-size:.9rem; color: var(--pb-text-muted);">No columns selected — pick at least one metric above.</p>'
+    : `<div style="overflow-x:auto; border-radius:.75rem; border:1px solid var(--pb-panel-border);"><table class="pb-table" style="min-width:100%;"><thead><tr><th></th>${groupRow}</tr><tr><th></th>${metricRow}</tr><tr><th style="padding:.5rem .75rem; text-align:left; font-size:.75rem; font-weight:600; color: var(--pb-text-muted);">Run</th>${subRow}</tr></thead><tbody>${bodyRows}</tbody></table></div>`;
+
+  document.querySelectorAll("#insights th[data-metric]").forEach(th => {
+    th.onclick = () => {
+      const mk = th.dataset.metric, variant = th.dataset.variant;
+      if (insightSort && insightSort.metric === mk && insightSort.variant === variant) {
+        insightSort = insightSort.dir === "desc" ? { metric: mk, variant, dir: "asc" } : null;
+      } else {
+        insightSort = { metric: mk, variant, dir: "desc" };
+      }
+      renderInsights();
+    };
+  });
+}
+
+renderInsights();
+</script>
+</body>
+</html>

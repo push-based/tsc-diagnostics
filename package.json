@@ -1,0 +1,61 @@
+{
+  "name": "@push-based/tsc-diagnostics",
+  "version": "1.0.0",
+  "description": "Run TypeScript compiler diagnostics (--extendedDiagnostics) and turn them into JSON and HTML performance reports",
+  "keywords": [
+    "typescript",
+    "tsc",
+    "diagnostics",
+    "extendedDiagnostics",
+    "performance",
+    "compiler",
+    "monorepo",
+    "cli"
+  ],
+  "homepage": "https://github.com/push-based/tsc-diagnostics#readme",
+  "bugs": {
+    "url": "https://github.com/push-based/tsc-diagnostics/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/push-based/tsc-diagnostics.git"
+  },
+  "license": "MIT",
+  "author": "",
+  "type": "commonjs",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "tsc-diagnostics": "dist/cli.js",
+    "ts-diagnostics": "dist/cli.js",
+    "ts-diagnostics-aggregate": "dist/aggregate-reports.js",
+    "ts-diagnostics-compare": "dist/compare-reports.js"
+  },
+  "files": [
+    "dist",
+    "CHANGELOG.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "npm run clean && tsc && node scripts/copy-assets.js",
+    "dev": "tsc --watch",
+    "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
+    "test": "npm run build && node --test",
+    "prepublishOnly": "npm test",
+    "diagnostics": "node dist/cli.js diagnostics",
+    "aggregate": "node dist/cli.js aggregate",
+    "compare": "node dist/cli.js compare"
+  },
+  "dependencies": {
+    "tinyglobby": "^0.2.17",
+    "typescript": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.0"
+  }
+}

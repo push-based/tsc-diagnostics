@@ -1,0 +1,186 @@
+{
+  "schemaVersion": 1,
+  "mode": "extendedDiagnostics",
+  "targetRoot": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/projects/test-lib-1",
+  "targetName": "test-lib-1",
+  "project": "tsconfig.fixed.json",
+  "generatedAt": "2026-07-12T23:14:17.558Z",
+  "command": [
+    "/Users/michael_hladky/.nvm/versions/node/v24.1.0/bin/node",
+    "/Users/michael_hladky/WebstormProjects/ts-perf-ws/node_modules/typescript/bin/tsc",
+    "--project",
+    "tsconfig.fixed.json",
+    "--extendedDiagnostics",
+    "--pretty",
+    "false"
+  ],
+  "cwd": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/projects/test-lib-1",
+  "startedAt": "2026-07-12T23:14:16.522Z",
+  "finishedAt": "2026-07-12T23:14:17.558Z",
+  "durationMs": 1035.788167,
+  "exitCode": 2,
+  "signal": null,
+  "metrics": {
+    "srcExamples09WorkspacePackageAsSourceConsumerExampleTs833": {
+      "raw": "error TS2307: Cannot find module '@workspace/config' or its corresponding type declarations.",
+      "value": "error TS2307: Cannot find module '@workspace/config' or its corresponding type declarations."
+    },
+    "files": {
+      "raw": "871",
+      "value": 871,
+      "unit": "count"
+    },
+    "linesOfLibrary": {
+      "raw": "9894",
+      "value": 9894,
+      "unit": "count"
+    },
+    "linesOfDefinitions": {
+      "raw": "113104",
+      "value": 113104,
+      "unit": "count"
+    },
+    "linesOfTypeScript": {
+      "raw": "11531",
+      "value": 11531,
+      "unit": "count"
+    },
+    "linesOfJavaScript": {
+      "raw": "0",
+      "value": 0,
+      "unit": "count"
+    },
+    "linesOfJSON": {
+      "raw": "0",
+      "value": 0,
+      "unit": "count"
+    },
+    "linesOfOther": {
+      "raw": "0",
+      "value": 0,
+      "unit": "count"
+    },
+    "identifiers": {
+      "raw": "131635",
+      "value": 131635,
+      "unit": "count"
+    },
+    "symbols": {
+      "raw": "107202",
+      "value": 107202,
+      "unit": "count"
+    },
+    "types": {
+      "raw": "20808",
+      "value": 20808,
+      "unit": "count"
+    },
+    "instantiations": {
+      "raw": "160869",
+      "value": 160869,
+      "unit": "count"
+    },
+    "memoryUsed": {
+      "raw": "196225K",
+      "value": 196225,
+      "unit": "KiB"
+    },
+    "assignabilityCacheSize": {
+      "raw": "19187",
+      "value": 19187,
+      "unit": "count"
+    },
+    "identityCacheSize": {
+      "raw": "10",
+      "value": 10,
+      "unit": "count"
+    },
+    "subtypeCacheSize": {
+      "raw": "25",
+      "value": 25,
+      "unit": "count"
+    },
+    "strictSubtypeCacheSize": {
+      "raw": "1",
+      "value": 1,
+      "unit": "count"
+    },
+    "iOReadTime": {
+      "raw": "0.11s",
+      "value": 0.11,
+      "unit": "seconds"
+    },
+    "parseTime": {
+      "raw": "0.19s",
+      "value": 0.19,
+      "unit": "seconds"
+    },
+    "resolveModuleTime": {
+      "raw": "0.04s",
+      "value": 0.04,
+      "unit": "seconds"
+    },
+    "resolveTypeReferenceTime": {
+      "raw": "0.00s",
+      "value": 0,
+      "unit": "seconds"
+    },
+    "resolveLibraryTime": {
+      "raw": "0.00s",
+      "value": 0,
+      "unit": "seconds"
+    },
+    "programTime": {
+      "raw": "0.39s",
+      "value": 0.39,
+      "unit": "seconds"
+    },
+    "bindTime": {
+      "raw": "0.10s",
+      "value": 0.1,
+      "unit": "seconds"
+    },
+    "checkTime": {
+      "raw": "0.29s",
+      "value": 0.29,
+      "unit": "seconds"
+    },
+    "transformTimeTime": {
+      "raw": "0.04s",
+      "value": 0.04,
+      "unit": "seconds"
+    },
+    "sourceMapTime": {
+      "raw": "0.01s",
+      "value": 0.01,
+      "unit": "seconds"
+    },
+    "commentTimeTime": {
+      "raw": "0.01s",
+      "value": 0.01,
+      "unit": "seconds"
+    },
+    "iOWriteTime": {
+      "raw": "0.04s",
+      "value": 0.04,
+      "unit": "seconds"
+    },
+    "printTimeTime": {
+      "raw": "0.15s",
+      "value": 0.15,
+      "unit": "seconds"
+    },
+    "emitTime": {
+      "raw": "0.15s",
+      "value": 0.15,
+      "unit": "seconds"
+    },
+    "totalTime": {
+      "raw": "0.94s",
+      "value": 0.94,
+      "unit": "seconds"
+    }
+  },
+  "stdout": "src/examples/09-workspace-package-as-source/consumer-example.ts(8,33): error TS2307: Cannot find module '@workspace/config' or its corresponding type declarations.\nFiles:                         871\nLines of Library:             9894\nLines of Definitions:       113104\nLines of TypeScript:         11531\nLines of JavaScript:             0\nLines of JSON:                   0\nLines of Other:                  0\nIdentifiers:                131635\nSymbols:                    107202\nTypes:                       20808\nInstantiations:             160869\nMemory used:               196225K\nAssignability cache size:    19187\nIdentity cache size:            10\nSubtype cache size:             25\nStrict subtype cache size:       1\nI/O Read time:               0.11s\nParse time:                  0.19s\nResolveModule time:          0.04s\nResolveTypeReference time:   0.00s\nResolveLibrary time:         0.00s\nProgram time:                0.39s\nBind time:                   0.10s\nCheck time:                  0.29s\ntransformTime time:          0.04s\nSource Map time:             0.01s\ncommentTime time:            0.01s\nI/O Write time:              0.04s\nprintTime time:              0.15s\nEmit time:                   0.15s\nTotal time:                  0.94s\n",
+  "stderr": ""
+}

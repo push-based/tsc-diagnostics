@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Component: Compiler Phase Timings Chart</title>
+<link rel="stylesheet" href="../design-tokens.css" />
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<style type="text/tailwindcss">
+  @theme {
+    --font-sans: var(--pb-font-family);
+    --font-pb-sans: var(--pb-font-family);
+
+    --color-pb-neutral-900: var(--pb-neutral-900);
+    --color-pb-neutral-500: var(--pb-neutral-500);
+    --color-pb-neutral-200: var(--pb-neutral-200);
+    --color-pb-neutral-200-alt: var(--pb-neutral-200-alt);
+    --color-pb-neutral-50: var(--pb-neutral-50);
+    --color-pb-black: var(--pb-black);
+    --color-pb-white: var(--pb-white);
+
+    --color-pb-primary-700: var(--pb-primary-700);
+    --color-pb-primary-600: var(--pb-primary-600);
+    --color-pb-primary-400: var(--pb-primary-400);
+    --color-pb-primary-50: var(--pb-primary-50);
+
+    --color-pb-secondary-700: var(--pb-secondary-700);
+    --color-pb-secondary-600: var(--pb-secondary-600);
+    --color-pb-secondary-400: var(--pb-secondary-400);
+    --color-pb-secondary-50: var(--pb-secondary-50);
+
+    --color-pb-success-700: var(--pb-success-700);
+    --color-pb-success-500: var(--pb-success-500);
+    --color-pb-success-50: var(--pb-success-50);
+
+    --color-pb-warning-600: var(--pb-warning-600);
+    --color-pb-warning-400: var(--pb-warning-400);
+    --color-pb-warning-50: var(--pb-warning-50);
+
+    --color-pb-text: var(--pb-text);
+    --color-pb-text-inverse: var(--pb-text-inverse);
+    --color-pb-text-muted: var(--pb-text-muted);
+    --color-pb-border: var(--pb-border);
+    --color-pb-link: var(--pb-link);
+
+    --color-pb-emphasis-purple: var(--pb-emphasis-purple);
+    --color-pb-emphasis-red: var(--pb-emphasis-red);
+    --color-pb-emphasis-green: var(--pb-emphasis-green);
+    --color-pb-emphasis-amber: var(--pb-emphasis-amber);
+
+    --color-pb-state-bad: var(--pb-state-bad);
+    --color-pb-state-good: var(--pb-state-good);
+    --color-pb-state-mid: var(--pb-state-mid);
+
+    --color-pb-panel-bg: var(--pb-panel-bg);
+    --color-pb-panel-border: var(--pb-panel-border);
+    --color-pb-panel-hover: var(--pb-panel-hover);
+
+    --text-pb-big-min: var(--pb-font-size-big-min);
+    --text-pb-big-max: var(--pb-font-size-big-max);
+    --text-pb-h1: var(--pb-font-size-h1);
+    --text-pb-h2: var(--pb-font-size-h2);
+    --text-pb-h3: var(--pb-font-size-h3);
+    --text-pb-body: var(--pb-font-size-body);
+    --text-pb-detail: var(--pb-font-size-detail);
+    --text-pb-hint: var(--pb-font-size-hint);
+    --text-pb-footer: var(--pb-font-size-footer);
+    --text-pb-card-value: var(--pb-font-size-card-value);
+
+    --radius-pb-none: var(--pb-radius-none);
+    --radius-pb-base: var(--pb-radius-base);
+    --shadow-pb-card: var(--pb-shadow-card);
+
+    --background-image-pb-radial: var(--pb-gradient-bg-radial);
+    --background-image-pb-card-linear: var(--pb-gradient-card-linear);
+  }
+  @layer base {
+    body { @apply min-h-screen bg-pb-neutral-900 text-pb-text-inverse antialiased; }
+    button, select, input { @apply outline-none; }
+  }
+  .pb-eyebrow { @apply mb-3 flex flex-wrap items-center gap-2 text-pb-h3 font-bold uppercase tracking-[0.16em] text-pb-secondary-400; }
+  .pb-eyebrow-tag { @apply rounded-full border border-pb-secondary-400/35 bg-pb-secondary-700/10 px-3 py-1; }
+  .pb-eyebrow-note { @apply font-normal normal-case tracking-normal text-pb-text-muted; }
+  .pb-h1 { @apply font-bold text-pb-h1 text-pb-text-inverse tracking-tight; }
+  .pb-subtitle { @apply mt-3 max-w-3xl text-pb-detail leading-relaxed text-pb-text-muted; }
+  .pb-mono { @apply font-mono text-pb-primary-400; }
+  .pb-header-row { @apply flex flex-col gap-5 border-b border-pb-panel-border pb-7 mb-7 lg:flex-row lg:items-end lg:justify-between; }
+  .pb-actions { @apply flex flex-wrap gap-2; }
+  .pb-card { @apply rounded-pb-base border border-pb-panel-border bg-pb-panel-bg shadow-pb-card p-5; }
+  .pb-card-label { @apply text-pb-h3 font-bold uppercase tracking-[0.14em] text-pb-text-muted; }
+  .pb-card-value { @apply mt-2 block text-pb-card-value font-extrabold text-pb-text-inverse; }
+  .pb-card-hint { @apply mt-1.5 block text-pb-hint text-pb-text-muted; }
+  .pb-card--good { @apply border-pb-success-700/35; }
+  .pb-card--bad { @apply border-pb-secondary-700/35; }
+  .pb-card--mid { @apply border-pb-warning-600/35; }
+  .pb-card--info { @apply border-pb-primary-600/35; }
+  .pb-badge { @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide; }
+  .pb-badge--error, .pb-badge--bad { @apply bg-pb-secondary-700/20 text-pb-secondary-400; }
+  .pb-badge--warn, .pb-badge--mid { @apply bg-pb-warning-600/20 text-pb-warning-400; }
+  .pb-badge--info { @apply bg-pb-text-inverse/10 text-pb-text-inverse; }
+  .pb-badge--pass, .pb-badge--good { @apply bg-pb-success-700/20 text-pb-success-500; }
+  .pb-badge--baseline { @apply bg-pb-primary-600/20 text-pb-primary-400 text-[0.65rem]; }
+  .pb-delta-good { @apply text-pb-success-500; }
+  .pb-delta-bad { @apply text-pb-secondary-400; }
+  .pb-delta-flat { @apply text-pb-text-muted; }
+  .pb-btn { @apply inline-flex items-center justify-center gap-1.5 rounded-xl border border-pb-panel-border bg-pb-panel-bg px-4 py-2 text-sm font-bold text-pb-text-inverse transition hover:bg-pb-panel-hover; }
+  .pb-btn--primary { @apply border-transparent bg-pb-secondary-400 text-pb-neutral-900 hover:bg-pb-secondary-700 hover:text-pb-text-inverse; }
+  .pb-link { @apply text-pb-link underline; }
+  .pb-table { @apply w-full border-collapse text-sm; }
+  .pb-table th, .pb-table td { @apply border-b border-pb-panel-border px-3 py-2.5 text-left align-top; }
+  .pb-table th { @apply text-xs font-bold uppercase tracking-wide text-pb-text-muted; }
+  .pb-table tr:hover td { @apply bg-pb-panel-hover; }
+  .pb-chart { @apply overflow-hidden rounded-pb-base border border-pb-panel-border bg-pb-panel-bg p-4 pb-2 shadow-pb-card; }
+  .pb-chart-title { @apply mb-2 ml-2 text-pb-h2 font-bold text-pb-text-inverse; }
+  .pb-plot-root { @apply w-full overflow-x-auto; }
+  .pb-plot-root figure, .pb-plot-root svg { display: block; margin: 0 auto; max-width: 100%; background: transparent !important; }
+  .pb-footer { @apply mt-8 flex flex-wrap items-center justify-between gap-2 border-t border-pb-panel-border pt-5 text-pb-footer text-pb-text-muted; }
+</style>
+<style>body { padding: 32px; } main { max-width: 800px; }</style>
+</head>
+<body class="pb-page">
+<main>
+  <article class="pb-card">
+    <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; margin-bottom: 1rem;">
+      <div>
+        <h2 id="timingChartTitle" style="font-size: var(--pb-font-size-h2); font-weight: var(--pb-font-weight-bold); color: var(--pb-text-inverse); margin:0;">Compiler phase timings</h2>
+        <p id="timingChartHint" class="pb-card-hint" style="margin-top:.25rem;">The run is dominated by program construction and parsing—not type checking.</p>
+      </div>
+      <span id="timingChartBadge" class="pb-badge pb-badge--good">Healthy</span>
+    </div>
+    <div style="display:flex; justify-content:flex-end; margin-bottom:.75rem;">
+      <label style="font-size:.8rem; color: var(--pb-text-muted);">Metric
+        <select id="timingChartMetric" style="margin-left:.4rem; border-radius:.5rem; padding:.3rem .5rem; border:1px solid var(--pb-panel-border); background: rgba(0,0,0,.2); color: var(--pb-text-inverse); font-size:.8rem;">
+          <option value="time">Time</option>
+          <option value="size">Size</option>
+          <option value="memory">Memory</option>
+        </select>
+      </label>
+    </div>
+    <div id="timingPlot" class="pb-plot-root" style="min-height: 20rem;"></div>
+  </article>
+</main>
+
+<script type="module">
+import * as Plot from "https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm";
+
+// Sample single-run metrics, shaped like the real tsc --extendedDiagnostics
+// output order: I/O Read -> Parse -> Resolve module/type ref/library ->
+// Program (a cumulative bucket that only completes after those finish) ->
+// Bind -> Check -> Print -> Emit.
+const metrics = {
+  ioRead: 20, parse: 310, resolveModule: 80, resolveTypeReference: 10, resolveLibrary: 40,
+  program: 430, bind: 190, check: 640, print: 30, emit: 250,
+  lines: { definitions: 9000, library: 3000, typescript: 400, javascript: 50, json: 20, other: 10 },
+  caches: { assignability: 900, identity: 120, subtype: 40, strictSubtype: 15 },
+  memoryMiB: 128.4, files: 301
+};
+
+function timingChartConfig(metric) {
+  if (metric === "size") {
+    const data = [
+      ["Definitions", metrics.lines.definitions],
+      ["Library", metrics.lines.library],
+      ["TypeScript", metrics.lines.typescript],
+      ["JavaScript", metrics.lines.javascript],
+      ["JSON", metrics.lines.json],
+      ["Other", metrics.lines.other]
+    ].map(([phase, value]) => ({ phase, value })).filter(d => d.value > 0);
+    return {
+      title: "Source lines breakdown",
+      data, axisLabel: "lines →",
+      format: (v) => v.toLocaleString(),
+      hint: "Declaration files (library + definitions) account for most of the source analyzed by the compiler.",
+      badge: { text: "Info", tone: "info" }
+    };
+  }
+
+  if (metric === "memory") {
+    const data = [
+      ["Assignability cache", metrics.caches.assignability],
+      ["Identity cache", metrics.caches.identity],
+      ["Subtype cache", metrics.caches.subtype],
+      ["Strict subtype cache", metrics.caches.strictSubtype]
+    ].map(([phase, value]) => ({ phase, value })).filter(d => d.value > 0);
+    return {
+      title: "Type cache breakdown",
+      data, axisLabel: "cache entries →",
+      format: (v) => v.toLocaleString(),
+      hint: `Peak memory usage was ${metrics.memoryMiB.toFixed(1)} MiB across ${metrics.files} files.`,
+      badge: { text: "Info", tone: "info" }
+    };
+  }
+
+  const data = [
+    ["I/O Read", metrics.ioRead],
+    ["Parse", metrics.parse],
+    ["Resolve modules", metrics.resolveModule],
+    ["Resolve type reference", metrics.resolveTypeReference],
+    ["Resolve libraries", metrics.resolveLibrary],
+    ["Program", metrics.program],
+    ["Bind", metrics.bind],
+    ["Check", metrics.check],
+    ["Print", metrics.print],
+    ["Emit", metrics.emit]
+  ].map(([phase, value]) => ({ phase, value })).filter(d => d.value > 0);
+  const total = metrics.program + metrics.bind + metrics.check + metrics.emit;
+  const checkShare = metrics.check / total;
+  return {
+    title: "Compiler phase timings",
+    data, axisLabel: "milliseconds →",
+    format: (v) => `${v.toFixed(0)} ms`,
+    hint: checkShare > 0.4
+      ? "Type checking dominates this run."
+      : "The run is dominated by program construction and parsing—not type checking.",
+    badge: checkShare > 0.4 ? { text: "Check-heavy", tone: "mid" } : { text: "Healthy", tone: "good" }
+  };
+}
+
+function renderTimingChart() {
+  const metric = document.querySelector("#timingChartMetric").value;
+  const config = timingChartConfig(metric);
+
+  document.querySelector("#timingChartTitle").textContent = config.title;
+  document.querySelector("#timingChartHint").textContent = config.hint;
+  const badge = document.querySelector("#timingChartBadge");
+  badge.textContent = config.badge.text;
+  badge.className = `pb-badge pb-badge--${config.badge.tone}`;
+
+  const maxValue = Math.max(...config.data.map(d => d.value), 0);
+  const timingPlot = Plot.plot({
+    width: 720, height: 330, marginLeft: 150, marginRight: 30,
+    style: { background: "transparent", color: "#cbd5e1", fontFamily: "Geist, sans-serif", fontSize: "12px" },
+    x: { label: config.axisLabel, grid: true, domain: [0, maxValue * 1.12] },
+    y: { label: null, domain: config.data.map(d => d.phase) },
+    marks: [
+      Plot.ruleX([0], { stroke: "#475569" }),
+      Plot.barX(config.data, { x: "value", y: "phase", rx: 6, fill: "#875bf7", tip: true }),
+      Plot.text(config.data, { x: "value", y: "phase", text: d => config.format(d.value), dx: 8, textAnchor: "start", fill: "#f8fafc", fontWeight: 700 })
+    ]
+  });
+  timingPlot.setAttribute("aria-label", `Horizontal bar chart of TypeScript compiler ${metric} breakdown`);
+  document.querySelector("#timingPlot").replaceChildren(timingPlot);
+}
+
+renderTimingChart();
+document.querySelector("#timingChartMetric").addEventListener("change", renderTimingChart);
+</script>
+</body>
+</html>

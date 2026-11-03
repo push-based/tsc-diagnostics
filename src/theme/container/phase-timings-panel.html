@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Component: Phase Timings Panel</title>
+<link rel="stylesheet" href="../design-tokens.css" />
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<style type="text/tailwindcss">
+  @theme {
+    --font-sans: var(--pb-font-family);
+    --font-pb-sans: var(--pb-font-family);
+
+    --color-pb-neutral-900: var(--pb-neutral-900);
+    --color-pb-neutral-500: var(--pb-neutral-500);
+    --color-pb-neutral-200: var(--pb-neutral-200);
+    --color-pb-neutral-200-alt: var(--pb-neutral-200-alt);
+    --color-pb-neutral-50: var(--pb-neutral-50);
+    --color-pb-black: var(--pb-black);
+    --color-pb-white: var(--pb-white);
+
+    --color-pb-primary-700: var(--pb-primary-700);
+    --color-pb-primary-600: var(--pb-primary-600);
+    --color-pb-primary-400: var(--pb-primary-400);
+    --color-pb-primary-50: var(--pb-primary-50);
+
+    --color-pb-secondary-700: var(--pb-secondary-700);
+    --color-pb-secondary-600: var(--pb-secondary-600);
+    --color-pb-secondary-400: var(--pb-secondary-400);
+    --color-pb-secondary-50: var(--pb-secondary-50);
+
+    --color-pb-success-700: var(--pb-success-700);
+    --color-pb-success-500: var(--pb-success-500);
+    --color-pb-success-50: var(--pb-success-50);
+
+    --color-pb-warning-600: var(--pb-warning-600);
+    --color-pb-warning-400: var(--pb-warning-400);
+    --color-pb-warning-50: var(--pb-warning-50);
+
+    --color-pb-text: var(--pb-text);
+    --color-pb-text-inverse: var(--pb-text-inverse);
+    --color-pb-text-muted: var(--pb-text-muted);
+    --color-pb-border: var(--pb-border);
+    --color-pb-link: var(--pb-link);
+
+    --color-pb-emphasis-purple: var(--pb-emphasis-purple);
+    --color-pb-emphasis-red: var(--pb-emphasis-red);
+    --color-pb-emphasis-green: var(--pb-emphasis-green);
+    --color-pb-emphasis-amber: var(--pb-emphasis-amber);
+
+    --color-pb-state-bad: var(--pb-state-bad);
+    --color-pb-state-good: var(--pb-state-good);
+    --color-pb-state-mid: var(--pb-state-mid);
+
+    --color-pb-panel-bg: var(--pb-panel-bg);
+    --color-pb-panel-border: var(--pb-panel-border);
+    --color-pb-panel-hover: var(--pb-panel-hover);
+
+    --text-pb-big-min: var(--pb-font-size-big-min);
+    --text-pb-big-max: var(--pb-font-size-big-max);
+    --text-pb-h1: var(--pb-font-size-h1);
+    --text-pb-h2: var(--pb-font-size-h2);
+    --text-pb-h3: var(--pb-font-size-h3);
+    --text-pb-body: var(--pb-font-size-body);
+    --text-pb-detail: var(--pb-font-size-detail);
+    --text-pb-hint: var(--pb-font-size-hint);
+    --text-pb-footer: var(--pb-font-size-footer);
+    --text-pb-card-value: var(--pb-font-size-card-value);
+
+    --radius-pb-none: var(--pb-radius-none);
+    --radius-pb-base: var(--pb-radius-base);
+    --shadow-pb-card: var(--pb-shadow-card);
+
+    --background-image-pb-radial: var(--pb-gradient-bg-radial);
+    --background-image-pb-card-linear: var(--pb-gradient-card-linear);
+  }
+  @layer base {
+    body { @apply min-h-screen bg-pb-neutral-900 text-pb-text-inverse antialiased; }
+    button, select, input { @apply outline-none; }
+  }
+  .pb-card { @apply rounded-pb-base border border-pb-panel-border bg-pb-panel-bg shadow-pb-card p-5; }
+  .pb-card-hint { @apply mt-1.5 block text-pb-hint text-pb-text-muted; }
+  .pb-mono { @apply font-mono text-pb-primary-400; }
+  .pb-chart { @apply overflow-hidden rounded-pb-base border border-pb-panel-border bg-pb-panel-bg p-4 pb-2 shadow-pb-card; }
+  .pb-chart-title { @apply mb-2 ml-2 text-pb-h2 font-bold text-pb-text-inverse; }
+  .pb-plot-root { @apply w-full overflow-x-auto; }
+  .pb-plot-root figure, .pb-plot-root svg { display: block; margin: 0 auto; max-width: 100%; background: transparent !important; }
+
+  .ov-section { @apply mt-6 border-t border-pb-panel-border pt-6 first:mt-0 first:border-0 first:pt-0; }
+  .ov-section-title { @apply text-pb-h3 font-bold uppercase tracking-[0.12em] text-pb-text-muted; }
+  .ov-row { @apply flex items-center justify-between gap-3 py-1 text-sm; }
+  .ov-row-label { color: var(--pb-text-muted); }
+  .ov-row-value { font-weight: 600; color: var(--pb-text-inverse); }
+</style>
+<style>body { padding: 32px; } main { max-width: 1180px; }</style>
+</head>
+<body class="pb-page">
+<main>
+  <article class="pb-card">
+
+    <!-- Compiler phases by solution -->
+    <section class="ov-section">
+      <div class="pb-chart">
+        <div style="display:flex; flex-wrap:wrap; align-items:flex-start; justify-content:space-between; gap:.75rem;">
+          <h3 class="pb-chart-title" style="margin-bottom:0;">Compiler phases by solution</h3>
+          <label style="font-size:.9rem; color: var(--pb-text-muted);">Metric
+            <select id="timeChartMetric" style="margin-left:.5rem; border-radius:.5rem; padding:.375rem .5rem; border:1px solid var(--pb-panel-border); background: rgba(0,0,0,.2); color: var(--pb-text-inverse);">
+              <option value="time">Time</option>
+              <option value="size">Size</option>
+              <option value="memory">Memory</option>
+            </select>
+          </label>
+        </div>
+        <div id="timeChart"></div>
+      </div>
+    </section>
+
+    <!-- Phase timings: rollup summed across every project, linked to the Metric select above -->
+    <section class="ov-section">
+      <h3 class="ov-section-title" id="phasePanelTitle">Phase timings</h3>
+      <div class="mt-3 flex items-start justify-between gap-4">
+        <div class="pb-card-hint" style="margin:0;" id="phasePanelSubtitle">Program → Bind → Check → Emit</div>
+        <div style="text-align:right; white-space:nowrap;">
+          <span id="phaseTotalValue" style="display:block; font-size:1.375rem; font-weight:800; line-height:1.1; color: var(--pb-text-inverse);"></span>
+          <span class="pb-card-hint" id="phaseTotalLabel">total time</span>
+        </div>
+      </div>
+      <div id="phasePlot" class="pb-plot-root" style="margin-top:.75rem;"></div>
+      <div id="phaseLegend" style="margin-top:.75rem; display:flex; flex-wrap:wrap; gap:.4rem 1.25rem;"></div>
+    </section>
+
+  </article>
+</main>
+
+<script src="../shared-report.js"></script>
+<script type="module">
+import * as Plot from "https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm";
+
+// ---- Aggregate view sample data: 9 real reports pulled from an actual
+// `ts-diagnostics aggregate` run over test-lib-1/src/examples, shaped exactly
+// like list-layout.html's fromAggregatedReport() row output. ----
+const aggregateRows = [
+  { config: "06-skip-lib-check", total_s: 1.97, check_s: 1.47, program_s: 0.33, bind_s: 0.08, files: 769, types: 130850, instantiations: 138811, memory_mb: 351.1,
+    phases: { io_read_s: 0.07, parse_s: 0.18, resolve_module_s: 0.04, resolve_type_reference_s: 0.01, resolve_library_s: 0.01, bind_s: 0.08, check_s: 1.47, print_s: 0.03, io_write_s: 0.02, emit_s: 0.04, other_s: 0.02 },
+    lines: { library: 50310, definitions: 113020, typescript: 15, javascript: 25, json: 10, other: 5 },
+    caches: { assignability: 233363, identity: 133, subtype: 15, strictSubtype: 530 } },
+  { config: "03-recursive-tuple-construction", total_s: 0.54, check_s: 0.28, program_s: 0.16, bind_s: 0.06, files: 148, types: 412813, instantiations: 416991, memory_mb: 400.4,
+    phases: { io_read_s: 0.01, parse_s: 0.12, resolve_module_s: 0.01, resolve_type_reference_s: 0.01, resolve_library_s: 0.01, bind_s: 0.06, check_s: 0.28, print_s: 0.01, io_write_s: 0.01, emit_s: 0.01, other_s: 0.01 },
+    lines: { library: 9894, definitions: 58345, typescript: 340, javascript: 8, json: 4, other: 2 },
+    caches: { assignability: 8200, identity: 15400, subtype: 9100, strictSubtype: 620 } },
+  { config: "05-incremental-builds/tsconfig.no-incremental.json", total_s: 0.47, check_s: 0.14, program_s: 0.18, bind_s: 0.06, files: 244, types: 12856, instantiations: 153689, memory_mb: 150.9,
+    phases: { io_read_s: 0.03, parse_s: 0.12, resolve_module_s: 0.01, resolve_type_reference_s: 0.01, resolve_library_s: 0.01, bind_s: 0.06, check_s: 0.14, print_s: 0.03, io_write_s: 0.02, emit_s: 0.03, other_s: 0.01 },
+    lines: { library: 12480, definitions: 72100, typescript: 210, javascript: 15, json: 15, other: 6 },
+    caches: { assignability: 5200, identity: 380, subtype: 210, strictSubtype: 95 } },
+  { config: "08-intersection-to-interface", total_s: 0.36, check_s: 0.09, program_s: 0.17, bind_s: 0.06, files: 148, types: 4479, instantiations: 3778, memory_mb: 129.9,
+    phases: { io_read_s: 0.01, parse_s: 0.13, resolve_module_s: 0.01, resolve_type_reference_s: 0.01, resolve_library_s: 0.01, bind_s: 0.06, check_s: 0.09, print_s: 0.01, io_write_s: 0.01, emit_s: 0.01, other_s: 0.01 },
+    lines: { library: 9894, definitions: 58345, typescript: 95, javascript: 8, json: 4, other: 2 },
+    caches: { assignability: 640, identity: 85, subtype: 40, strictSubtype: 20 } },
+  { config: "09-workspace-package-as-source/tsconfig.slow.json", total_s: 0.32, check_s: 0.03, program_s: 0.17, bind_s: 0.07, files: 180, types: 888, instantiations: 1705, memory_mb: 118.1,
+    phases: { io_read_s: 0.01, parse_s: 0.13, resolve_module_s: 0.01, resolve_type_reference_s: 0.01, resolve_library_s: 0.01, bind_s: 0.07, check_s: 0.03, print_s: 0.01, io_write_s: 0.01, emit_s: 0.01, other_s: 0.02 },
+    lines: { library: 10200, definitions: 61800, typescript: 180, javascript: 40, json: 6, other: 3 },
+    caches: { assignability: 120, identity: 30, subtype: 10, strictSubtype: 5 } },
+  { config: "04-deep-recursive-object", total_s: 0.26, check_s: 0.03, program_s: 0.13, bind_s: 0.06, files: 148, types: 1105, instantiations: 667, memory_mb: 122.8,
+    phases: { io_read_s: 0.01, parse_s: 0.09, resolve_module_s: 0.01, resolve_type_reference_s: 0.01, resolve_library_s: 0.01, bind_s: 0.06, check_s: 0.03, print_s: 0.01, io_write_s: 0.01, emit_s: 0.01, other_s: 0.01 },
+    lines: { library: 9894, definitions: 58345, typescript: 130, javascript: 8, json: 4, other: 2 },
+    caches: { assignability: 95, identity: 220, subtype: 140, strictSubtype: 60 } },
+  { config: "10-trace-resolution/tsconfig.bad.json", total_s: 0.26, check_s: 0.01, program_s: 0.14, bind_s: 0.07, files: 172, types: 124, instantiations: 3, memory_mb: 136.3,
+    phases: { io_read_s: 0.01, parse_s: 0.10, resolve_module_s: 0.01, resolve_type_reference_s: 0.01, resolve_library_s: 0.01, bind_s: 0.07, check_s: 0.01, print_s: 0.01, io_write_s: 0.01, emit_s: 0.01, other_s: 0.01 },
+    lines: { library: 9894, definitions: 60210, typescript: 60, javascript: 9, json: 5, other: 2 },
+    caches: { assignability: 10, identity: 5, subtype: 2, strictSubtype: 1 } },
+  { config: "07-union-type-reduction", total_s: 0.25, check_s: 0.03, program_s: 0.12, bind_s: 0.06, files: 148, types: 2417, instantiations: 3622, memory_mb: 134.0,
+    phases: { io_read_s: 0.01, parse_s: 0.08, resolve_module_s: 0.01, resolve_type_reference_s: 0.01, resolve_library_s: 0.01, bind_s: 0.06, check_s: 0.03, print_s: 0.01, io_write_s: 0.01, emit_s: 0.01, other_s: 0.01 },
+    lines: { library: 9894, definitions: 58345, typescript: 110, javascript: 8, json: 4, other: 2 },
+    caches: { assignability: 480, identity: 140, subtype: 310, strictSubtype: 45 } },
+  { config: "02-nested-distributive-conditionals", total_s: 0.24, check_s: 0.02, program_s: 0.12, bind_s: 0.06, files: 148, types: 10444, instantiations: 40201, memory_mb: 123.8,
+    phases: { io_read_s: 0.01, parse_s: 0.08, resolve_module_s: 0.01, resolve_type_reference_s: 0.01, resolve_library_s: 0.01, bind_s: 0.06, check_s: 0.02, print_s: 0.01, io_write_s: 0.01, emit_s: 0.01, other_s: 0.01 },
+    lines: { library: 9894, definitions: 58345, typescript: 155, javascript: 8, json: 4, other: 2 },
+    caches: { assignability: 890, identity: 610, subtype: 720, strictSubtype: 85 } }
+];
+
+const LINE_DEFS = [
+  { key: "library", label: "Library", color: "#38bdf8" },
+  { key: "definitions", label: "Definitions", color: "#875bf7" },
+  { key: "typescript", label: "TypeScript", color: "#22c55e" },
+  { key: "javascript", label: "JavaScript", color: "#fbbf24" },
+  { key: "json", label: "JSON", color: "#f472b6" },
+  { key: "other", label: "Other", color: "#64748b" }
+];
+
+const CACHE_DEFS = [
+  { key: "assignability", label: "Assignability cache", color: "#d70033" },
+  { key: "identity", label: "Identity cache", color: "#a48afb" },
+  { key: "subtype", label: "Subtype cache", color: "#14b8a6" },
+  { key: "strictSubtype", label: "Strict subtype cache", color: "#fbbf24" }
+];
+
+const COMPILER_PHASE_DEFS = [
+  { key: "io_read_s", label: "I/O Read" },
+  { key: "parse_s", label: "Parse" },
+  { key: "resolve_module_s", label: "Resolve module" },
+  { key: "resolve_type_reference_s", label: "Resolve type ref" },
+  { key: "resolve_library_s", label: "Resolve library" },
+  { key: "bind_s", label: "Bind" },
+  { key: "check_s", label: "Check" },
+  { key: "print_s", label: "Print" },
+  { key: "io_write_s", label: "I/O Write" },
+  { key: "emit_s", label: "Emit" },
+  { key: "other_s", label: "Other" }
+];
+const COMPILER_PHASES = COMPILER_PHASE_DEFS.map((phase, i) => ({ ...phase, color: PB_CHART_PALETTE[i] }));
+
+const AGG_PLOT_STYLE = { color: "#f8fafc", fontFamily: "Geist, ui-sans-serif, system-ui, sans-serif", background: "transparent" };
+
+function shortName(path) {
+  return path.replace(/\/tsconfig\.json$/, "").replace(/^packages\//, "");
+}
+
+function basePlotOptions(containerId, extra = {}) {
+  return { width: plotWidth(containerId), height: 360, marginLeft: 56, marginRight: 20, marginTop: 12, marginBottom: 56, style: AGG_PLOT_STYLE, ...extra };
+}
+
+function renderTimeChart(rows) {
+  const metric = document.getElementById("timeChartMetric").value;
+  const configOrder = rows.map((row) => shortName(row.config));
+
+  if (metric === "size") {
+    const lineData = rows.flatMap((row) =>
+      LINE_DEFS.map((def) => ({ config: shortName(row.config), kind: def.label, lines: row.lines[def.key] || 0 }))
+        .filter((entry) => entry.lines > 0)
+    );
+    mountPlot("timeChart", Plot.plot({
+      ...basePlotOptions("timeChart", { marginBottom: 90, height: 420 }),
+      x: { label: null, domain: configOrder, tickRotate: -35 },
+      y: { label: "Lines", grid: true, tickFormat: "s" },
+      color: { domain: LINE_DEFS.map((def) => def.label), range: LINE_DEFS.map((def) => def.color), legend: true },
+      marks: [
+        Plot.barY(lineData, { x: "config", y: "lines", fill: "kind", tip: { ...TIP_STYLE, format: { x: true, y: (value) => value.toLocaleString(), fill: true } } }),
+        Plot.ruleY([0])
+      ]
+    }));
+    return;
+  }
+
+  if (metric === "memory") {
+    const cacheData = rows.flatMap((row) =>
+      CACHE_DEFS.map((def) => ({ config: shortName(row.config), kind: def.label, entries: row.caches[def.key] || 0 }))
+        .filter((entry) => entry.entries > 0)
+    );
+    mountPlot("timeChart", Plot.plot({
+      ...basePlotOptions("timeChart", { marginBottom: 90, height: 420 }),
+      x: { label: null, domain: configOrder, tickRotate: -35 },
+      y: { label: "Cache entries", grid: true, tickFormat: "s" },
+      color: { domain: CACHE_DEFS.map((def) => def.label), range: CACHE_DEFS.map((def) => def.color), legend: true },
+      marks: [
+        Plot.barY(cacheData, { x: "config", y: "entries", fill: "kind", tip: { ...TIP_STYLE, format: { x: true, y: (value) => value.toLocaleString(), fill: true } } }),
+        Plot.ruleY([0])
+      ]
+    }));
+    return;
+  }
+
+  const phaseData = rows.flatMap((row) =>
+    COMPILER_PHASES.map((phase) => ({ config: shortName(row.config), phase: phase.label, seconds: row.phases[phase.key] || 0 }))
+      .filter((entry) => entry.seconds > 0.001)
+  );
+
+  mountPlot("timeChart", Plot.plot({
+    ...basePlotOptions("timeChart", { marginBottom: 90, height: 420 }),
+    x: { label: null, domain: configOrder, tickRotate: -35 },
+    y: { label: "Seconds", grid: true, tickFormat: "s" },
+    color: { domain: COMPILER_PHASES.map((phase) => phase.label), range: COMPILER_PHASES.map((phase) => phase.color), legend: true },
+    marks: [
+      Plot.barY(phaseData, { x: "config", y: "seconds", fill: "phase", tip: { ...TIP_STYLE, format: { x: true, y: (value) => `${value.toFixed(2)}s`, fill: true } } }),
+      Plot.ruleY([0])
+    ]
+  }));
+}
+
+renderTimeChart(aggregateRows);
+// ---- Phase timings rollup: always summed across every project in
+// aggregateRows, driven by the same #timeChartMetric select as the chart above. ----
+const TIME_OVERVIEW = [
+  { key: "program_s", label: "Program", color: "#875bf7" },
+  { key: "bind_s", label: "Bind", color: "#fbbf24" },
+  { key: "check_s", label: "Check", color: "#d70033" },
+  { key: "emit_s", label: "Emit", color: "#22c55e" }
+];
+
+function sumRows(rows, get) {
+  return rows.reduce((total, row) => total + (Number(get(row)) || 0), 0);
+}
+
+const PHASE_VIEWS = {
+  time: {
+    title: "Phase timings",
+    subtitle: "Program → Bind → Check → Emit",
+    totalLabel: "total time",
+    format: (v) => `${Math.round(v * 1000)} ms`,
+    overview: TIME_OVERVIEW,
+    getOverviewValue: (rows, key) => key === "program_s" ? sumRows(rows, (r) => r.program_s) : sumRows(rows, (r) => r.phases[key]),
+    getTotal: (rows) => sumRows(rows, (r) => r.total_s)
+  },
+  size: {
+    title: "Source composition",
+    subtitle: "Library → Definitions → TypeScript → JavaScript → JSON → Other",
+    totalLabel: "total lines",
+    format: (v) => fmtNumber.format(Math.round(v)),
+    overview: LINE_DEFS,
+    getOverviewValue: (rows, key) => sumRows(rows, (r) => r.lines[key]),
+    getTotal: (rows) => LINE_DEFS.reduce((sum, def) => sum + sumRows(rows, (r) => r.lines[def.key]), 0)
+  },
+  memory: {
+    title: "Cache breakdown",
+    subtitle: "Assignability → Identity → Subtype → Strict subtype",
+    totalLabel: "total cache entries",
+    format: (v) => fmtNumber.format(Math.round(v)),
+    overview: CACHE_DEFS,
+    getOverviewValue: (rows, key) => sumRows(rows, (r) => r.caches[key]),
+    getTotal: (rows) => CACHE_DEFS.reduce((sum, def) => sum + sumRows(rows, (r) => r.caches[def.key]), 0)
+  }
+};
+
+function renderPhasePanel(rows) {
+  const metric = document.getElementById("timeChartMetric").value;
+  const view = PHASE_VIEWS[metric] ?? PHASE_VIEWS.time;
+
+  document.getElementById("phasePanelTitle").textContent = view.title;
+  document.getElementById("phasePanelSubtitle").textContent = view.subtitle;
+  document.getElementById("phaseTotalLabel").textContent = view.totalLabel;
+
+  const total = view.getTotal(rows);
+  document.getElementById("phaseTotalValue").textContent = view.format(total);
+
+  const overviewData = view.overview.map((def) => ({ phase: def.label, value: view.getOverviewValue(rows, def.key) }));
+  const overviewColors = Object.fromEntries(view.overview.map((def) => [def.label, def.color]));
+
+  document.getElementById("phasePlot").replaceChildren();
+  const phasePlot = Plot.plot({
+    width: 800, height: 32, marginLeft: 0, marginRight: 0, marginTop: 0, marginBottom: 0,
+    style: { background: "transparent" },
+    color: { legend: false, domain: Object.keys(overviewColors), range: Object.values(overviewColors) },
+    x: { axis: null }, y: { axis: null },
+    marks: [Plot.barX(overviewData, { y: () => "Phases", x: "value", fill: "phase", tip: true, rx: 6 })]
+  });
+  document.getElementById("phasePlot").append(phasePlot);
+
+  document.getElementById("phaseLegend").innerHTML = overviewData.map((d) => `
+    <span style="display:inline-flex; align-items:center; gap:.4rem; font-size:.8rem; white-space:nowrap; color: var(--pb-text-muted);">
+      <span style="height:.5rem; width:.5rem; border-radius:999px; background:${overviewColors[d.phase]}; flex-shrink:0;"></span>
+      <span style="font-weight:600; color: var(--pb-text-inverse);">${d.phase}</span>
+      ${view.format(d.value)} <span style="color: var(--pb-text-muted);">(${fmtPercent.format(total ? d.value / total : 0)})</span>
+    </span>
+  `).join("");
+}
+
+renderPhasePanel(aggregateRows);
+window.addEventListener("resize", () => renderTimeChart(aggregateRows));
+document.getElementById("timeChartMetric").onchange = () => {
+  renderTimeChart(aggregateRows);
+  renderPhasePanel(aggregateRows);
+};
+</script>
+</body>
+</html>

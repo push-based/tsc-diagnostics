@@ -1,0 +1,1212 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <title id="pageTitle">TypeScript Performance Report</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+/* SHARED_STYLES:START */
+/*
+ * PushBased design tokens for the tsc-diagnostics report templates.
+ * Source of truth: tools/theme/design-system.md — keep in sync with that file,
+ * do not hand-invent new colors/sizes here.
+ *
+ * pt → rem conversion used throughout the type scale: 1pt = 1.3333px, 16px = 1rem.
+ */
+
+:root {
+  /* ---------------------------------------------------------------------
+   * 1. Brand palette (design-system.md §1)
+   * ------------------------------------------------------------------- */
+
+  /* Neutrals — text & background */
+  --pb-neutral-900: #121926; /* near-black — primary text / dark background */
+  --pb-neutral-500: #697586; /* muted / secondary text */
+  --pb-neutral-200: #eef2f6; /* light divider / fill */
+  --pb-neutral-200-alt: #e3e8ef; /* neutral 200 variant (reference/gradient surfaces) */
+  --pb-neutral-50: #f8fafc; /* near-white — light background */
+  --pb-black: #000000;
+  --pb-white: #ffffff;
+
+  /* Primary — purple (hero brand) */
+  --pb-primary-700: #6927da; /* HERO — titles, purple bg, "good/AI/after" */
+  --pb-primary-600: #875bf7; /* hyperlink color */
+  --pb-primary-400: #a48afb; /* light purple accent */
+  --pb-primary-50: #f5f3ff; /* light tint — card linear-gradient end */
+
+  /* Secondary — pink/red */
+  --pb-secondary-700: #d70033; /* kicker, red bg, "bad/before" */
+  --pb-secondary-600: #ff003c; /* strong red */
+  --pb-secondary-400: #ff577f; /* strong pink */
+  --pb-secondary-50: #fff0f4; /* light pink tint */
+
+  /* Success — green */
+  --pb-success-700: #15803d; /* emphasis / "after-good" */
+  --pb-success-500: #22c55e; /* fill */
+  --pb-success-50: #f0fdf4; /* light tint */
+
+  /* Warning — amber */
+  --pb-warning-600: #f59e0b; /* emphasis / "middle state" */
+  --pb-warning-400: #fbbf24; /* fill */
+  --pb-warning-50: #fffbeb; /* light tint */
+
+  /* ---------------------------------------------------------------------
+   * Semantic aliases
+   * Chart/state semantics (design-system.md §3): RED = bad/legacy/before,
+   * PURPLE = good/AI/after, AMBER = middle/transitional. Only these four
+   * colors (§3) are ever used for emphasis: primary-700, secondary-700,
+   * success-700, warning-600.
+   * ------------------------------------------------------------------- */
+  --pb-text: var(--pb-neutral-900);
+  --pb-text-inverse: var(--pb-neutral-50);
+  --pb-text-muted: var(--pb-neutral-500);
+  --pb-border: var(--pb-neutral-200);
+  --pb-link: var(--pb-primary-600);
+
+  --pb-emphasis-purple: var(--pb-primary-700);
+  --pb-emphasis-red: var(--pb-secondary-700);
+  --pb-emphasis-green: var(--pb-success-700);
+  --pb-emphasis-amber: var(--pb-warning-600);
+
+  --pb-state-bad: var(--pb-secondary-700); /* red = bad / manual / legacy / slow / before */
+  --pb-state-good: var(--pb-primary-700); /* purple = good / AI / new / fast / after */
+  --pb-state-mid: var(--pb-warning-600); /* amber = middle / transitional */
+
+  /* ---------------------------------------------------------------------
+   * 2. Type scale — Geist (design-system.md §2)
+   * ------------------------------------------------------------------- */
+  --pb-font-family: "Geist", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+  --pb-font-weight-normal: 400;
+  --pb-font-weight-bold: 700;
+
+  --pb-font-size-big-min: 2.5rem; /* 30pt — Main Point statements, hero numbers */
+  --pb-font-size-big-max: 10rem; /* 120pt */
+  --pb-font-size-h1: 2.333rem; /* 28pt — slide/page title */
+  --pb-font-size-h2: 1.25rem; /* 15pt — card titles, section sub-labels, KPI names */
+  --pb-font-size-h3: 0.833rem; /* 10pt — small labels, eyebrows, chart/axis headers */
+  --pb-font-size-body: 1.5rem; /* 18pt — primary paragraph / list text */
+  --pb-font-size-detail: 1.25rem; /* 15pt — secondary/support text, card descriptions */
+  --pb-font-size-hint: 0.833rem; /* 10pt — insight-bar text, captions, annotations */
+  --pb-font-size-footer: 0.583rem; /* 7pt — footer lockup */
+
+  /* ---------------------------------------------------------------------
+   * 4. Border radius (design-system.md §4)
+   * ------------------------------------------------------------------- */
+  --pb-radius-none: 0; /* full-bleed panels, color blocks, dividers, backdrops */
+  --pb-radius-base: 12px; /* all cards — always paired with --pb-shadow-card */
+  --pb-shadow-card: 0 12px 30px rgba(18, 25, 38, 0.12);
+
+  /* ---------------------------------------------------------------------
+   * 5. Gradients (design-system.md §5) — each scoped to one surface, never mixed
+   * ------------------------------------------------------------------- */
+  --pb-gradient-bg-radial: radial-gradient(
+    circle at center,
+    rgba(255, 255, 255, 0.35) 0%,
+    rgba(255, 255, 255, 0) 70%
+  ); /* backgrounds only */
+  --pb-gradient-card-linear: linear-gradient(
+    135deg,
+    var(--pb-primary-50) 0%,
+    var(--pb-white) 100%
+  ); /* cards only — swap --pb-primary-50 for the card's own tint color */
+}
+
+/*
+ * Contrast Map (design-system.md §6) — background → allowed text colors.
+ * Apply a surface with [data-pb-surface="light|purple|dark|red"] on a
+ * container to get the correct default text color for that background;
+ * emphasis colors still must be hand-picked from the allowed set per element
+ * (see the table in design-system.md, this only sets the *default*).
+ */
+[data-pb-surface="light"] {
+  background: var(--pb-neutral-50);
+  color: var(--pb-text);
+}
+[data-pb-surface="purple"] {
+  background: var(--pb-primary-700);
+  color: var(--pb-text-inverse);
+}
+[data-pb-surface="dark"] {
+  background: var(--pb-neutral-900);
+  color: var(--pb-text-inverse);
+}
+[data-pb-surface="red"] {
+  background: var(--pb-secondary-700);
+  color: var(--pb-text-inverse);
+}
+
+/* =========================================================================
+ * Dashboard component classes
+ * design-system.md only specifies slide chrome; the tsc-diagnostics HTML
+ * reports need the same brand tokens applied to a web dashboard, which the
+ * slide spec doesn't define directly. Nothing below introduces a new brand
+ * color — every rule resolves to a --pb-* token above. Reports run on a dark
+ * surface ([data-pb-surface="dark"]), so per the Contrast Map (§6): running
+ * *text* (H1/H2/H3/Body/Detail) never uses purple on dark — only T&BG2,
+ * Accent 2 (red), and Warning amber. Purple is still used for links (its
+ * documented "Link" role) and as a fill/border accent (chart marks, badges),
+ * since §6 restricts text legibility, not decorative fills.
+ * ========================================================================= */
+
+:root {
+  /* Glass card surface for a dark dashboard (translucent near-white over neutral-900) */
+  --pb-panel-bg: rgba(248, 250, 252, 0.04);
+  --pb-panel-border: rgba(248, 250, 252, 0.1);
+  --pb-panel-hover: rgba(248, 250, 252, 0.06);
+
+  /* Dashboard KPI number size — distinct from the slide "Big Text" scale (§2), which is sized for a 720pt-wide slide, not a card. */
+  --pb-font-size-card-value: 1.875rem;
+}
+
+.pb-page {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--pb-font-family);
+  background: var(--pb-neutral-900);
+  color: var(--pb-text-inverse);
+  -webkit-font-smoothing: antialiased;
+}
+.pb-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 3rem;
+}
+
+/* Eyebrow / kicker — always Accent 2 pink per design-system.md §7 */
+.pb-eyebrow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  font-size: var(--pb-font-size-h3);
+  font-weight: var(--pb-font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--pb-secondary-400);
+}
+.pb-eyebrow-tag {
+  border: 1px solid rgba(255, 87, 127, 0.35);
+  background: rgba(215, 0, 51, 0.12);
+  border-radius: 999px;
+  padding: 0.25rem 0.75rem;
+}
+.pb-eyebrow-note {
+  color: var(--pb-text-muted);
+  text-transform: none;
+  letter-spacing: normal;
+  font-weight: var(--pb-font-weight-normal);
+}
+
+/* Page title (H1) — near-white on dark; purple H1 is a light-surface-only choice per §6 */
+.pb-h1 {
+  margin: 0;
+  font-weight: var(--pb-font-weight-bold);
+  font-size: var(--pb-font-size-h1);
+  color: var(--pb-text-inverse);
+  letter-spacing: -0.01em;
+}
+
+.pb-subtitle {
+  margin-top: 0.75rem;
+  max-width: 46rem;
+  font-size: var(--pb-font-size-detail);
+  line-height: 1.6;
+  color: var(--pb-text-muted);
+}
+.pb-subtitle strong {
+  color: var(--pb-text-inverse);
+  font-weight: var(--pb-font-weight-bold);
+}
+.pb-mono {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  color: var(--pb-primary-400);
+}
+
+.pb-header-row {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding-bottom: 1.75rem;
+  margin-bottom: 1.75rem;
+  border-bottom: 1px solid var(--pb-panel-border);
+}
+@media (min-width: 1024px) {
+  .pb-header-row { flex-direction: row; align-items: flex-end; justify-content: space-between; }
+}
+.pb-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+
+/* Card — glass surface, radius-base + shadow-card always paired (§4) */
+.pb-card {
+  background: var(--pb-panel-bg);
+  border: 1px solid var(--pb-panel-border);
+  border-radius: var(--pb-radius-base);
+  box-shadow: var(--pb-shadow-card);
+  padding: 1.25rem;
+}
+.pb-card-label {
+  font-size: var(--pb-font-size-h3);
+  font-weight: var(--pb-font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--pb-text-muted);
+}
+.pb-card-value {
+  margin-top: 0.5rem;
+  font-size: var(--pb-font-size-card-value);
+  font-weight: 800;
+  color: var(--pb-text-inverse);
+}
+.pb-card-hint {
+  margin-top: 0.4rem;
+  font-size: var(--pb-font-size-hint);
+  color: var(--pb-text-muted);
+}
+.pb-card--good { border-color: rgba(21, 128, 61, 0.35); }
+.pb-card--bad { border-color: rgba(215, 0, 51, 0.35); }
+.pb-card--mid { border-color: rgba(245, 158, 11, 0.35); }
+.pb-card--info { border-color: rgba(135, 91, 247, 0.35); }
+
+/* Compact summary card — same surface as .pb-card, tightened for a dense KPI row */
+.pb-summary-card { padding: 0.4rem 0.65rem; }
+.pb-summary-card .pb-card-label {
+  font-size: 0.6rem;
+  letter-spacing: 0.06em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pb-summary-card .pb-summary-row {
+  margin-top: 0.1rem;
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+.pb-summary-card .pb-card-value { margin-top: 0; font-size: 1.05rem; white-space: nowrap; }
+.pb-summary-card .pb-card-hint {
+  margin-top: 0;
+  font-size: 0.65rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Badge / pill — severity + status; colors mirror the §3 chart/state semantics */
+.pb-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  padding: 0.15em 0.6em;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: var(--pb-font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.pb-badge--error,
+.pb-badge--bad { background: rgba(215, 0, 51, 0.18); color: var(--pb-secondary-400); }
+.pb-badge--warn,
+.pb-badge--mid { background: rgba(245, 158, 11, 0.18); color: var(--pb-warning-400); }
+.pb-badge--info { background: rgba(248, 250, 252, 0.12); color: var(--pb-text-inverse); }
+.pb-badge--pass,
+.pb-badge--good { background: rgba(21, 128, 61, 0.18); color: var(--pb-success-500); }
+.pb-badge--baseline { background: rgba(135, 91, 247, 0.18); color: var(--pb-primary-400); font-size: 0.65rem; }
+
+/* Delta / trend text — good=green, bad=red, flat=muted (never purple text on dark, per §6) */
+.pb-delta-good { color: var(--pb-success-500); }
+.pb-delta-bad { color: var(--pb-secondary-400); }
+.pb-delta-flat { color: var(--pb-text-muted); }
+
+/* Buttons */
+.pb-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  border-radius: 0.75rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: var(--pb-font-weight-bold);
+  border: 1px solid var(--pb-panel-border);
+  background: var(--pb-panel-bg);
+  color: var(--pb-text-inverse);
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s;
+  text-decoration: none;
+}
+.pb-btn:hover { background: var(--pb-panel-hover); }
+.pb-btn--primary {
+  border-color: transparent;
+  background: var(--pb-secondary-400);
+  color: var(--pb-neutral-900);
+}
+.pb-btn--primary:hover { background: var(--pb-secondary-700); color: var(--pb-text-inverse); }
+
+/* Links — the brand's documented hyperlink token, used regardless of surface */
+.pb-link, a.pb-link { color: var(--pb-link); text-decoration: underline; }
+
+/* Table */
+.pb-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.pb-table th, .pb-table td { text-align: left; padding: 0.6rem 0.75rem; border-bottom: 1px solid var(--pb-panel-border); vertical-align: top; }
+.pb-table th { color: var(--pb-text-muted); font-weight: var(--pb-font-weight-bold); text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.08em; }
+.pb-table tr:hover td { background: var(--pb-panel-hover); }
+
+/* Chart mount point */
+.pb-chart {
+  background: var(--pb-panel-bg);
+  border: 1px solid var(--pb-panel-border);
+  border-radius: var(--pb-radius-base);
+  box-shadow: var(--pb-shadow-card);
+  padding: 1rem 0.75rem 0.5rem;
+  overflow: hidden;
+}
+.pb-chart-title { margin: 0 0 0.5rem 0.5rem; font-size: var(--pb-font-size-h2); font-weight: var(--pb-font-weight-bold); color: var(--pb-text-inverse); }
+.pb-plot-root { width: 100%; overflow-x: auto; }
+.pb-plot-root figure, .pb-plot-root svg { display: block; margin: 0 auto; max-width: 100%; background: transparent !important; }
+.pb-plot-root g[aria-label="tip"] { --plot-background: #ffffff; }
+.pb-plot-root g[aria-label="tip"] text { fill: #000000 !important; }
+
+/* Footer chrome */
+.pb-footer {
+  margin-top: 2rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--pb-panel-border);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: var(--pb-font-size-footer);
+  color: var(--pb-text-muted);
+}
+
+/* Print support */
+@media print {
+  .pb-page { background: #ffffff !important; color: var(--pb-text) !important; }
+  .pb-no-print { display: none !important; }
+  .pb-card, .pb-chart { border-color: var(--pb-border) !important; background: #ffffff !important; box-shadow: none !important; }
+  .pb-subtitle, .pb-card-label, .pb-card-hint, .pb-footer, .pb-eyebrow-note { color: #475569 !important; }
+  .pb-h1 { color: var(--pb-emphasis-purple) !important; } /* on printed paper the surface is light again, so purple H1 is legal per §6 */
+}
+/* SHARED_STYLES:END */
+    </style>
+</head>
+<body class="pb-page">
+<!-- Embedded run data, isolated in its own classic script so that an
+     unreplaced REPORT_DATA placeholder (i.e. this template opened
+     directly instead of through the report generator) only fails to parse
+     this one tag — the module script below still runs and falls back to
+     the bundled demo data as an "idle" state. -->
+<script>
+    try { window.__PB_REPORT_DATA__ = {{REPORT_DATA}}; } catch (e) { /* raw template — no embedded data */ }
+</script>
+<!-- SLOT_DECORATIVE_BG: two blurred gradient blobs -->
+<div class="pb-no-print pointer-events-none fixed inset-0 overflow-hidden">
+    <div class="absolute left-[-10rem] top-[-10rem] h-[30rem] w-[30rem] rounded-full blur-3xl" style="background: rgba(135,91,247,.12);"></div>
+    <div class="absolute right-[-8rem] top-[12rem] h-[26rem] w-[26rem] rounded-full blur-3xl" style="background: rgba(215,0,51,.1);"></div>
+</div>
+
+<main class="relative pb-container">
+    <!-- HEADER + SLOT_HEADER_ACTIONS: Print/Save PDF + Copy summary buttons (container/header-actions.html) -->
+    <header class="pb-header-row">
+        <div>
+            <div class="pb-eyebrow"><span class="pb-eyebrow-tag">TypeScript Compiler</span><span id="modeEyebrow" class="pb-eyebrow-note"></span></div>
+            <h1 class="pb-h1" style="font-size: clamp(2.333rem, 3vw, 3.5rem);">Performance report</h1>
+            <p class="pb-subtitle">
+                A compact diagnostic view of <strong id="targetNameLabel"></strong>, generated from <span id="runKindLabel">one clean compiler run</span>.
+            </p>
+        </div>
+        <div class="pb-no-print pb-actions">
+            <button id="loadDemoButton" class="pb-btn">Load demo data</button>
+            <button id="printButton" class="pb-btn">Print / Save PDF</button>
+            <button id="copyButton" class="pb-btn pb-btn--primary">Copy summary</button>
+        </div>
+    </header>
+
+    <!-- SLOT_BELOW_HEADER: notice shown when tsc exited unsuccessfully -->
+    <section id="compileFailureNotice" class="mb-6 hidden pb-card pb-card--bad" role="alert" style="background: rgba(215,0,51,.08);"></section>
+
+    <!-- SLOT_SUMMARY: summary-cards-toned.html -->
+    <section id="summaryCards" class="grid grid-cols-2 gap-2 xl:grid-cols-4"></section>
+
+    <!-- SLOT_PRIMARY: 2-col phase-timing + source-composition
+         (container/phase-timing-chart.html, container/source-composition.html) -->
+    <section class="mt-6 grid gap-6 xl:grid-cols-[1.4fr_1fr]">
+        <article class="pb-card">
+            <div class="mb-4 flex items-start justify-between gap-4">
+                <div>
+                    <h2 id="timingChartTitle" style="font-size: var(--pb-font-size-h2); font-weight: var(--pb-font-weight-bold); color: var(--pb-text-inverse);">Compiler phase timings</h2>
+                    <p id="timingChartHint" class="pb-card-hint mt-1">The run is dominated by program construction and parsing—not type checking.</p>
+                </div>
+                <span id="timingChartBadge" class="pb-badge pb-badge--good" style="flex-shrink: 0; white-space: nowrap;">Healthy</span>
+            </div>
+            <div class="mb-3 flex justify-end">
+                <label style="font-size: .8rem; color: var(--pb-text-muted);">Metric
+                    <select id="timingChartMetric" style="margin-left:.4rem; border-radius:.5rem; padding:.3rem .5rem; border:1px solid var(--pb-panel-border); background: rgba(0,0,0,.2); color: var(--pb-text-inverse); font-size:.8rem;">
+                        <option value="time">Time</option>
+                        <option value="size">Size</option>
+                        <option value="memory">Memory</option>
+                    </select>
+                </label>
+            </div>
+            <div id="timingPlot" class="pb-plot-root min-h-80"></div>
+        </article>
+
+        <article class="pb-card">
+            <div class="flex items-start justify-between gap-4">
+                <div>
+                    <h2 style="font-size: var(--pb-font-size-h2); font-weight: var(--pb-font-weight-bold); color: var(--pb-text-inverse);">Source composition</h2>
+                    <p id="sourceCompositionHint" class="pb-card-hint mt-1"></p>
+                </div>
+                <div class="shrink-0 text-right">
+                    <span id="totalSourceLinesValue" class="block text-[1.375rem] font-extrabold leading-tight" style="color: var(--pb-text-inverse);"></span>
+                    <span class="pb-card-hint">total lines</span>
+                </div>
+            </div>
+            <div id="linesPlot" class="pb-plot-root mt-4"></div>
+            <div id="compositionLegend" class="mt-3 flex flex-wrap gap-x-5 gap-y-1.5"></div>
+        </article>
+    </section>
+
+    <!-- SLOT_SECONDARY: insights cards (insights-cards.html) -->
+    <section class="mt-6">
+        <article class="pb-card">
+            <h2 style="font-size: var(--pb-font-size-h2); font-weight: var(--pb-font-weight-bold); color: var(--pb-text-inverse);">Interpretation</h2>
+            <div id="insights" class="mt-4 grid gap-3 sm:grid-cols-2"></div>
+        </article>
+    </section>
+
+    <!-- SLOT_DETAIL: collapsible trace analysis + all-metrics table
+         (collapsible-trace.html, metrics-table.html) -->
+    <section id="traceAnalysisSection" class="mt-6 hidden pb-card">
+        <details open>
+            <summary class="cursor-pointer list-none -m-5 mb-0 p-5">
+                <div class="flex items-center justify-between gap-4">
+                    <div>
+                        <h2 style="font-size: var(--pb-font-size-h2); font-weight: var(--pb-font-weight-bold); color: var(--pb-text-inverse);">Trace analysis</h2>
+                        <p class="pb-card-hint mt-1">Output from <code class="pb-mono">@typescript/analyze-trace</code>.</p>
+                    </div>
+                    <span class="pb-badge pb-badge--info">Collapse</span>
+                </div>
+            </summary>
+            <div class="border-t mt-5 pt-5" style="border-color: var(--pb-panel-border);">
+                <div id="traceAnalysisMeta" class="pb-card-hint mb-3"></div>
+                <pre id="traceAnalysisOutput" class="overflow-x-auto rounded-xl p-4 text-xs leading-6" style="border: 1px solid var(--pb-panel-border); background: rgba(0,0,0,.25); color: var(--pb-text-inverse);"></pre>
+            </div>
+        </details>
+    </section>
+
+    <section class="mt-6 pb-card">
+        <details>
+            <summary class="cursor-pointer list-none -m-5 mb-0 p-5">
+                <div class="flex items-center justify-between gap-4">
+                    <div>
+                        <h2 style="font-size: var(--pb-font-size-h2); font-weight: var(--pb-font-weight-bold); color: var(--pb-text-inverse);">All metrics</h2>
+                        <p class="pb-card-hint mt-1">Raw values captured from <code class="pb-mono">tsc --<span id="modeCliFlag"></span></code>.</p>
+                    </div>
+                    <span class="pb-badge pb-badge--info">Expand</span>
+                </div>
+            </summary>
+            <div class="border-t mt-5 pt-5" style="border-color: var(--pb-panel-border);">
+                <div id="metricsTable" class="overflow-x-auto"></div>
+            </div>
+        </details>
+    </section>
+
+    <!-- SLOT_METADATA: run metadata (run-metadata.html) -->
+    <section class="mt-6 pb-card">
+        <details>
+            <summary class="cursor-pointer list-none -m-5 mb-0 p-5">
+                <div class="flex items-center justify-between gap-4">
+                    <h2 style="font-size: var(--pb-font-size-h2); font-weight: var(--pb-font-weight-bold); color: var(--pb-text-inverse);">Run metadata</h2>
+                    <span class="pb-badge pb-badge--info">Expand</span>
+                </div>
+            </summary>
+            <dl id="metadata" class="mt-5 space-y-4 border-t pt-5 text-sm" style="border-color: var(--pb-panel-border);"></dl>
+        </details>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="pb-footer">
+        <span>Generated from TypeScript extended diagnostics</span>
+        <span id="footerTimestamp"></span>
+    </footer>
+</main>
+
+<script type="module">
+    import * as Plot from "https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm";
+
+    /* SHARED_SCRIPT:START */
+/*
+ * Shared report helpers — inlined into theme/layouts/list-layout.html,
+ * theme/layouts/detail-layout.html, and theme/layouts/comparison-layout.html
+ * between their SHARED_SCRIPT:START/END marker comments. Each layout template
+ * already carries a working copy of this file so it renders correctly when
+ * opened directly; src/theme-splice.ts refreshes that copy from this file at
+ * report-generation time, so the two never drift apart. Keep this the single
+ * source of truth for formatting/chart-mounting logic used across all three
+ * reports; don't re-implement fmt/toSeconds/mountPlot/etc. locally in a
+ * template again.
+ *
+ * Written as plain top-level declarations (no import/export) since it is
+ * spliced as text into each template's `<script type="module">` block, not
+ * loaded as a separate module file — the shipped HTML report stays a single
+ * self-contained file.
+ */
+
+const fmtNumber = new Intl.NumberFormat("en-US");
+const fmtPercent = new Intl.NumberFormat("en-US", { style: "percent", maximumFractionDigits: 1 });
+
+function fmt(n, digits = 1) {
+  return new Intl.NumberFormat(undefined, { maximumFractionDigits: digits }).format(n);
+}
+
+function toSeconds(metric) {
+  if (!metric) return 0;
+  const value = Number(metric.value);
+  if (!Number.isFinite(value)) return 0;
+  if (metric.unit === "milliseconds") return value / 1000;
+  return value;
+}
+
+function toMiB(metric) {
+  if (!metric) return 0;
+  const value = Number(metric.value);
+  if (!Number.isFinite(value)) return 0;
+  if (metric.unit === "KiB") return value / 1024;
+  if (metric.unit === "bytes") return value / (1024 * 1024);
+  return value;
+}
+
+function toCount(metric) {
+  if (!metric) return 0;
+  const value = Number(metric.value);
+  return Number.isFinite(value) ? value : 0;
+}
+
+// camelCase metric key -> "Human Label" (e.g. "checkTime" -> "Check time")
+function labelize(key) {
+  return key
+    .replace(/TimeTime$/, " time")
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/^i O/i, "I/O")
+    .replace(/^./, (s) => s.toUpperCase());
+}
+
+// Format a raw {value, unit} metric object for display (ms / MiB / count).
+function formatMetric(metric) {
+  if (metric.unit === "seconds") return `${(metric.value * 1000).toFixed(0)} ms`;
+  if (metric.unit === "milliseconds") return `${metric.value.toFixed(0)} ms`;
+  if (metric.unit === "KiB") return `${(metric.value / 1024).toFixed(1)} MiB`;
+  return fmtNumber.format(metric.value);
+}
+
+// Format an already-normalized plain number for a given display unit.
+function formatValue(value, unit) {
+  if (unit === "ms") return `${value.toFixed(value < 10 ? 1 : 0)} ms`;
+  if (unit === "MiB" || unit === "MB") return `${value.toFixed(1)} ${unit}`;
+  return fmtNumber.format(Math.round(value));
+}
+
+// Relative change from a to b, or null when there's no meaningful baseline.
+function delta(a, b) {
+  return a === 0 ? (b === 0 ? 0 : null) : (b - a) / a;
+}
+
+function deltaText(a, b, unit = "") {
+  const d = delta(a, b);
+  if (d === null) return "new value";
+  const signedAbs = Math.abs(b - a) >= 100 ? (b - a).toFixed(0) : (b - a).toFixed(1);
+  return `${d > 0 ? "+" : ""}${(d * 100).toFixed(1)}% (${b - a > 0 ? "+" : ""}${signedAbs}${unit ? ` ${unit}` : ""})`;
+}
+
+// CSS class for a delta value — lower-is-better by default (time/memory metrics).
+function deltaClass(d, lowerIsBetter = true) {
+  if (d === null || Math.abs(d) < 0.001) return "pb-delta-flat";
+  const good = lowerIsBetter ? d < 0 : d > 0;
+  return good ? "pb-delta-good" : "pb-delta-bad";
+}
+
+// Severity/status -> badge class (see .pb-badge* in design-tokens.css).
+function badgeClass(kind) {
+  const map = {
+    error: "pb-badge pb-badge--error",
+    bad: "pb-badge pb-badge--bad",
+    warn: "pb-badge pb-badge--warn",
+    mid: "pb-badge pb-badge--mid",
+    info: "pb-badge pb-badge--info",
+    pass: "pb-badge pb-badge--pass",
+    good: "pb-badge pb-badge--good",
+    baseline: "pb-badge pb-badge--baseline",
+  };
+  return map[kind] || "pb-badge pb-badge--info";
+}
+
+function escapeHtml(value) {
+  return String(value).replace(/[&<>'"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" }[c]));
+}
+
+// Qualitative chart palette — brand-tinted but wider than the 4 legal emphasis
+// colors, since charts with many series (e.g. 11 compiler phases) need more
+// distinguishable hues than the slide-deck emphasis-color rule allows.
+const PB_CHART_PALETTE = [
+  "#38bdf8", // sky (I/O read)
+  "#875bf7", // pb-primary-600 (parse)
+  "#a48afb", // pb-primary-400 (resolve module)
+  "#c4b5fd", // light violet (resolve type ref)
+  "#f472b6", // pink (resolve library)
+  "#fbbf24", // pb-warning-400 (bind)
+  "#d70033", // pb-secondary-700 (check — the expensive phase)
+  "#84cc16", // lime (print)
+  "#14b8a6", // teal (I/O write)
+  "#22c55e", // pb-success-500 (emit)
+  "#64748b", // slate (other)
+];
+
+// Tooltip styling shared by every Plot chart across all three reports.
+const TIP_STYLE = { fill: "#ffffff", stroke: "#94a3b8", strokeWidth: 1 };
+
+function plotWidth(containerId) {
+  const el = document.getElementById(containerId);
+  return Math.max(320, el.clientWidth - 24);
+}
+
+// Mount an Observable Plot chart into a `.pb-chart` container, wiring up the
+// `data-title` heading and the scrollable `.pb-plot-root` wrapper.
+function mountPlot(containerId, plot) {
+  const el = document.getElementById(containerId);
+  el.replaceChildren();
+
+  const title = el.dataset.title;
+  if (title) {
+    const heading = document.createElement("h3");
+    heading.className = "pb-chart-title";
+    heading.textContent = title;
+    el.appendChild(heading);
+  }
+
+  const wrap = document.createElement("div");
+  wrap.className = "pb-plot-root";
+  wrap.append(plot);
+  el.appendChild(wrap);
+}
+/* SHARED_SCRIPT:END */
+
+    // Idle-state sample so this template renders something real when opened
+    // directly (outside the report generator) and so "Load demo data" has
+    // something to show inside a generated report.
+    const DEMO_REPORT = {
+  "schemaVersion": 1,
+  "mode": "extendedDiagnostics",
+  "targetRoot": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/projects/test-lib-1",
+  "targetName": "test-lib-1",
+  "project": "tsconfig.fixed.json",
+  "generatedAt": "2026-07-12T23:14:17.558Z",
+  "command": [
+    "/Users/michael_hladky/.nvm/versions/node/v24.1.0/bin/node",
+    "/Users/michael_hladky/WebstormProjects/ts-perf-ws/node_modules/typescript/bin/tsc",
+    "--project",
+    "tsconfig.fixed.json",
+    "--extendedDiagnostics",
+    "--pretty",
+    "false"
+  ],
+  "cwd": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/projects/test-lib-1",
+  "startedAt": "2026-07-12T23:14:16.522Z",
+  "finishedAt": "2026-07-12T23:14:17.558Z",
+  "durationMs": 1035.788167,
+  "exitCode": 2,
+  "signal": null,
+  "metrics": {
+    "files": {
+      "raw": "871",
+      "value": 871,
+      "unit": "count"
+    },
+    "linesOfLibrary": {
+      "raw": "9894",
+      "value": 9894,
+      "unit": "count"
+    },
+    "linesOfDefinitions": {
+      "raw": "113104",
+      "value": 113104,
+      "unit": "count"
+    },
+    "linesOfTypeScript": {
+      "raw": "11531",
+      "value": 11531,
+      "unit": "count"
+    },
+    "linesOfJavaScript": {
+      "raw": "0",
+      "value": 0,
+      "unit": "count"
+    },
+    "linesOfJSON": {
+      "raw": "0",
+      "value": 0,
+      "unit": "count"
+    },
+    "linesOfOther": {
+      "raw": "0",
+      "value": 0,
+      "unit": "count"
+    },
+    "identifiers": {
+      "raw": "131635",
+      "value": 131635,
+      "unit": "count"
+    },
+    "symbols": {
+      "raw": "107202",
+      "value": 107202,
+      "unit": "count"
+    },
+    "types": {
+      "raw": "20808",
+      "value": 20808,
+      "unit": "count"
+    },
+    "instantiations": {
+      "raw": "160869",
+      "value": 160869,
+      "unit": "count"
+    },
+    "memoryUsed": {
+      "raw": "196225K",
+      "value": 196225,
+      "unit": "KiB"
+    },
+    "assignabilityCacheSize": {
+      "raw": "19187",
+      "value": 19187,
+      "unit": "count"
+    },
+    "identityCacheSize": {
+      "raw": "10",
+      "value": 10,
+      "unit": "count"
+    },
+    "subtypeCacheSize": {
+      "raw": "25",
+      "value": 25,
+      "unit": "count"
+    },
+    "strictSubtypeCacheSize": {
+      "raw": "1",
+      "value": 1,
+      "unit": "count"
+    },
+    "iOReadTime": {
+      "raw": "0.11s",
+      "value": 0.11,
+      "unit": "seconds"
+    },
+    "parseTime": {
+      "raw": "0.19s",
+      "value": 0.19,
+      "unit": "seconds"
+    },
+    "resolveModuleTime": {
+      "raw": "0.04s",
+      "value": 0.04,
+      "unit": "seconds"
+    },
+    "resolveTypeReferenceTime": {
+      "raw": "0.00s",
+      "value": 0,
+      "unit": "seconds"
+    },
+    "resolveLibraryTime": {
+      "raw": "0.00s",
+      "value": 0,
+      "unit": "seconds"
+    },
+    "programTime": {
+      "raw": "0.39s",
+      "value": 0.39,
+      "unit": "seconds"
+    },
+    "bindTime": {
+      "raw": "0.10s",
+      "value": 0.1,
+      "unit": "seconds"
+    },
+    "checkTime": {
+      "raw": "0.29s",
+      "value": 0.29,
+      "unit": "seconds"
+    },
+    "transformTimeTime": {
+      "raw": "0.04s",
+      "value": 0.04,
+      "unit": "seconds"
+    },
+    "sourceMapTime": {
+      "raw": "0.01s",
+      "value": 0.01,
+      "unit": "seconds"
+    },
+    "commentTimeTime": {
+      "raw": "0.01s",
+      "value": 0.01,
+      "unit": "seconds"
+    },
+    "iOWriteTime": {
+      "raw": "0.04s",
+      "value": 0.04,
+      "unit": "seconds"
+    },
+    "printTimeTime": {
+      "raw": "0.15s",
+      "value": 0.15,
+      "unit": "seconds"
+    },
+    "emitTime": {
+      "raw": "0.15s",
+      "value": 0.15,
+      "unit": "seconds"
+    },
+    "totalTime": {
+      "raw": "0.94s",
+      "value": 0.94,
+      "unit": "seconds"
+    }
+  },
+  "stdout": "src/examples/09-workspace-package-as-source/consumer-example.ts(8,33): error TS2307: Cannot find module '@workspace/config' or its corresponding type declarations.\nFiles:                         871\nLines of Library:             9894\nLines of Definitions:       113104\nLines of TypeScript:         11531\nLines of JavaScript:             0\nLines of JSON:                   0\nLines of Other:                  0\nIdentifiers:                131635\nSymbols:                    107202\nTypes:                       20808\nInstantiations:             160869\nMemory used:               196225K\nAssignability cache size:    19187\nIdentity cache size:            10\nSubtype cache size:             25\nStrict subtype cache size:       1\nI/O Read time:               0.11s\nParse time:                  0.19s\nResolveModule time:          0.04s\nResolveTypeReference time:   0.00s\nResolveLibrary time:         0.00s\nProgram time:                0.39s\nBind time:                   0.10s\nCheck time:                  0.29s\ntransformTime time:          0.04s\nSource Map time:             0.01s\ncommentTime time:            0.01s\nI/O Write time:              0.04s\nprintTime time:              0.15s\nEmit time:                   0.15s\nTotal time:                  0.94s\n",
+  "stderr": ""
+};
+
+    let currentReport = null;
+
+    // The compile errors tsc printed, one line each. Same rule as
+    // findCompileErrors() in src/utils/metric-utils.ts.
+    function compileErrorLines(report) {
+        return `${report.stdout ?? ""}\n${report.stderr ?? ""}`
+            .split(/\r?\n/)
+            .map(line => line.replace(/\u001b\[[0-9;]*m/g, "").trimEnd())
+            .filter(line => /^(?:\S.*?(?:\(\d+,\d+\): |:\d+:\d+ - ))?error TS\d+:/.test(line));
+    }
+
+    // "exited with code 2 (3 compile errors)", or null when tsc succeeded.
+    function compileFailureSummary(report) {
+        if (report.exitCode === 0) return null;
+        const outcome = typeof report.exitCode === "number"
+            ? `exited with code ${report.exitCode}`
+            : `was terminated by ${report.signal ?? "a signal"}`;
+        const errorCount = compileErrorLines(report).length;
+        return errorCount > 0
+            ? `${outcome} (${fmtNumber.format(errorCount)} compile error${errorCount === 1 ? "" : "s"})`
+            : outcome;
+    }
+
+    // part / total as a percentage, or "–" when there is nothing to divide by.
+    function fmtShare(part, total) {
+        return total > 0 ? fmtPercent.format(part / total) : "–";
+    }
+
+    // Only `tsc --extendedDiagnostics` prints "Lines of Library:", "Lines of
+    // Definitions:", and so on. Plain `--diagnostics` prints a single "Lines:"
+    // total, so those runs have `lines` and none of these keys.
+    const LINE_KIND_METRICS = ["linesOfLibrary", "linesOfDefinitions", "linesOfTypeScript", "linesOfJavaScript", "linesOfJSON", "linesOfOther"];
+
+    function sourceLineStats(metrics) {
+        const hasBreakdown = LINE_KIND_METRICS.some(key => typeof metrics[key]?.value === "number");
+        const total = hasBreakdown
+            ? LINE_KIND_METRICS.reduce((sum, key) => sum + (metrics[key]?.value ?? 0), 0)
+            : (metrics.lines?.value ?? 0);
+        return {hasBreakdown, total};
+    }
+
+    const MAX_NOTICE_ERRORS = 5;
+
+    function renderCompileFailureNotice(report) {
+        const notice = document.querySelector("#compileFailureNotice");
+        const summary = compileFailureSummary(report);
+        if (!summary) {
+            notice.classList.add("hidden");
+            notice.replaceChildren();
+            return;
+        }
+
+        const errors = compileErrorLines(report);
+        const shown = errors.slice(0, MAX_NOTICE_ERRORS);
+        notice.innerHTML = `
+          <div class="flex flex-wrap items-center gap-3">
+            <span class="pb-badge pb-badge--bad">Compile failed</span>
+            <h2 style="font-size: var(--pb-font-size-h2); font-weight: var(--pb-font-weight-bold); color: var(--pb-text-inverse);">TypeScript ${escapeHtml(summary)}</h2>
+          </div>
+          <p class="mt-2 text-sm leading-6" style="color: var(--pb-text-inverse);">The timings in this report come from a failing compile. Code that does not resolve is checked as <code class="pb-mono">any</code> and emit may be skipped, so the numbers can differ from a working build. Fix the errors and re-run before comparing results.</p>
+          ${shown.length > 0 ? `<pre class="mt-3 overflow-x-auto rounded-xl p-3 text-xs leading-6" style="border: 1px solid var(--pb-panel-border); background: rgba(0,0,0,.25); color: var(--pb-text-inverse);">${shown.map(escapeHtml).join("\n")}</pre>` : ""}
+          ${errors.length > shown.length ? `<p class="pb-card-hint">${escapeHtml(`…and ${fmtNumber.format(errors.length - shown.length)} more in the run's stdout.`)}</p>` : ""}
+        `;
+        notice.classList.remove("hidden");
+    }
+
+    function timingChartConfig(report, metric) {
+        const m = report.metrics;
+
+        if (metric === "size") {
+            const data = [
+                ["Definitions", m.linesOfDefinitions?.value ?? 0],
+                ["Library", m.linesOfLibrary?.value ?? 0],
+                ["TypeScript", m.linesOfTypeScript?.value ?? 0],
+                ["JavaScript", m.linesOfJavaScript?.value ?? 0],
+                ["JSON", m.linesOfJSON?.value ?? 0],
+                ["Other", m.linesOfOther?.value ?? 0]
+            ].map(([phase, lines]) => ({phase, value: lines})).filter(d => d.value > 0);
+            return {
+                title: "Source lines breakdown",
+                data,
+                axisLabel: "lines →",
+                format: (v) => fmtNumber.format(v),
+                hint: "Declaration files (library + definitions) account for most of the source analyzed by the compiler.",
+                badge: {text: "Info", tone: "info"}
+            };
+        }
+
+        if (metric === "memory") {
+            const data = [
+                ["Assignability cache", m.assignabilityCacheSize?.value ?? 0],
+                ["Identity cache", m.identityCacheSize?.value ?? 0],
+                ["Subtype cache", m.subtypeCacheSize?.value ?? 0],
+                ["Strict subtype cache", m.strictSubtypeCacheSize?.value ?? 0]
+            ].map(([phase, entries]) => ({phase, value: entries})).filter(d => d.value > 0);
+            return {
+                title: "Type cache breakdown",
+                data,
+                axisLabel: "cache entries →",
+                format: (v) => fmtNumber.format(v),
+                hint: `Peak memory usage was ${((m.memoryUsed?.value ?? 0) / 1024).toFixed(1)} MiB across ${fmtNumber.format(m.files?.value ?? 0)} files.`,
+                badge: {text: "Info", tone: "info"}
+            };
+        }
+
+        const data = [
+            ["I/O Read", m.iOReadTime?.value ?? 0],
+            ["Parse", m.parseTime?.value ?? 0],
+            ["Resolve modules", m.resolveModuleTime?.value ?? 0],
+            ["Resolve type reference", m.resolveTypeReferenceTime?.value ?? 0],
+            ["Resolve libraries", m.resolveLibraryTime?.value ?? 0],
+            ["Program", m.programTime?.value ?? 0],
+            ["Bind", m.bindTime?.value ?? 0],
+            ["Check", m.checkTime?.value ?? 0],
+            ["Print", m.printTimeTime?.value ?? 0],
+            ["Emit", m.emitTime?.value ?? 0]
+        ].map(([phase, seconds]) => ({phase, value: seconds * 1000})).filter(d => d.value > 0);
+        const checkShare = (m.checkTime?.value ?? 0) / (m.totalTime?.value ?? 0.001);
+        const verdict = compileFailureSummary(report)
+            ? {hint: "Measured on a failing compile, so these timings may not match a working build.", badge: {text: "Compile failed", tone: "bad"}}
+            : checkShare > 0.4
+                ? {hint: "Type checking dominates this run.", badge: {text: "Check-heavy", tone: "mid"}}
+                : {hint: "The run is dominated by program construction and parsing—not type checking.", badge: {text: "Healthy", tone: "good"}};
+        return {
+            title: "Compiler phase timings",
+            data,
+            axisLabel: "milliseconds →",
+            format: (v) => `${v.toFixed(0)} ms`,
+            ...verdict
+        };
+    }
+
+    function renderTimingChart(report) {
+        const metric = document.querySelector("#timingChartMetric").value;
+        const config = timingChartConfig(report, metric);
+
+        document.querySelector("#timingChartTitle").textContent = config.title;
+        document.querySelector("#timingChartHint").textContent = config.hint;
+        const badge = document.querySelector("#timingChartBadge");
+        badge.textContent = config.badge.text;
+        badge.className = `pb-badge pb-badge--${config.badge.tone}`;
+
+        const maxValue = Math.max(...config.data.map(d => d.value), 0);
+        const timingPlot = Plot.plot({
+            width: 760,
+            height: 330,
+            marginLeft: 150,
+            marginRight: 30,
+            style: {background: "transparent", color: "#cbd5e1", fontFamily: "Geist, ui-sans-serif, sans-serif", fontSize: "12px"},
+            x: {label: config.axisLabel, grid: true, domain: [0, maxValue * 1.12]},
+            y: {label: null, domain: config.data.map(d => d.phase)},
+            marks: [
+                Plot.ruleX([0], {stroke: "#475569"}),
+                Plot.barX(config.data, {x: "value", y: "phase", rx: 6, fill: "#875bf7", tip: true}),
+                Plot.text(config.data, {x: "value", y: "phase", text: d => config.format(d.value), dx: 8, textAnchor: "start", fill: "#f8fafc", fontWeight: 700})
+            ]
+        });
+        timingPlot.setAttribute("aria-label", `Horizontal bar chart of TypeScript compiler ${metric} breakdown`);
+        document.querySelector("#timingPlot").replaceChildren(timingPlot);
+    }
+
+    document.querySelector("#timingChartMetric").addEventListener("change", () => {
+        if (currentReport) renderTimingChart(currentReport);
+    });
+
+    function renderSourceComposition(lineData, totalSourceLines, hasLineBreakdown) {
+        const hint = document.querySelector("#sourceCompositionHint");
+        const plotRoot = document.querySelector("#linesPlot");
+        const legend = document.querySelector("#compositionLegend");
+
+        if (!hasLineBreakdown) {
+            hint.textContent = "This run reports only the total line count.";
+            plotRoot.replaceChildren();
+            legend.innerHTML = `
+          <span class="text-xs" style="color: var(--pb-text-muted);">
+            The breakdown into definitions, library, and TypeScript lines needs <code class="pb-mono">--mode extendedDiagnostics</code>.
+          </span>
+        `;
+            return;
+        }
+
+        const largest = lineData.reduce((a, b) => (b.lines > a.lines ? b : a));
+        hint.textContent = totalSourceLines > 0
+            ? `${largest.kind} is the largest share of analyzed source lines (${fmtShare(largest.lines, totalSourceLines)}).`
+            : "No source lines were analyzed.";
+
+        const linePlot = Plot.plot({
+            width: 480,
+            height: 32,
+            marginLeft: 0,
+            marginRight: 0,
+            marginTop: 0,
+            marginBottom: 0,
+            style: {background: "transparent"},
+            color: {legend: false, domain: ["Definitions", "Library", "TypeScript"], range: ["#875bf7", "#38bdf8", "#22c55e"]},
+            x: {axis: null},
+            y: {axis: null},
+            marks: [
+                Plot.barX(lineData, {y: () => "Source", x: "lines", fill: "kind", tip: true, rx: 6})
+            ]
+        });
+        linePlot.setAttribute("aria-label", "Stacked bar chart of source line composition");
+        plotRoot.replaceChildren(linePlot);
+
+        const legendColors = {Definitions: "#875bf7", Library: "#38bdf8", TypeScript: "#22c55e"};
+        legend.innerHTML = lineData.map(d => `
+          <span class="inline-flex items-center gap-1.5 whitespace-nowrap text-xs" style="color: var(--pb-text-muted);">
+            <span class="h-2 w-2 shrink-0 rounded-full" style="background:${legendColors[d.kind]};"></span>
+            <span class="font-semibold" style="color: var(--pb-text-inverse);">${escapeHtml(d.kind)}</span>
+            ${escapeHtml(fmtNumber.format(d.lines))} <span style="color: var(--pb-text-muted);">(${escapeHtml(fmtShare(d.lines, totalSourceLines))})</span>
+          </span>
+        `).join("");
+    }
+
+    function renderReport(report) {
+        const m = report.metrics;
+        const traceAnalysis = report.traceAnalysis;
+        const {hasBreakdown: hasLineBreakdown, total: totalSourceLines} = sourceLineStats(m);
+        const checkShare = (m.checkTime?.value ?? 0) / (m.totalTime?.value ?? 0.001);
+        const compilerVsWall = ((m.totalTime?.value ?? 0) * 1000) / report.durationMs;
+
+        document.querySelector("#pageTitle").textContent = `TypeScript Performance Report — ${report.targetName}`;
+        document.querySelector("#modeEyebrow").textContent = report.mode;
+        document.querySelector("#targetNameLabel").textContent = report.targetName;
+        document.querySelector("#modeCliFlag").textContent = report.mode;
+        const failureSummary = compileFailureSummary(report);
+        document.querySelector("#runKindLabel").textContent = failureSummary ? "a compiler run that failed" : "one clean compiler run";
+        renderCompileFailureNotice(report);
+
+        const cards = [
+            {label: "Wall duration", value: `${report.durationMs.toFixed(1)} ms`, hint: "Process start to finish", tone: "info"},
+            {label: "Compiler total", value: `${((m.totalTime?.value ?? 0) * 1000).toFixed(0)} ms`, hint: `${fmtPercent.format(compilerVsWall)} of wall time`, tone: ""},
+            {label: "Type check", value: `${((m.checkTime?.value ?? 0) * 1000).toFixed(0)} ms`, hint: `${fmtPercent.format(checkShare)} of compiler time`, tone: "good"},
+            {label: "Memory", value: `${((m.memoryUsed?.value ?? 0) / 1024).toFixed(1)} MiB`, hint: `${fmtNumber.format(m.files?.value ?? 0)} files loaded`, tone: "mid"}
+        ];
+
+        document.querySelector("#summaryCards").innerHTML = cards.map(card => `
+          <article class="pb-card pb-summary-card ${card.tone ? `pb-card--${card.tone}` : ""}">
+            <p class="pb-card-label">${card.label}</p>
+            <div class="pb-summary-row">
+              <span class="pb-card-value">${card.value}</span>
+              <span class="pb-card-hint">${card.hint}</span>
+            </div>
+          </article>
+        `).join("");
+
+        currentReport = report;
+        renderTimingChart(report);
+
+        const lineData = [
+            {kind: "Definitions", lines: m.linesOfDefinitions?.value ?? 0},
+            {kind: "Library", lines: m.linesOfLibrary?.value ?? 0},
+            {kind: "TypeScript", lines: m.linesOfTypeScript?.value ?? 0}
+        ];
+        document.querySelector("#totalSourceLinesValue").textContent = fmtNumber.format(totalSourceLines);
+        renderSourceComposition(lineData, totalSourceLines, hasLineBreakdown);
+
+        const insights = [
+            {title: "No checker hotspot", body: `Check time is only ${((m.checkTime?.value ?? 0) * 1000).toFixed(0)} ms. This run does not indicate expensive conditional types, large unions, or generic-instantiation pressure.`},
+            {title: "Setup dominates", body: `Program creation, parsing, and binding consume ${fmtPercent.format(((m.programTime?.value ?? 0) + (m.bindTime?.value ?? 0)) / (m.totalTime?.value ?? 0.001))} of compiler time. For a tiny source file, fixed startup and dependency costs dominate.`},
+            hasLineBreakdown
+                ? {title: "Dependency-heavy workload", body: `${fmtShare(m.linesOfDefinitions?.value ?? 0, totalSourceLines)} of analyzed lines are declaration files, while the project itself has only ${fmtNumber.format(m.linesOfTypeScript?.value ?? 0)} TypeScript lines.`}
+                : {title: "Source breakdown unavailable", body: `This run counted ${fmtNumber.format(totalSourceLines)} source lines in total, but not how many are declaration files. Run with --mode extendedDiagnostics to see whether dependencies dominate the workload.`},
+            {title: "Treat as a baseline", body: `The measurement is fast enough that OS scheduling and process startup can noticeably affect results. Compare medians across repeated clean runs rather than relying on one sample.`}
+        ];
+        document.querySelector("#insights").innerHTML = insights.map((x, i) => `
+          <div class="rounded-xl p-4" style="border: 1px solid var(--pb-panel-border); background: rgba(0,0,0,.15);">
+            <div class="mb-2 flex items-center gap-2"><span class="flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold" style="background: rgba(248,250,252,.08); color: var(--pb-secondary-400);">${i + 1}</span><h3 class="font-bold" style="color: var(--pb-text-inverse);">${escapeHtml(x.title)}</h3></div>
+            <p class="text-sm leading-6" style="color: var(--pb-text-muted);">${escapeHtml(x.body)}</p>
+          </div>
+        `).join("");
+
+        const generated = new Date(report.generatedAt);
+        const metadata = [
+            ["Target", report.targetName],
+            ["Mode", report.mode],
+            ["Exit code", String(report.exitCode)],
+            ["Generated", generated.toLocaleString()],
+            ["Working directory", report.cwd],
+            ["Command", report.command.slice(1).map(x => x.includes("/") ? x.split("/").pop() : x).join(" ")]
+        ];
+        document.querySelector("#metadata").innerHTML = metadata.map(([key, value]) => `
+          <div>
+            <dt class="pb-card-label">${escapeHtml(key)}</dt>
+            <dd class="mt-1 break-all font-medium" style="color: var(--pb-text-inverse);">${escapeHtml(value)}</dd>
+          </div>
+        `).join("");
+
+        const traceSection = document.querySelector("#traceAnalysisSection");
+        if (traceAnalysis) {
+            const traceMeta = document.querySelector("#traceAnalysisMeta");
+            const traceOutput = document.querySelector("#traceAnalysisOutput");
+
+            traceSection.classList.remove("hidden");
+            traceMeta.textContent = `Command: ${(traceAnalysis.command || []).join(" ")} | Exit: ${traceAnalysis.exitCode ?? "n/a"}${traceAnalysis.outputFile ? ` | Saved: ${traceAnalysis.outputFile}` : ""}`;
+            traceOutput.textContent = traceAnalysis.error
+                ? `Error: ${traceAnalysis.error}`
+                : (traceAnalysis.output || "(No analyze-trace output)");
+        } else {
+            traceSection.classList.add("hidden");
+        }
+
+        const rows = Object.entries(m).map(([key, metric]) => ({key, label: labelize(key), value: formatMetric(metric), raw: metric.raw, unit: metric.unit}));
+        document.querySelector("#metricsTable").innerHTML = `
+          <table class="pb-table w-full min-w-[680px]">
+            <thead><tr><th>Metric</th><th>Display value</th><th>Raw</th><th>Unit</th></tr></thead>
+            <tbody>${rows.map(row => `<tr><td class="font-medium" style="color: var(--pb-text-inverse);">${escapeHtml(row.label)}</td><td class="font-semibold" style="color: var(--pb-secondary-400);">${escapeHtml(row.value)}</td><td class="pb-mono text-xs">${escapeHtml(row.raw)}</td><td class="pb-card-hint">${escapeHtml(row.unit ?? "")}</td></tr>`).join("")}</tbody>
+          </table>`;
+
+        document.querySelector("#footerTimestamp").textContent = generated.toLocaleString();
+        document.querySelector("#copyButton").onclick = async event => {
+            const summary = `${report.targetName}: ${report.durationMs.toFixed(1)} ms wall, ${((m.totalTime?.value ?? 0) * 1000).toFixed(0)} ms compiler, ${((m.checkTime?.value ?? 0) * 1000).toFixed(0)} ms check, ${((m.memoryUsed?.value ?? 0) / 1024).toFixed(1)} MiB, ${m.files?.value ?? 0} files.${failureSummary ? ` Compile failed: TypeScript ${failureSummary}.` : ""}`;
+            await navigator.clipboard.writeText(summary);
+            const button = event.currentTarget;
+            const original = button.textContent;
+            button.textContent = "Copied";
+            setTimeout(() => button.textContent = original, 1200);
+        };
+    }
+
+    renderReport(window.__PB_REPORT_DATA__ ?? DEMO_REPORT);
+
+    document.querySelector("#printButton").addEventListener("click", () => window.print());
+    document.querySelector("#loadDemoButton").addEventListener("click", () => renderReport(DEMO_REPORT));
+</script>
+</body>
+</html>

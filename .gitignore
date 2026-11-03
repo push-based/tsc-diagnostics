@@ -1,0 +1,7 @@
+node_modules
+# dist/ is committed on purpose: it is what `npm install github:...` installs
+# (no build step at install time). CI checks it matches the sources.
+*.tsbuildinfo
+.DS_Store
+.idea
+ts-diagnostics/

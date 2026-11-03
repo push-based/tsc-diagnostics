@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+<!--
+  STANDALONE REPORT SHELL
+  =======================
+  Shared page chrome for every self-contained tsc-diagnostics HTML report.
+  This file is not rendered on its own — it is the common skeleton that the
+  three concrete templates are derived from by filling in its {{SLOT_*}}
+  regions and {{PLACEHOLDER}} text tokens:
+
+    list layout        (many solutions, one snapshot)   — replaces aggregate-template.html
+    detail layout       (one solution, one run)           — replaces report-template.html
+    comparison layout   (one solution, many runs)         — replaces compare-template.html
+
+  Every slot below is commented with which components/*.html and
+  container/*.html demo(s) it is built from, so a concrete template is
+  assembled by copying those components' markup/script into the matching
+  slot — nothing here should be hand-invented per layout. Placeholders use
+  the same `.replace("{{TOKEN}}", …)` convention already used by
+  ts-diagnostics.ts / aggregate-reports.ts / compare-reports.ts.
+-->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="dark" />
+<title>{{REPORT_TITLE}}</title>
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+<!-- ==========================================================================
+     THEME
+     Spliced verbatim from templates/design-tokens.css — the pb-* custom
+     properties plus the dashboard component classes (.pb-card, .pb-badge,
+     .pb-chart, .pb-table, .pb-footer, print rules, …) every layout builds on.
+     Never hand-invent a color/radius/shadow in a slot below; add it to
+     design-tokens.css instead so all three layouts stay in sync.
+     ========================================================================== -->
+<style>
+{{SHARED_STYLES}}
+</style>
+
+<!-- ==========================================================================
+     LAYOUT STYLES (optional)
+     CSS that only one concrete layout needs on top of the shared theme, e.g.
+     the comparison layout's combobox/listbox and dashed drop-zone rules.
+     Layouts that only need SHARED_STYLES (the list layout) leave this empty.
+     ========================================================================== -->
+<style>
+{{LAYOUT_STYLES}}
+</style>
+</head>
+<body class="pb-page">
+
+<!-- ==========================================================================
+     DECORATIVE BACKGROUND (optional, .pb-no-print)
+     Two blurred gradient blobs behind the content — used by the detail and
+     comparison layouts (see report-template.html / compare-template.html);
+     the list layout omits it and leaves this slot empty.
+     ========================================================================== -->
+{{SLOT_DECORATIVE_BG}}
+
+<main class="pb-container">
+
+  <!-- ========================================================================
+       HEADER
+       Eyebrow + title + subtitle (left) is the same shape in every layout —
+       only the copy differs, via the PLACEHOLDER tokens below. The actions
+       slot (right) is what actually varies structurally:
+         list layout        → empty
+         detail layout       → Print / Save PDF + Copy summary buttons
+         comparison layout   → Import JSON / Load demo runs + Print buttons
+       ======================================================================== -->
+  <header class="pb-header-row">
+    <div>
+      <div class="pb-eyebrow">
+        <span class="pb-eyebrow-tag">{{EYEBROW_TAG}}</span>
+        <span class="pb-eyebrow-note">{{EYEBROW_NOTE}}</span>
+      </div>
+      <h1 class="pb-h1">{{PAGE_TITLE}}</h1>
+      <p class="pb-subtitle">{{PAGE_SUBTITLE}}</p>
+    </div>
+    <div class="pb-no-print pb-actions">
+      {{SLOT_HEADER_ACTIONS}}
+    </div>
+  </header>
+
+  <!-- ========================================================================
+       BELOW HEADER (optional)
+       Content between the header and the summary cards:
+         list layout        → status bar (container/header-status.html)
+         detail layout       → nothing
+         comparison layout   → drop-zone + empty-state, and the `#dashboard`
+                                wrapper that stays hidden until a report is
+                                loaded (container/header-import.html,
+                                components/empty-state.html) — everything
+                                from SUMMARY down to DETAIL lives inside that
+                                wrapper for the comparison layout only.
+       ======================================================================== -->
+  {{SLOT_BELOW_HEADER}}
+
+  <!-- ========================================================================
+       SUMMARY
+       One row of KPI cards. The grid shell is identical across layouts; only
+       the card tone/count/delta logic differs:
+         list layout        → summary-cards-plain.html
+         detail layout       → summary-cards-toned.html
+         comparison layout   → project-selector.html above the cards, then
+                                summary-cards-delta.html
+       ======================================================================== -->
+  <section id="summary" class="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    {{SLOT_SUMMARY}}
+  </section>
+
+  <!-- ========================================================================
+       PRIMARY
+       The report's main chart(s) — the biggest point of divergence:
+         list layout        → 2-col chart grid: phases / instantiations /
+                                scatter / e2e (chart-phases.html,
+                                chart-instantiations.html, chart-scatter.html,
+                                chart-e2e.html)
+         detail layout       → 2-col phase-timing + source-composition
+                                (container/phase-timing-chart.html,
+                                container/source-composition.html)
+         comparison layout   → trend chart + selected-run comparison chart,
+                                stacked (container/trend-chart.html,
+                                container/comparison-chart.html)
+       ======================================================================== -->
+  <section id="primary" class="mt-6">
+    {{SLOT_PRIMARY}}
+  </section>
+
+  <!-- ========================================================================
+       SECONDARY
+       Supporting narrative/context beneath the main chart(s):
+         list layout        → notes grid (notes.html)
+         detail layout       → insights cards + run metadata
+                                (insights-cards.html, run-metadata.html)
+         comparison layout   → impact-against-baseline sortable table
+                                (container/insights-table.html)
+       ======================================================================== -->
+  <section id="secondary" class="mt-6">
+    {{SLOT_SECONDARY}}
+  </section>
+
+  <!-- ========================================================================
+       DETAIL
+       Deep-dive / audit content, often collapsed by default:
+         list layout        → tsconfig performance check
+                                (container/config-check.html)
+         detail layout       → collapsible trace analysis + all-metrics table
+                                (collapsible-trace.html, metrics-table.html)
+         comparison layout   → run history table
+                                (container/run-history-table.html)
+       ======================================================================== -->
+  <section id="detail" class="mt-6">
+    {{SLOT_DETAIL}}
+  </section>
+
+  <!-- ========================================================================
+       FOOTER
+       Identical shell in every layout (footer.html) — only the caption text
+       differs, via the PLACEHOLDER token below.
+       ======================================================================== -->
+  <footer class="pb-footer">
+    <span>{{FOOTER_CAPTION}}</span>
+    <span id="footerGeneratedAt"></span>
+  </footer>
+</main>
+
+<script type="module">
+import * as Plot from "https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6.17/+esm";
+
+/* ----------------------------------------------------------------------
+ * SHARED HELPERS
+ * Spliced from templates/shared-report.js (fmt/toSeconds/toMiB/labelize/
+ * badgeClass/mountPlot/plotWidth/PB_CHART_PALETTE/TIP_STYLE/…). Every
+ * layout's render logic below is built on these — don't redefine them
+ * locally in a slot.
+ * ---------------------------------------------------------------------- */
+{{SHARED_SCRIPT}}
+
+/* ----------------------------------------------------------------------
+ * DATA
+ * Embedded JSON + per-layout normalization into chart-ready rows:
+ *   list layout        → const embeddedAggregatedReport = {{AGGREGATED_REPORT}};
+ *                          fromAggregatedReport(embeddedAggregatedReport)
+ *   detail layout       → const report = {{REPORT_DATA}};
+ *   comparison layout   → const embeddedReports = {{COMPARE_REPORTS}};
+ *                          groupByProject(embeddedReports)
+ * ---------------------------------------------------------------------- */
+{{SLOT_SCRIPT_DATA}}
+
+/* ----------------------------------------------------------------------
+ * RENDER
+ * render()/mount() functions for every section above, the initial render
+ * call, the window `resize` listener (Plot sizes itself from the
+ * container's clientWidth), the #footerGeneratedAt timestamp, and any
+ * interactive wiring (print/copy buttons, import/drag-drop, the project
+ * combobox, sortable table headers, …).
+ * ---------------------------------------------------------------------- */
+{{SLOT_SCRIPT_RENDER}}
+</script>
+</body>
+</html>

@@ -1,0 +1,2190 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark" />
+  <title id="pageTitle">TypeScript Performance History</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <style>
+/* SHARED_STYLES:START */
+/*
+ * PushBased design tokens for the tsc-diagnostics report templates.
+ * Source of truth: tools/theme/design-system.md — keep in sync with that file,
+ * do not hand-invent new colors/sizes here.
+ *
+ * pt → rem conversion used throughout the type scale: 1pt = 1.3333px, 16px = 1rem.
+ */
+
+:root {
+  /* ---------------------------------------------------------------------
+   * 1. Brand palette (design-system.md §1)
+   * ------------------------------------------------------------------- */
+
+  /* Neutrals — text & background */
+  --pb-neutral-900: #121926; /* near-black — primary text / dark background */
+  --pb-neutral-500: #697586; /* muted / secondary text */
+  --pb-neutral-200: #eef2f6; /* light divider / fill */
+  --pb-neutral-200-alt: #e3e8ef; /* neutral 200 variant (reference/gradient surfaces) */
+  --pb-neutral-50: #f8fafc; /* near-white — light background */
+  --pb-black: #000000;
+  --pb-white: #ffffff;
+
+  /* Primary — purple (hero brand) */
+  --pb-primary-700: #6927da; /* HERO — titles, purple bg, "good/AI/after" */
+  --pb-primary-600: #875bf7; /* hyperlink color */
+  --pb-primary-400: #a48afb; /* light purple accent */
+  --pb-primary-50: #f5f3ff; /* light tint — card linear-gradient end */
+
+  /* Secondary — pink/red */
+  --pb-secondary-700: #d70033; /* kicker, red bg, "bad/before" */
+  --pb-secondary-600: #ff003c; /* strong red */
+  --pb-secondary-400: #ff577f; /* strong pink */
+  --pb-secondary-50: #fff0f4; /* light pink tint */
+
+  /* Success — green */
+  --pb-success-700: #15803d; /* emphasis / "after-good" */
+  --pb-success-500: #22c55e; /* fill */
+  --pb-success-50: #f0fdf4; /* light tint */
+
+  /* Warning — amber */
+  --pb-warning-600: #f59e0b; /* emphasis / "middle state" */
+  --pb-warning-400: #fbbf24; /* fill */
+  --pb-warning-50: #fffbeb; /* light tint */
+
+  /* ---------------------------------------------------------------------
+   * Semantic aliases
+   * Chart/state semantics (design-system.md §3): RED = bad/legacy/before,
+   * PURPLE = good/AI/after, AMBER = middle/transitional. Only these four
+   * colors (§3) are ever used for emphasis: primary-700, secondary-700,
+   * success-700, warning-600.
+   * ------------------------------------------------------------------- */
+  --pb-text: var(--pb-neutral-900);
+  --pb-text-inverse: var(--pb-neutral-50);
+  --pb-text-muted: var(--pb-neutral-500);
+  --pb-border: var(--pb-neutral-200);
+  --pb-link: var(--pb-primary-600);
+
+  --pb-emphasis-purple: var(--pb-primary-700);
+  --pb-emphasis-red: var(--pb-secondary-700);
+  --pb-emphasis-green: var(--pb-success-700);
+  --pb-emphasis-amber: var(--pb-warning-600);
+
+  --pb-state-bad: var(--pb-secondary-700); /* red = bad / manual / legacy / slow / before */
+  --pb-state-good: var(--pb-primary-700); /* purple = good / AI / new / fast / after */
+  --pb-state-mid: var(--pb-warning-600); /* amber = middle / transitional */
+
+  /* ---------------------------------------------------------------------
+   * 2. Type scale — Geist (design-system.md §2)
+   * ------------------------------------------------------------------- */
+  --pb-font-family: "Geist", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+  --pb-font-weight-normal: 400;
+  --pb-font-weight-bold: 700;
+
+  --pb-font-size-big-min: 2.5rem; /* 30pt — Main Point statements, hero numbers */
+  --pb-font-size-big-max: 10rem; /* 120pt */
+  --pb-font-size-h1: 2.333rem; /* 28pt — slide/page title */
+  --pb-font-size-h2: 1.25rem; /* 15pt — card titles, section sub-labels, KPI names */
+  --pb-font-size-h3: 0.833rem; /* 10pt — small labels, eyebrows, chart/axis headers */
+  --pb-font-size-body: 1.5rem; /* 18pt — primary paragraph / list text */
+  --pb-font-size-detail: 1.25rem; /* 15pt — secondary/support text, card descriptions */
+  --pb-font-size-hint: 0.833rem; /* 10pt — insight-bar text, captions, annotations */
+  --pb-font-size-footer: 0.583rem; /* 7pt — footer lockup */
+
+  /* ---------------------------------------------------------------------
+   * 4. Border radius (design-system.md §4)
+   * ------------------------------------------------------------------- */
+  --pb-radius-none: 0; /* full-bleed panels, color blocks, dividers, backdrops */
+  --pb-radius-base: 12px; /* all cards — always paired with --pb-shadow-card */
+  --pb-shadow-card: 0 12px 30px rgba(18, 25, 38, 0.12);
+
+  /* ---------------------------------------------------------------------
+   * 5. Gradients (design-system.md §5) — each scoped to one surface, never mixed
+   * ------------------------------------------------------------------- */
+  --pb-gradient-bg-radial: radial-gradient(
+    circle at center,
+    rgba(255, 255, 255, 0.35) 0%,
+    rgba(255, 255, 255, 0) 70%
+  ); /* backgrounds only */
+  --pb-gradient-card-linear: linear-gradient(
+    135deg,
+    var(--pb-primary-50) 0%,
+    var(--pb-white) 100%
+  ); /* cards only — swap --pb-primary-50 for the card's own tint color */
+}
+
+/*
+ * Contrast Map (design-system.md §6) — background → allowed text colors.
+ * Apply a surface with [data-pb-surface="light|purple|dark|red"] on a
+ * container to get the correct default text color for that background;
+ * emphasis colors still must be hand-picked from the allowed set per element
+ * (see the table in design-system.md, this only sets the *default*).
+ */
+[data-pb-surface="light"] {
+  background: var(--pb-neutral-50);
+  color: var(--pb-text);
+}
+[data-pb-surface="purple"] {
+  background: var(--pb-primary-700);
+  color: var(--pb-text-inverse);
+}
+[data-pb-surface="dark"] {
+  background: var(--pb-neutral-900);
+  color: var(--pb-text-inverse);
+}
+[data-pb-surface="red"] {
+  background: var(--pb-secondary-700);
+  color: var(--pb-text-inverse);
+}
+
+/* =========================================================================
+ * Dashboard component classes
+ * design-system.md only specifies slide chrome; the tsc-diagnostics HTML
+ * reports need the same brand tokens applied to a web dashboard, which the
+ * slide spec doesn't define directly. Nothing below introduces a new brand
+ * color — every rule resolves to a --pb-* token above. Reports run on a dark
+ * surface ([data-pb-surface="dark"]), so per the Contrast Map (§6): running
+ * *text* (H1/H2/H3/Body/Detail) never uses purple on dark — only T&BG2,
+ * Accent 2 (red), and Warning amber. Purple is still used for links (its
+ * documented "Link" role) and as a fill/border accent (chart marks, badges),
+ * since §6 restricts text legibility, not decorative fills.
+ * ========================================================================= */
+
+:root {
+  /* Glass card surface for a dark dashboard (translucent near-white over neutral-900) */
+  --pb-panel-bg: rgba(248, 250, 252, 0.04);
+  --pb-panel-border: rgba(248, 250, 252, 0.1);
+  --pb-panel-hover: rgba(248, 250, 252, 0.06);
+
+  /* Dashboard KPI number size — distinct from the slide "Big Text" scale (§2), which is sized for a 720pt-wide slide, not a card. */
+  --pb-font-size-card-value: 1.875rem;
+}
+
+.pb-page {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--pb-font-family);
+  background: var(--pb-neutral-900);
+  color: var(--pb-text-inverse);
+  -webkit-font-smoothing: antialiased;
+}
+.pb-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 3rem;
+}
+
+/* Eyebrow / kicker — always Accent 2 pink per design-system.md §7 */
+.pb-eyebrow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  font-size: var(--pb-font-size-h3);
+  font-weight: var(--pb-font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--pb-secondary-400);
+}
+.pb-eyebrow-tag {
+  border: 1px solid rgba(255, 87, 127, 0.35);
+  background: rgba(215, 0, 51, 0.12);
+  border-radius: 999px;
+  padding: 0.25rem 0.75rem;
+}
+.pb-eyebrow-note {
+  color: var(--pb-text-muted);
+  text-transform: none;
+  letter-spacing: normal;
+  font-weight: var(--pb-font-weight-normal);
+}
+
+/* Page title (H1) — near-white on dark; purple H1 is a light-surface-only choice per §6 */
+.pb-h1 {
+  margin: 0;
+  font-weight: var(--pb-font-weight-bold);
+  font-size: var(--pb-font-size-h1);
+  color: var(--pb-text-inverse);
+  letter-spacing: -0.01em;
+}
+
+.pb-subtitle {
+  margin-top: 0.75rem;
+  max-width: 46rem;
+  font-size: var(--pb-font-size-detail);
+  line-height: 1.6;
+  color: var(--pb-text-muted);
+}
+.pb-subtitle strong {
+  color: var(--pb-text-inverse);
+  font-weight: var(--pb-font-weight-bold);
+}
+.pb-mono {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  color: var(--pb-primary-400);
+}
+
+.pb-header-row {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding-bottom: 1.75rem;
+  margin-bottom: 1.75rem;
+  border-bottom: 1px solid var(--pb-panel-border);
+}
+@media (min-width: 1024px) {
+  .pb-header-row { flex-direction: row; align-items: flex-end; justify-content: space-between; }
+}
+.pb-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+
+/* Card — glass surface, radius-base + shadow-card always paired (§4) */
+.pb-card {
+  background: var(--pb-panel-bg);
+  border: 1px solid var(--pb-panel-border);
+  border-radius: var(--pb-radius-base);
+  box-shadow: var(--pb-shadow-card);
+  padding: 1.25rem;
+}
+.pb-card-label {
+  font-size: var(--pb-font-size-h3);
+  font-weight: var(--pb-font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--pb-text-muted);
+}
+.pb-card-value {
+  margin-top: 0.5rem;
+  font-size: var(--pb-font-size-card-value);
+  font-weight: 800;
+  color: var(--pb-text-inverse);
+}
+.pb-card-hint {
+  margin-top: 0.4rem;
+  font-size: var(--pb-font-size-hint);
+  color: var(--pb-text-muted);
+}
+.pb-card--good { border-color: rgba(21, 128, 61, 0.35); }
+.pb-card--bad { border-color: rgba(215, 0, 51, 0.35); }
+.pb-card--mid { border-color: rgba(245, 158, 11, 0.35); }
+.pb-card--info { border-color: rgba(135, 91, 247, 0.35); }
+
+/* Compact summary card — same surface as .pb-card, tightened for a dense KPI row */
+.pb-summary-card { padding: 0.4rem 0.65rem; }
+.pb-summary-card .pb-card-label {
+  font-size: 0.6rem;
+  letter-spacing: 0.06em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pb-summary-card .pb-summary-row {
+  margin-top: 0.1rem;
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+.pb-summary-card .pb-card-value { margin-top: 0; font-size: 1.05rem; white-space: nowrap; }
+.pb-summary-card .pb-card-hint {
+  margin-top: 0;
+  font-size: 0.65rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Badge / pill — severity + status; colors mirror the §3 chart/state semantics */
+.pb-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  padding: 0.15em 0.6em;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: var(--pb-font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.pb-badge--error,
+.pb-badge--bad { background: rgba(215, 0, 51, 0.18); color: var(--pb-secondary-400); }
+.pb-badge--warn,
+.pb-badge--mid { background: rgba(245, 158, 11, 0.18); color: var(--pb-warning-400); }
+.pb-badge--info { background: rgba(248, 250, 252, 0.12); color: var(--pb-text-inverse); }
+.pb-badge--pass,
+.pb-badge--good { background: rgba(21, 128, 61, 0.18); color: var(--pb-success-500); }
+.pb-badge--baseline { background: rgba(135, 91, 247, 0.18); color: var(--pb-primary-400); font-size: 0.65rem; }
+
+/* Delta / trend text — good=green, bad=red, flat=muted (never purple text on dark, per §6) */
+.pb-delta-good { color: var(--pb-success-500); }
+.pb-delta-bad { color: var(--pb-secondary-400); }
+.pb-delta-flat { color: var(--pb-text-muted); }
+
+/* Buttons */
+.pb-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  border-radius: 0.75rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: var(--pb-font-weight-bold);
+  border: 1px solid var(--pb-panel-border);
+  background: var(--pb-panel-bg);
+  color: var(--pb-text-inverse);
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s;
+  text-decoration: none;
+}
+.pb-btn:hover { background: var(--pb-panel-hover); }
+.pb-btn--primary {
+  border-color: transparent;
+  background: var(--pb-secondary-400);
+  color: var(--pb-neutral-900);
+}
+.pb-btn--primary:hover { background: var(--pb-secondary-700); color: var(--pb-text-inverse); }
+
+/* Links — the brand's documented hyperlink token, used regardless of surface */
+.pb-link, a.pb-link { color: var(--pb-link); text-decoration: underline; }
+
+/* Table */
+.pb-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.pb-table th, .pb-table td { text-align: left; padding: 0.6rem 0.75rem; border-bottom: 1px solid var(--pb-panel-border); vertical-align: top; }
+.pb-table th { color: var(--pb-text-muted); font-weight: var(--pb-font-weight-bold); text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.08em; }
+.pb-table tr:hover td { background: var(--pb-panel-hover); }
+
+/* Chart mount point */
+.pb-chart {
+  background: var(--pb-panel-bg);
+  border: 1px solid var(--pb-panel-border);
+  border-radius: var(--pb-radius-base);
+  box-shadow: var(--pb-shadow-card);
+  padding: 1rem 0.75rem 0.5rem;
+  overflow: hidden;
+}
+.pb-chart-title { margin: 0 0 0.5rem 0.5rem; font-size: var(--pb-font-size-h2); font-weight: var(--pb-font-weight-bold); color: var(--pb-text-inverse); }
+.pb-plot-root { width: 100%; overflow-x: auto; }
+.pb-plot-root figure, .pb-plot-root svg { display: block; margin: 0 auto; max-width: 100%; background: transparent !important; }
+.pb-plot-root g[aria-label="tip"] { --plot-background: #ffffff; }
+.pb-plot-root g[aria-label="tip"] text { fill: #000000 !important; }
+
+/* Footer chrome */
+.pb-footer {
+  margin-top: 2rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--pb-panel-border);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: var(--pb-font-size-footer);
+  color: var(--pb-text-muted);
+}
+
+/* Print support */
+@media print {
+  .pb-page { background: #ffffff !important; color: var(--pb-text) !important; }
+  .pb-no-print { display: none !important; }
+  .pb-card, .pb-chart { border-color: var(--pb-border) !important; background: #ffffff !important; box-shadow: none !important; }
+  .pb-subtitle, .pb-card-label, .pb-card-hint, .pb-footer, .pb-eyebrow-note { color: #475569 !important; }
+  .pb-h1 { color: var(--pb-emphasis-purple) !important; } /* on printed paper the surface is light again, so purple H1 is legal per §6 */
+}
+/* SHARED_STYLES:END */
+    button, select, input { outline: none; }
+  </style>
+</head>
+<body class="pb-page">
+<!-- Embedded reports, isolated in its own classic script so that an
+     unreplaced COMPARE_REPORTS placeholder (i.e. this template opened
+     directly instead of through the report generator) only fails to parse
+     this one tag — the module script below still runs and falls back to
+     the bundled demo data as an "idle" state. -->
+<script>
+  try { window.__PB_COMPARE_REPORTS__ = {{COMPARE_REPORTS}}; } catch (e) { /* raw template — no embedded data */ }
+</script>
+<!-- SLOT_DECORATIVE_BG: two blurred gradient blobs -->
+<div class="pb-no-print pointer-events-none fixed inset-0 overflow-hidden">
+  <div class="absolute -left-36 -top-36 h-[32rem] w-[32rem] rounded-full blur-3xl" style="background: rgba(135,91,247,.12);"></div>
+  <div class="absolute -right-24 top-40 h-[28rem] w-[28rem] rounded-full blur-3xl" style="background: rgba(215,0,51,.1);"></div>
+</div>
+
+<main class="relative pb-container">
+  <!-- HEADER + SLOT_HEADER_ACTIONS: Import JSON / Load demo runs / Print
+       (container/header-import.html) -->
+  <header class="pb-header-row">
+    <div>
+      <div class="pb-eyebrow"><span class="pb-eyebrow-tag">TypeScript Compiler</span><span class="pb-eyebrow-note">performance history</span></div>
+      <h1 class="pb-h1" style="font-size: clamp(2.333rem, 3vw, 3.5rem);">Diagnostics comparison</h1>
+      <p class="pb-subtitle">Import multiple <code class="pb-mono">--extendedDiagnostics</code> JSON reports from the same project, track trends over time, and compare the impact of individual changes.</p>
+    </div>
+    <div class="pb-no-print pb-actions">
+      <label class="pb-btn pb-btn--primary cursor-pointer">
+        Import JSON reports
+        <input id="fileInput" type="file" accept="application/json,.json" multiple class="hidden" />
+      </label>
+      <button id="loadDemo" class="pb-btn">Load demo runs</button>
+      <button onclick="print()" class="pb-btn">Print / PDF</button>
+    </div>
+  </header>
+
+  <!-- SLOT_BELOW_HEADER: drop-zone + empty-state, and the #dashboard wrapper
+       that stays hidden until a report is loaded (container/header-import.html's
+       drop zone, components/empty-state.html) — SUMMARY through DETAIL below
+       all live inside #dashboard for this layout only. -->
+  <section id="dropZone" class="pb-no-print mb-6 rounded-2xl border border-dashed p-5 text-center text-sm transition" style="border-color: var(--pb-panel-border); background: var(--pb-panel-bg); color: var(--pb-text-muted);">
+    Drop one or more diagnostics JSON files here. Imported data lasts for this page view only — reload to reset.
+  </section>
+
+  <section id="emptyState" class="pb-card p-10 text-center">
+    <div class="mx-auto max-w-xl">
+      <h2 class="text-2xl font-bold" style="color: var(--pb-text-inverse);">No runs loaded</h2>
+      <p class="mt-3" style="color: var(--pb-text-muted);">Import at least two reports to see trends and compare the effect of changes. Reports are grouped by <code class="pb-mono">targetName</code>.</p>
+    </div>
+  </section>
+
+  <div id="dashboard" class="hidden">
+    <!-- SLOT_SUMMARY: project-selector.html above the cards, then summary-cards-delta.html -->
+    <section class="pb-card mb-6">
+      <label class="relative block max-w-sm" id="projectSelectWrapper">
+        <span class="pb-card-label">Project</span>
+        <button id="projectSelect" type="button" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-controls="projectListbox" class="mt-2 flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-sm" style="border: 1px solid var(--pb-panel-border); background: rgba(0,0,0,.2); color: var(--pb-text-inverse);">
+          <span id="projectSelectLabel"></span>
+          <span style="color: var(--pb-text-muted);" aria-hidden="true">&#9662;</span>
+        </button>
+        <ul id="projectListbox" role="listbox" tabindex="-1" class="absolute z-20 mt-1 hidden max-h-64 w-full overflow-auto rounded-xl py-1 text-sm shadow-2xl" style="border: 1px solid var(--pb-panel-border); background: #1a2333;"></ul>
+      </label>
+    </section>
+
+    <section id="summaryCards" class="grid grid-cols-2 gap-2 xl:grid-cols-4"></section>
+
+    <!-- SLOT_PRIMARY: compiler phases by run, stacked bar with a Time/Size/Memory
+         metric selector (container/phase-timings-panel.html "Compiler phases
+         by solution" chart, adapted to selected runs instead of solutions) -->
+    <section class="mt-6 space-y-6">
+      <article class="pb-card">
+        <div class="mb-4 flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 id="timingChartTitle" style="font-size: var(--pb-font-size-h2); font-weight: var(--pb-font-weight-bold); color: var(--pb-text-inverse);">Compiler phases by run</h2>
+            <p id="timingChartHint" class="pb-card-hint mt-1">Each selected run is stacked by compiler phase, so you can compare cost and composition across runs.</p>
+          </div>
+          <label class="pb-no-print text-sm" style="color: var(--pb-text-muted);">Metric
+            <select id="timingChartMetric" class="ml-2 rounded-lg px-2 py-1.5" style="border: 1px solid var(--pb-panel-border); background: rgba(0,0,0,.2); color: var(--pb-text-inverse);">
+              <option value="time">Time</option>
+              <option value="size">Size</option>
+              <option value="memory">Memory</option>
+            </select>
+          </label>
+        </div>
+        <div id="timingPlot" class="min-h-80"></div>
+      </article>
+
+      <!-- SLOT_SECONDARY: impact-against-baseline sortable table (container/insights-table.html) -->
+      <article class="pb-card">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h2 style="font-size: var(--pb-font-size-h2); font-weight: var(--pb-font-weight-bold); color: var(--pb-text-inverse);">Impact against baseline</h2>
+            <p class="pb-card-hint mt-1">Every run is compared with the first (oldest) diagnostic, the baseline. Click a column header to sort.</p>
+          </div>
+          <div class="pb-no-print flex flex-wrap gap-2">
+            <button id="insightsPresetKey" type="button" class="pb-btn" style="padding: .375rem .625rem; font-size: .75rem;">Key metrics</button>
+            <button id="insightsPresetAll" type="button" class="pb-btn" style="padding: .375rem .625rem; font-size: .75rem;">All</button>
+            <button id="insightsPresetNone" type="button" class="pb-btn" style="padding: .375rem .625rem; font-size: .75rem;">None</button>
+          </div>
+        </div>
+        <div id="insightsFilters" class="pb-no-print mt-4 flex flex-col gap-2"></div>
+        <div id="insights" class="mt-4"></div>
+      </article>
+    </section>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="pb-footer">Standalone report using Tailwind CSS and Observable Plot. CDN access is required for styling and charts.</footer>
+</main>
+
+<script type="module">
+import * as Plot from "https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm";
+
+    /* SHARED_SCRIPT:START */
+/*
+ * Shared report helpers — inlined into theme/layouts/list-layout.html,
+ * theme/layouts/detail-layout.html, and theme/layouts/comparison-layout.html
+ * between their SHARED_SCRIPT:START/END marker comments. Each layout template
+ * already carries a working copy of this file so it renders correctly when
+ * opened directly; src/theme-splice.ts refreshes that copy from this file at
+ * report-generation time, so the two never drift apart. Keep this the single
+ * source of truth for formatting/chart-mounting logic used across all three
+ * reports; don't re-implement fmt/toSeconds/mountPlot/etc. locally in a
+ * template again.
+ *
+ * Written as plain top-level declarations (no import/export) since it is
+ * spliced as text into each template's `<script type="module">` block, not
+ * loaded as a separate module file — the shipped HTML report stays a single
+ * self-contained file.
+ */
+
+const fmtNumber = new Intl.NumberFormat("en-US");
+const fmtPercent = new Intl.NumberFormat("en-US", { style: "percent", maximumFractionDigits: 1 });
+
+function fmt(n, digits = 1) {
+  return new Intl.NumberFormat(undefined, { maximumFractionDigits: digits }).format(n);
+}
+
+function toSeconds(metric) {
+  if (!metric) return 0;
+  const value = Number(metric.value);
+  if (!Number.isFinite(value)) return 0;
+  if (metric.unit === "milliseconds") return value / 1000;
+  return value;
+}
+
+function toMiB(metric) {
+  if (!metric) return 0;
+  const value = Number(metric.value);
+  if (!Number.isFinite(value)) return 0;
+  if (metric.unit === "KiB") return value / 1024;
+  if (metric.unit === "bytes") return value / (1024 * 1024);
+  return value;
+}
+
+function toCount(metric) {
+  if (!metric) return 0;
+  const value = Number(metric.value);
+  return Number.isFinite(value) ? value : 0;
+}
+
+// camelCase metric key -> "Human Label" (e.g. "checkTime" -> "Check time")
+function labelize(key) {
+  return key
+    .replace(/TimeTime$/, " time")
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/^i O/i, "I/O")
+    .replace(/^./, (s) => s.toUpperCase());
+}
+
+// Format a raw {value, unit} metric object for display (ms / MiB / count).
+function formatMetric(metric) {
+  if (metric.unit === "seconds") return `${(metric.value * 1000).toFixed(0)} ms`;
+  if (metric.unit === "milliseconds") return `${metric.value.toFixed(0)} ms`;
+  if (metric.unit === "KiB") return `${(metric.value / 1024).toFixed(1)} MiB`;
+  return fmtNumber.format(metric.value);
+}
+
+// Format an already-normalized plain number for a given display unit.
+function formatValue(value, unit) {
+  if (unit === "ms") return `${value.toFixed(value < 10 ? 1 : 0)} ms`;
+  if (unit === "MiB" || unit === "MB") return `${value.toFixed(1)} ${unit}`;
+  return fmtNumber.format(Math.round(value));
+}
+
+// Relative change from a to b, or null when there's no meaningful baseline.
+function delta(a, b) {
+  return a === 0 ? (b === 0 ? 0 : null) : (b - a) / a;
+}
+
+function deltaText(a, b, unit = "") {
+  const d = delta(a, b);
+  if (d === null) return "new value";
+  const signedAbs = Math.abs(b - a) >= 100 ? (b - a).toFixed(0) : (b - a).toFixed(1);
+  return `${d > 0 ? "+" : ""}${(d * 100).toFixed(1)}% (${b - a > 0 ? "+" : ""}${signedAbs}${unit ? ` ${unit}` : ""})`;
+}
+
+// CSS class for a delta value — lower-is-better by default (time/memory metrics).
+function deltaClass(d, lowerIsBetter = true) {
+  if (d === null || Math.abs(d) < 0.001) return "pb-delta-flat";
+  const good = lowerIsBetter ? d < 0 : d > 0;
+  return good ? "pb-delta-good" : "pb-delta-bad";
+}
+
+// Severity/status -> badge class (see .pb-badge* in design-tokens.css).
+function badgeClass(kind) {
+  const map = {
+    error: "pb-badge pb-badge--error",
+    bad: "pb-badge pb-badge--bad",
+    warn: "pb-badge pb-badge--warn",
+    mid: "pb-badge pb-badge--mid",
+    info: "pb-badge pb-badge--info",
+    pass: "pb-badge pb-badge--pass",
+    good: "pb-badge pb-badge--good",
+    baseline: "pb-badge pb-badge--baseline",
+  };
+  return map[kind] || "pb-badge pb-badge--info";
+}
+
+function escapeHtml(value) {
+  return String(value).replace(/[&<>'"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" }[c]));
+}
+
+// Qualitative chart palette — brand-tinted but wider than the 4 legal emphasis
+// colors, since charts with many series (e.g. 11 compiler phases) need more
+// distinguishable hues than the slide-deck emphasis-color rule allows.
+const PB_CHART_PALETTE = [
+  "#38bdf8", // sky (I/O read)
+  "#875bf7", // pb-primary-600 (parse)
+  "#a48afb", // pb-primary-400 (resolve module)
+  "#c4b5fd", // light violet (resolve type ref)
+  "#f472b6", // pink (resolve library)
+  "#fbbf24", // pb-warning-400 (bind)
+  "#d70033", // pb-secondary-700 (check — the expensive phase)
+  "#84cc16", // lime (print)
+  "#14b8a6", // teal (I/O write)
+  "#22c55e", // pb-success-500 (emit)
+  "#64748b", // slate (other)
+];
+
+// Tooltip styling shared by every Plot chart across all three reports.
+const TIP_STYLE = { fill: "#ffffff", stroke: "#94a3b8", strokeWidth: 1 };
+
+function plotWidth(containerId) {
+  const el = document.getElementById(containerId);
+  return Math.max(320, el.clientWidth - 24);
+}
+
+// Mount an Observable Plot chart into a `.pb-chart` container, wiring up the
+// `data-title` heading and the scrollable `.pb-plot-root` wrapper.
+function mountPlot(containerId, plot) {
+  const el = document.getElementById(containerId);
+  el.replaceChildren();
+
+  const title = el.dataset.title;
+  if (title) {
+    const heading = document.createElement("h3");
+    heading.className = "pb-chart-title";
+    heading.textContent = title;
+    el.appendChild(heading);
+  }
+
+  const wrap = document.createElement("div");
+  wrap.className = "pb-plot-root";
+  wrap.append(plot);
+  el.appendChild(wrap);
+}
+/* SHARED_SCRIPT:END */
+
+const esc = escapeHtml;
+const goodClass = deltaClass;
+
+// Embedded reports injected by the CLI – fall back to demo data when browsing standalone
+const embeddedReports = window.__PB_COMPARE_REPORTS__ ?? [];
+
+const demoReports = [
+  {
+    "schemaVersion": 1,
+    "mode": "extendedDiagnostics",
+    "targetRoot": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/projects/test-lib-1",
+    "targetName": "test-lib-1",
+    "project": "tsconfig.slow.json",
+    "note": "Initial implementation",
+    "generatedAt": "2026-07-12T23:14:02.965Z",
+    "command": [
+      "/Users/michael_hladky/.nvm/versions/node/v24.1.0/bin/node",
+      "/Users/michael_hladky/WebstormProjects/ts-perf-ws/node_modules/typescript/bin/tsc",
+      "--project",
+      "tsconfig.slow.json",
+      "--extendedDiagnostics",
+      "--pretty",
+      "false"
+    ],
+    "cwd": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/projects/test-lib-1",
+    "startedAt": "2026-07-12T23:14:00.000Z",
+    "finishedAt": "2026-07-12T23:14:02.925Z",
+    "durationMs": 2925.00325,
+    "exitCode": 2,
+    "signal": null,
+    "metrics": {
+      "srcExamples09WorkspacePackageAsSourceConsumerExampleTs833": {
+        "raw": "error TS2307: Cannot find module '@workspace/config' or its corresponding type declarations.",
+        "value": "error TS2307: Cannot find module '@workspace/config' or its corresponding type declarations."
+      },
+      "files": {
+        "raw": "871",
+        "value": 871,
+        "unit": "count"
+      },
+      "linesOfLibrary": {
+        "raw": "9894",
+        "value": 9894,
+        "unit": "count"
+      },
+      "linesOfDefinitions": {
+        "raw": "113104",
+        "value": 113104,
+        "unit": "count"
+      },
+      "linesOfTypeScript": {
+        "raw": "11534",
+        "value": 11534,
+        "unit": "count"
+      },
+      "linesOfJavaScript": {
+        "raw": "0",
+        "value": 0,
+        "unit": "count"
+      },
+      "linesOfJSON": {
+        "raw": "0",
+        "value": 0,
+        "unit": "count"
+      },
+      "linesOfOther": {
+        "raw": "0",
+        "value": 0,
+        "unit": "count"
+      },
+      "identifiers": {
+        "raw": "131584",
+        "value": 131584,
+        "unit": "count"
+      },
+      "symbols": {
+        "raw": "1017925",
+        "value": 1017925,
+        "unit": "count"
+      },
+      "types": {
+        "raw": "550780",
+        "value": 550780,
+        "unit": "count"
+      },
+      "instantiations": {
+        "raw": "740895",
+        "value": 740895,
+        "unit": "count"
+      },
+      "memoryUsed": {
+        "raw": "704070K",
+        "value": 704070,
+        "unit": "KiB"
+      },
+      "assignabilityCacheSize": {
+        "raw": "242528",
+        "value": 242528,
+        "unit": "count"
+      },
+      "identityCacheSize": {
+        "raw": "140",
+        "value": 140,
+        "unit": "count"
+      },
+      "subtypeCacheSize": {
+        "raw": "21",
+        "value": 21,
+        "unit": "count"
+      },
+      "strictSubtypeCacheSize": {
+        "raw": "531",
+        "value": 531,
+        "unit": "count"
+      },
+      "iOReadTime": {
+        "raw": "0.12s",
+        "value": 0.12,
+        "unit": "seconds"
+      },
+      "parseTime": {
+        "raw": "0.19s",
+        "value": 0.19,
+        "unit": "seconds"
+      },
+      "resolveModuleTime": {
+        "raw": "0.07s",
+        "value": 0.07,
+        "unit": "seconds"
+      },
+      "resolveTypeReferenceTime": {
+        "raw": "0.00s",
+        "value": 0,
+        "unit": "seconds"
+      },
+      "resolveLibraryTime": {
+        "raw": "0.00s",
+        "value": 0,
+        "unit": "seconds"
+      },
+      "programTime": {
+        "raw": "0.43s",
+        "value": 0.43,
+        "unit": "seconds"
+      },
+      "bindTime": {
+        "raw": "0.10s",
+        "value": 0.1,
+        "unit": "seconds"
+      },
+      "checkTime": {
+        "raw": "2.13s",
+        "value": 2.13,
+        "unit": "seconds"
+      },
+      "transformTimeTime": {
+        "raw": "0.04s",
+        "value": 0.04,
+        "unit": "seconds"
+      },
+      "sourceMapTime": {
+        "raw": "0.01s",
+        "value": 0.01,
+        "unit": "seconds"
+      },
+      "commentTimeTime": {
+        "raw": "0.01s",
+        "value": 0.01,
+        "unit": "seconds"
+      },
+      "iOWriteTime": {
+        "raw": "0.07s",
+        "value": 0.07,
+        "unit": "seconds"
+      },
+      "printTimeTime": {
+        "raw": "0.16s",
+        "value": 0.16,
+        "unit": "seconds"
+      },
+      "emitTime": {
+        "raw": "0.16s",
+        "value": 0.16,
+        "unit": "seconds"
+      },
+      "totalTime": {
+        "raw": "2.82s",
+        "value": 2.82,
+        "unit": "seconds"
+      }
+    }
+  },
+  {
+    "schemaVersion": 1,
+    "mode": "extendedDiagnostics",
+    "targetRoot": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/projects/test-lib-1",
+    "targetName": "test-lib-1",
+    "project": "tsconfig.step2.json",
+    "note": "Extract shared helper types",
+    "generatedAt": "2026-07-12T23:19:02.587Z",
+    "command": [
+      "/Users/michael_hladky/.nvm/versions/node/v24.1.0/bin/node",
+      "/Users/michael_hladky/WebstormProjects/ts-perf-ws/node_modules/typescript/bin/tsc",
+      "--project",
+      "tsconfig.step2.json",
+      "--extendedDiagnostics",
+      "--pretty",
+      "false"
+    ],
+    "cwd": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/projects/test-lib-1",
+    "startedAt": "2026-07-12T23:19:00.000Z",
+    "finishedAt": "2026-07-12T23:19:02.547Z",
+    "durationMs": 2547.160233,
+    "exitCode": 2,
+    "signal": null,
+    "metrics": {
+      "srcExamples09WorkspacePackageAsSourceConsumerExampleTs833": {
+        "raw": "error TS2307: Cannot find module '@workspace/config' or its corresponding type declarations.",
+        "value": "error TS2307: Cannot find module '@workspace/config' or its corresponding type declarations."
+      },
+      "files": {
+        "raw": "871",
+        "value": 871,
+        "unit": "count"
+      },
+      "linesOfLibrary": {
+        "raw": "9894",
+        "value": 9894,
+        "unit": "count"
+      },
+      "linesOfDefinitions": {
+        "raw": "113104",
+        "value": 113104,
+        "unit": "count"
+      },
+      "linesOfTypeScript": {
+        "raw": "11533",
+        "value": 11533,
+        "unit": "count"
+      },
+      "linesOfJavaScript": {
+        "raw": "0",
+        "value": 0,
+        "unit": "count"
+      },
+      "linesOfJSON": {
+        "raw": "0",
+        "value": 0,
+        "unit": "count"
+      },
+      "linesOfOther": {
+        "raw": "0",
+        "value": 0,
+        "unit": "count"
+      },
+      "identifiers": {
+        "raw": "131594",
+        "value": 131594,
+        "unit": "count"
+      },
+      "symbols": {
+        "raw": "835780",
+        "value": 835780,
+        "unit": "count"
+      },
+      "types": {
+        "raw": "444786",
+        "value": 444786,
+        "unit": "count"
+      },
+      "instantiations": {
+        "raw": "624890",
+        "value": 624890,
+        "unit": "count"
+      },
+      "memoryUsed": {
+        "raw": "602501K",
+        "value": 602501,
+        "unit": "KiB"
+      },
+      "assignabilityCacheSize": {
+        "raw": "197860",
+        "value": 197860,
+        "unit": "count"
+      },
+      "identityCacheSize": {
+        "raw": "114",
+        "value": 114,
+        "unit": "count"
+      },
+      "subtypeCacheSize": {
+        "raw": "22",
+        "value": 22,
+        "unit": "count"
+      },
+      "strictSubtypeCacheSize": {
+        "raw": "425",
+        "value": 425,
+        "unit": "count"
+      },
+      "iOReadTime": {
+        "raw": "0.12s",
+        "value": 0.12,
+        "unit": "seconds"
+      },
+      "parseTime": {
+        "raw": "0.19s",
+        "value": 0.19,
+        "unit": "seconds"
+      },
+      "resolveModuleTime": {
+        "raw": "0.06s",
+        "value": 0.06,
+        "unit": "seconds"
+      },
+      "resolveTypeReferenceTime": {
+        "raw": "0.00s",
+        "value": 0,
+        "unit": "seconds"
+      },
+      "resolveLibraryTime": {
+        "raw": "0.00s",
+        "value": 0,
+        "unit": "seconds"
+      },
+      "programTime": {
+        "raw": "0.42s",
+        "value": 0.42,
+        "unit": "seconds"
+      },
+      "bindTime": {
+        "raw": "0.10s",
+        "value": 0.1,
+        "unit": "seconds"
+      },
+      "checkTime": {
+        "raw": "1.76s",
+        "value": 1.76,
+        "unit": "seconds"
+      },
+      "transformTimeTime": {
+        "raw": "0.04s",
+        "value": 0.04,
+        "unit": "seconds"
+      },
+      "sourceMapTime": {
+        "raw": "0.01s",
+        "value": 0.01,
+        "unit": "seconds"
+      },
+      "commentTimeTime": {
+        "raw": "0.01s",
+        "value": 0.01,
+        "unit": "seconds"
+      },
+      "iOWriteTime": {
+        "raw": "0.06s",
+        "value": 0.06,
+        "unit": "seconds"
+      },
+      "printTimeTime": {
+        "raw": "0.16s",
+        "value": 0.16,
+        "unit": "seconds"
+      },
+      "emitTime": {
+        "raw": "0.16s",
+        "value": 0.16,
+        "unit": "seconds"
+      },
+      "totalTime": {
+        "raw": "2.44s",
+        "value": 2.44,
+        "unit": "seconds"
+      }
+    }
+  },
+  {
+    "schemaVersion": 1,
+    "mode": "extendedDiagnostics",
+    "targetRoot": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/projects/test-lib-1",
+    "targetName": "test-lib-1",
+    "project": "tsconfig.step3.json",
+    "note": "Replace intersections with interfaces",
+    "generatedAt": "2026-07-12T23:24:02.209Z",
+    "command": [
+      "/Users/michael_hladky/.nvm/versions/node/v24.1.0/bin/node",
+      "/Users/michael_hladky/WebstormProjects/ts-perf-ws/node_modules/typescript/bin/tsc",
+      "--project",
+      "tsconfig.step3.json",
+      "--extendedDiagnostics",
+      "--pretty",
+      "false"
+    ],
+    "cwd": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/projects/test-lib-1",
+    "startedAt": "2026-07-12T23:24:00.000Z",
+    "finishedAt": "2026-07-12T23:24:02.169Z",
+    "durationMs": 2169.317217,
+    "exitCode": 2,
+    "signal": null,
+    "metrics": {
+      "srcExamples09WorkspacePackageAsSourceConsumerExampleTs833": {
+        "raw": "error TS2307: Cannot find module '@workspace/config' or its corresponding type declarations.",
+        "value": "error TS2307: Cannot find module '@workspace/config' or its corresponding type declarations."
+      },
+      "files": {
+        "raw": "871",
+        "value": 871,
+        "unit": "count"
+      },
+      "linesOfLibrary": {
+        "raw": "9894",
+        "value": 9894,
+        "unit": "count"
+      },
+      "linesOfDefinitions": {
+        "raw": "113104",
+        "value": 113104,
+        "unit": "count"
+      },
+      "linesOfTypeScript": {
+        "raw": "11533",
+        "value": 11533,
+        "unit": "count"
+      },
+      "linesOfJavaScript": {
+        "raw": "0",
+        "value": 0,
+        "unit": "count"
+      },
+      "linesOfJSON": {
+        "raw": "0",
+        "value": 0,
+        "unit": "count"
+      },
+      "linesOfOther": {
+        "raw": "0",
+        "value": 0,
+        "unit": "count"
+      },
+      "identifiers": {
+        "raw": "131604",
+        "value": 131604,
+        "unit": "count"
+      },
+      "symbols": {
+        "raw": "653636",
+        "value": 653636,
+        "unit": "count"
+      },
+      "types": {
+        "raw": "338791",
+        "value": 338791,
+        "unit": "count"
+      },
+      "instantiations": {
+        "raw": "508885",
+        "value": 508885,
+        "unit": "count"
+      },
+      "memoryUsed": {
+        "raw": "500932K",
+        "value": 500932,
+        "unit": "KiB"
+      },
+      "assignabilityCacheSize": {
+        "raw": "153192",
+        "value": 153192,
+        "unit": "count"
+      },
+      "identityCacheSize": {
+        "raw": "88",
+        "value": 88,
+        "unit": "count"
+      },
+      "subtypeCacheSize": {
+        "raw": "23",
+        "value": 23,
+        "unit": "count"
+      },
+      "strictSubtypeCacheSize": {
+        "raw": "319",
+        "value": 319,
+        "unit": "count"
+      },
+      "iOReadTime": {
+        "raw": "0.12s",
+        "value": 0.12,
+        "unit": "seconds"
+      },
+      "parseTime": {
+        "raw": "0.19s",
+        "value": 0.19,
+        "unit": "seconds"
+      },
+      "resolveModuleTime": {
+        "raw": "0.06s",
+        "value": 0.06,
+        "unit": "seconds"
+      },
+      "resolveTypeReferenceTime": {
+        "raw": "0.00s",
+        "value": 0,
+        "unit": "seconds"
+      },
+      "resolveLibraryTime": {
+        "raw": "0.00s",
+        "value": 0,
+        "unit": "seconds"
+      },
+      "programTime": {
+        "raw": "0.41s",
+        "value": 0.41,
+        "unit": "seconds"
+      },
+      "bindTime": {
+        "raw": "0.10s",
+        "value": 0.1,
+        "unit": "seconds"
+      },
+      "checkTime": {
+        "raw": "1.39s",
+        "value": 1.39,
+        "unit": "seconds"
+      },
+      "transformTimeTime": {
+        "raw": "0.04s",
+        "value": 0.04,
+        "unit": "seconds"
+      },
+      "sourceMapTime": {
+        "raw": "0.01s",
+        "value": 0.01,
+        "unit": "seconds"
+      },
+      "commentTimeTime": {
+        "raw": "0.01s",
+        "value": 0.01,
+        "unit": "seconds"
+      },
+      "iOWriteTime": {
+        "raw": "0.06s",
+        "value": 0.06,
+        "unit": "seconds"
+      },
+      "printTimeTime": {
+        "raw": "0.16s",
+        "value": 0.16,
+        "unit": "seconds"
+      },
+      "emitTime": {
+        "raw": "0.16s",
+        "value": 0.16,
+        "unit": "seconds"
+      },
+      "totalTime": {
+        "raw": "2.07s",
+        "value": 2.07,
+        "unit": "seconds"
+      }
+    }
+  },
+  {
+    "schemaVersion": 1,
+    "mode": "extendedDiagnostics",
+    "targetRoot": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/projects/test-lib-1",
+    "targetName": "test-lib-1",
+    "project": "tsconfig.step4.json",
+    "note": "Simplify conditional types",
+    "generatedAt": "2026-07-12T23:29:01.831Z",
+    "command": [
+      "/Users/michael_hladky/.nvm/versions/node/v24.1.0/bin/node",
+      "/Users/michael_hladky/WebstormProjects/ts-perf-ws/node_modules/typescript/bin/tsc",
+      "--project",
+      "tsconfig.step4.json",
+      "--extendedDiagnostics",
+      "--pretty",
+      "false"
+    ],
+    "cwd": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/projects/test-lib-1",
+    "startedAt": "2026-07-12T23:29:00.000Z",
+    "finishedAt": "2026-07-12T23:29:01.791Z",
+    "durationMs": 1791.4742,
+    "exitCode": 2,
+    "signal": null,
+    "metrics": {
+      "srcExamples09WorkspacePackageAsSourceConsumerExampleTs833": {
+        "raw": "error TS2307: Cannot find module '@workspace/config' or its corresponding type declarations.",
+        "value": "error TS2307: Cannot find module '@workspace/config' or its corresponding type declarations."
+      },
+      "files": {
+        "raw": "871",
+        "value": 871,
+        "unit": "count"
+      },
+      "linesOfLibrary": {
+        "raw": "9894",
+        "value": 9894,
+        "unit": "count"
+      },
+      "linesOfDefinitions": {
+        "raw": "113104",
+        "value": 113104,
+        "unit": "count"
+      },
+      "linesOfTypeScript": {
+        "raw": "11532",
+        "value": 11532,
+        "unit": "count"
+      },
+      "linesOfJavaScript": {
+        "raw": "0",
+        "value": 0,
+        "unit": "count"
+      },
+      "linesOfJSON": {
+        "raw": "0",
+        "value": 0,
+        "unit": "count"
+      },
+      "linesOfOther": {
+        "raw": "0",
+        "value": 0,
+        "unit": "count"
+      },
+      "identifiers": {
+        "raw": "131615",
+        "value": 131615,
+        "unit": "count"
+      },
+      "symbols": {
+        "raw": "471491",
+        "value": 471491,
+        "unit": "count"
+      },
+      "types": {
+        "raw": "232797",
+        "value": 232797,
+        "unit": "count"
+      },
+      "instantiations": {
+        "raw": "392879",
+        "value": 392879,
+        "unit": "count"
+      },
+      "memoryUsed": {
+        "raw": "399363K",
+        "value": 399363,
+        "unit": "KiB"
+      },
+      "assignabilityCacheSize": {
+        "raw": "108523",
+        "value": 108523,
+        "unit": "count"
+      },
+      "identityCacheSize": {
+        "raw": "62",
+        "value": 62,
+        "unit": "count"
+      },
+      "subtypeCacheSize": {
+        "raw": "23",
+        "value": 23,
+        "unit": "count"
+      },
+      "strictSubtypeCacheSize": {
+        "raw": "213",
+        "value": 213,
+        "unit": "count"
+      },
+      "iOReadTime": {
+        "raw": "0.11s",
+        "value": 0.11,
+        "unit": "seconds"
+      },
+      "parseTime": {
+        "raw": "0.19s",
+        "value": 0.19,
+        "unit": "seconds"
+      },
+      "resolveModuleTime": {
+        "raw": "0.05s",
+        "value": 0.05,
+        "unit": "seconds"
+      },
+      "resolveTypeReferenceTime": {
+        "raw": "0.00s",
+        "value": 0,
+        "unit": "seconds"
+      },
+      "resolveLibraryTime": {
+        "raw": "0.00s",
+        "value": 0,
+        "unit": "seconds"
+      },
+      "programTime": {
+        "raw": "0.41s",
+        "value": 0.41,
+        "unit": "seconds"
+      },
+      "bindTime": {
+        "raw": "0.10s",
+        "value": 0.1,
+        "unit": "seconds"
+      },
+      "checkTime": {
+        "raw": "1.03s",
+        "value": 1.03,
+        "unit": "seconds"
+      },
+      "transformTimeTime": {
+        "raw": "0.04s",
+        "value": 0.04,
+        "unit": "seconds"
+      },
+      "sourceMapTime": {
+        "raw": "0.01s",
+        "value": 0.01,
+        "unit": "seconds"
+      },
+      "commentTimeTime": {
+        "raw": "0.01s",
+        "value": 0.01,
+        "unit": "seconds"
+      },
+      "iOWriteTime": {
+        "raw": "0.05s",
+        "value": 0.05,
+        "unit": "seconds"
+      },
+      "printTimeTime": {
+        "raw": "0.15s",
+        "value": 0.15,
+        "unit": "seconds"
+      },
+      "emitTime": {
+        "raw": "0.15s",
+        "value": 0.15,
+        "unit": "seconds"
+      },
+      "totalTime": {
+        "raw": "1.69s",
+        "value": 1.69,
+        "unit": "seconds"
+      }
+    }
+  },
+  {
+    "schemaVersion": 1,
+    "mode": "extendedDiagnostics",
+    "targetRoot": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/projects/test-lib-1",
+    "targetName": "test-lib-1",
+    "project": "tsconfig.step5.json",
+    "note": "Cache repeated type computations",
+    "generatedAt": "2026-07-12T23:34:01.453Z",
+    "command": [
+      "/Users/michael_hladky/.nvm/versions/node/v24.1.0/bin/node",
+      "/Users/michael_hladky/WebstormProjects/ts-perf-ws/node_modules/typescript/bin/tsc",
+      "--project",
+      "tsconfig.step5.json",
+      "--extendedDiagnostics",
+      "--pretty",
+      "false"
+    ],
+    "cwd": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/projects/test-lib-1",
+    "startedAt": "2026-07-12T23:34:00.000Z",
+    "finishedAt": "2026-07-12T23:34:01.413Z",
+    "durationMs": 1413.631184,
+    "exitCode": 2,
+    "signal": null,
+    "metrics": {
+      "srcExamples09WorkspacePackageAsSourceConsumerExampleTs833": {
+        "raw": "error TS2307: Cannot find module '@workspace/config' or its corresponding type declarations.",
+        "value": "error TS2307: Cannot find module '@workspace/config' or its corresponding type declarations."
+      },
+      "files": {
+        "raw": "871",
+        "value": 871,
+        "unit": "count"
+      },
+      "linesOfLibrary": {
+        "raw": "9894",
+        "value": 9894,
+        "unit": "count"
+      },
+      "linesOfDefinitions": {
+        "raw": "113104",
+        "value": 113104,
+        "unit": "count"
+      },
+      "linesOfTypeScript": {
+        "raw": "11532",
+        "value": 11532,
+        "unit": "count"
+      },
+      "linesOfJavaScript": {
+        "raw": "0",
+        "value": 0,
+        "unit": "count"
+      },
+      "linesOfJSON": {
+        "raw": "0",
+        "value": 0,
+        "unit": "count"
+      },
+      "linesOfOther": {
+        "raw": "0",
+        "value": 0,
+        "unit": "count"
+      },
+      "identifiers": {
+        "raw": "131625",
+        "value": 131625,
+        "unit": "count"
+      },
+      "symbols": {
+        "raw": "289347",
+        "value": 289347,
+        "unit": "count"
+      },
+      "types": {
+        "raw": "126802",
+        "value": 126802,
+        "unit": "count"
+      },
+      "instantiations": {
+        "raw": "276874",
+        "value": 276874,
+        "unit": "count"
+      },
+      "memoryUsed": {
+        "raw": "297794K",
+        "value": 297794,
+        "unit": "KiB"
+      },
+      "assignabilityCacheSize": {
+        "raw": "63855",
+        "value": 63855,
+        "unit": "count"
+      },
+      "identityCacheSize": {
+        "raw": "36",
+        "value": 36,
+        "unit": "count"
+      },
+      "subtypeCacheSize": {
+        "raw": "24",
+        "value": 24,
+        "unit": "count"
+      },
+      "strictSubtypeCacheSize": {
+        "raw": "107",
+        "value": 107,
+        "unit": "count"
+      },
+      "iOReadTime": {
+        "raw": "0.11s",
+        "value": 0.11,
+        "unit": "seconds"
+      },
+      "parseTime": {
+        "raw": "0.19s",
+        "value": 0.19,
+        "unit": "seconds"
+      },
+      "resolveModuleTime": {
+        "raw": "0.05s",
+        "value": 0.05,
+        "unit": "seconds"
+      },
+      "resolveTypeReferenceTime": {
+        "raw": "0.00s",
+        "value": 0,
+        "unit": "seconds"
+      },
+      "resolveLibraryTime": {
+        "raw": "0.00s",
+        "value": 0,
+        "unit": "seconds"
+      },
+      "programTime": {
+        "raw": "0.40s",
+        "value": 0.4,
+        "unit": "seconds"
+      },
+      "bindTime": {
+        "raw": "0.10s",
+        "value": 0.1,
+        "unit": "seconds"
+      },
+      "checkTime": {
+        "raw": "0.66s",
+        "value": 0.66,
+        "unit": "seconds"
+      },
+      "transformTimeTime": {
+        "raw": "0.04s",
+        "value": 0.04,
+        "unit": "seconds"
+      },
+      "sourceMapTime": {
+        "raw": "0.01s",
+        "value": 0.01,
+        "unit": "seconds"
+      },
+      "commentTimeTime": {
+        "raw": "0.01s",
+        "value": 0.01,
+        "unit": "seconds"
+      },
+      "iOWriteTime": {
+        "raw": "0.05s",
+        "value": 0.05,
+        "unit": "seconds"
+      },
+      "printTimeTime": {
+        "raw": "0.15s",
+        "value": 0.15,
+        "unit": "seconds"
+      },
+      "emitTime": {
+        "raw": "0.15s",
+        "value": 0.15,
+        "unit": "seconds"
+      },
+      "totalTime": {
+        "raw": "1.32s",
+        "value": 1.32,
+        "unit": "seconds"
+      }
+    }
+  },
+  {
+    "schemaVersion": 1,
+    "mode": "extendedDiagnostics",
+    "targetRoot": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/projects/test-lib-1",
+    "targetName": "test-lib-1",
+    "project": "tsconfig.fixed.json",
+    "note": "Final optimized version",
+    "generatedAt": "2026-07-12T23:39:01.075Z",
+    "command": [
+      "/Users/michael_hladky/.nvm/versions/node/v24.1.0/bin/node",
+      "/Users/michael_hladky/WebstormProjects/ts-perf-ws/node_modules/typescript/bin/tsc",
+      "--project",
+      "tsconfig.fixed.json",
+      "--extendedDiagnostics",
+      "--pretty",
+      "false"
+    ],
+    "cwd": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/projects/test-lib-1",
+    "startedAt": "2026-07-12T23:39:00.000Z",
+    "finishedAt": "2026-07-12T23:39:01.035Z",
+    "durationMs": 1035.788167,
+    "exitCode": 2,
+    "signal": null,
+    "metrics": {
+      "srcExamples09WorkspacePackageAsSourceConsumerExampleTs833": {
+        "raw": "error TS2307: Cannot find module '@workspace/config' or its corresponding type declarations.",
+        "value": "error TS2307: Cannot find module '@workspace/config' or its corresponding type declarations."
+      },
+      "files": {
+        "raw": "871",
+        "value": 871,
+        "unit": "count"
+      },
+      "linesOfLibrary": {
+        "raw": "9894",
+        "value": 9894,
+        "unit": "count"
+      },
+      "linesOfDefinitions": {
+        "raw": "113104",
+        "value": 113104,
+        "unit": "count"
+      },
+      "linesOfTypeScript": {
+        "raw": "11531",
+        "value": 11531,
+        "unit": "count"
+      },
+      "linesOfJavaScript": {
+        "raw": "0",
+        "value": 0,
+        "unit": "count"
+      },
+      "linesOfJSON": {
+        "raw": "0",
+        "value": 0,
+        "unit": "count"
+      },
+      "linesOfOther": {
+        "raw": "0",
+        "value": 0,
+        "unit": "count"
+      },
+      "identifiers": {
+        "raw": "131635",
+        "value": 131635,
+        "unit": "count"
+      },
+      "symbols": {
+        "raw": "107202",
+        "value": 107202,
+        "unit": "count"
+      },
+      "types": {
+        "raw": "20808",
+        "value": 20808,
+        "unit": "count"
+      },
+      "instantiations": {
+        "raw": "160869",
+        "value": 160869,
+        "unit": "count"
+      },
+      "memoryUsed": {
+        "raw": "196225K",
+        "value": 196225,
+        "unit": "KiB"
+      },
+      "assignabilityCacheSize": {
+        "raw": "19187",
+        "value": 19187,
+        "unit": "count"
+      },
+      "identityCacheSize": {
+        "raw": "10",
+        "value": 10,
+        "unit": "count"
+      },
+      "subtypeCacheSize": {
+        "raw": "25",
+        "value": 25,
+        "unit": "count"
+      },
+      "strictSubtypeCacheSize": {
+        "raw": "1",
+        "value": 1,
+        "unit": "count"
+      },
+      "iOReadTime": {
+        "raw": "0.11s",
+        "value": 0.11,
+        "unit": "seconds"
+      },
+      "parseTime": {
+        "raw": "0.19s",
+        "value": 0.19,
+        "unit": "seconds"
+      },
+      "resolveModuleTime": {
+        "raw": "0.04s",
+        "value": 0.04,
+        "unit": "seconds"
+      },
+      "resolveTypeReferenceTime": {
+        "raw": "0.00s",
+        "value": 0,
+        "unit": "seconds"
+      },
+      "resolveLibraryTime": {
+        "raw": "0.00s",
+        "value": 0,
+        "unit": "seconds"
+      },
+      "programTime": {
+        "raw": "0.39s",
+        "value": 0.39,
+        "unit": "seconds"
+      },
+      "bindTime": {
+        "raw": "0.10s",
+        "value": 0.1,
+        "unit": "seconds"
+      },
+      "checkTime": {
+        "raw": "0.29s",
+        "value": 0.29,
+        "unit": "seconds"
+      },
+      "transformTimeTime": {
+        "raw": "0.04s",
+        "value": 0.04,
+        "unit": "seconds"
+      },
+      "sourceMapTime": {
+        "raw": "0.01s",
+        "value": 0.01,
+        "unit": "seconds"
+      },
+      "commentTimeTime": {
+        "raw": "0.01s",
+        "value": 0.01,
+        "unit": "seconds"
+      },
+      "iOWriteTime": {
+        "raw": "0.04s",
+        "value": 0.04,
+        "unit": "seconds"
+      },
+      "printTimeTime": {
+        "raw": "0.15s",
+        "value": 0.15,
+        "unit": "seconds"
+      },
+      "emitTime": {
+        "raw": "0.15s",
+        "value": 0.15,
+        "unit": "seconds"
+      },
+      "totalTime": {
+        "raw": "0.94s",
+        "value": 0.94,
+        "unit": "seconds"
+      }
+    }
+  }
+];
+
+let reports = [];
+let plots = [];
+let selectedIds = [];
+let currentSelected = [];
+let currentProject = null;
+let projectListOpen = false;
+
+const metricDefs = {
+  durationMs: {label:"Wall duration", unit:"ms", getter:r=>num(r.durationMs)},
+  totalTime: {label:"Compiler total", unit:"ms", getter:r=>metric(r,"totalTime")*1000},
+  programTime: {label:"Program time", unit:"ms", getter:r=>metric(r,"programTime")*1000},
+  parseTime: {label:"Parse time", unit:"ms", getter:r=>metric(r,"parseTime")*1000},
+  bindTime: {label:"Bind time", unit:"ms", getter:r=>metric(r,"bindTime")*1000},
+  checkTime: {label:"Check time", unit:"ms", getter:r=>metric(r,"checkTime")*1000},
+  emitTime: {label:"Emit time", unit:"ms", getter:r=>metric(r,"emitTime")*1000},
+  memoryUsed: {label:"Memory", unit:"MiB", getter:r=>metric(r,"memoryUsed")/1024},
+  files: {label:"Files", unit:"count", getter:r=>metric(r,"files")},
+  types: {label:"Types", unit:"count", getter:r=>metric(r,"types")},
+  instantiations: {label:"Instantiations", unit:"count", getter:r=>metric(r,"instantiations")}
+};
+
+// Full metric set for the "Impact against baseline" grid — scoped to that
+// section only, so it doesn't add options to the trend dropdown or summary
+// cards, which intentionally stay on the smaller metricDefs above.
+const insightGroups = [
+  { key:"scale", label:"Program scale", metrics:["files","linesOfLibrary","linesOfDefinitions","linesOfTypeScript","linesOfJavaScript","linesOfJSON","linesOfOther","identifiers"] },
+  { key:"typesys", label:"Type system", metrics:["symbols","types","instantiations"] },
+  { key:"cache", label:"Caches & memory", metrics:["memoryUsed","assignabilityCacheSize","identityCacheSize","subtypeCacheSize","strictSubtypeCacheSize"] },
+  { key:"timing", label:"Phase timings", metrics:["iOReadTime","parseTime","resolveTypeReferenceTime","resolveModuleTime","resolveLibraryTime","programTime","bindTime","checkTime","transformTimeTime","sourceMapTime","commentTimeTime","iOWriteTime","printTimeTime","emitTime","totalTime"] },
+];
+const msMetric = k => r => metric(r,k) * 1000;
+const insightMetricDefs = {
+  files: {label:"Files", unit:"count", getter:r=>metric(r,"files")},
+  linesOfLibrary: {label:"Lib lines", unit:"count", getter:r=>metric(r,"linesOfLibrary")},
+  linesOfDefinitions: {label:".d.ts lines", unit:"count", getter:r=>metric(r,"linesOfDefinitions")},
+  linesOfTypeScript: {label:".ts lines", unit:"count", getter:r=>metric(r,"linesOfTypeScript")},
+  linesOfJavaScript: {label:".js lines", unit:"count", getter:r=>metric(r,"linesOfJavaScript")},
+  linesOfJSON: {label:".json lines", unit:"count", getter:r=>metric(r,"linesOfJSON")},
+  linesOfOther: {label:"Other lines", unit:"count", getter:r=>metric(r,"linesOfOther")},
+  identifiers: {label:"Identifiers", unit:"count", getter:r=>metric(r,"identifiers")},
+  symbols: {label:"Symbols", unit:"count", getter:r=>metric(r,"symbols")},
+  types: {label:"Types", unit:"count", getter:r=>metric(r,"types")},
+  instantiations: {label:"Instantiations", unit:"count", getter:r=>metric(r,"instantiations")},
+  memoryUsed: {label:"Memory", unit:"MiB", getter:r=>metric(r,"memoryUsed")/1024},
+  assignabilityCacheSize: {label:"Assignability cache", unit:"count", getter:r=>metric(r,"assignabilityCacheSize")},
+  identityCacheSize: {label:"Identity cache", unit:"count", getter:r=>metric(r,"identityCacheSize")},
+  subtypeCacheSize: {label:"Subtype cache", unit:"count", getter:r=>metric(r,"subtypeCacheSize")},
+  strictSubtypeCacheSize: {label:"Strict subtype cache", unit:"count", getter:r=>metric(r,"strictSubtypeCacheSize")},
+  iOReadTime: {label:"I/O read", unit:"ms", getter:msMetric("iOReadTime")},
+  parseTime: {label:"Parse", unit:"ms", getter:msMetric("parseTime")},
+  resolveTypeReferenceTime: {label:"Resolve type ref", unit:"ms", getter:msMetric("resolveTypeReferenceTime")},
+  resolveModuleTime: {label:"Resolve module", unit:"ms", getter:msMetric("resolveModuleTime")},
+  resolveLibraryTime: {label:"Resolve library", unit:"ms", getter:msMetric("resolveLibraryTime")},
+  programTime: {label:"Program", unit:"ms", getter:msMetric("programTime")},
+  bindTime: {label:"Bind", unit:"ms", getter:msMetric("bindTime")},
+  checkTime: {label:"Check", unit:"ms", getter:msMetric("checkTime")},
+  transformTimeTime: {label:"Transform", unit:"ms", getter:msMetric("transformTimeTime")},
+  sourceMapTime: {label:"Source map", unit:"ms", getter:msMetric("sourceMapTime")},
+  commentTimeTime: {label:"Comments", unit:"ms", getter:msMetric("commentTimeTime")},
+  iOWriteTime: {label:"I/O write", unit:"ms", getter:msMetric("iOWriteTime")},
+  printTimeTime: {label:"Print", unit:"ms", getter:msMetric("printTimeTime")},
+  emitTime: {label:"Emit", unit:"ms", getter:msMetric("emitTime")},
+  totalTime: {label:"Total", unit:"ms", getter:msMetric("totalTime")},
+};
+const INSIGHT_DEFAULT_VISIBLE = ["types","instantiations","memoryUsed","checkTime","totalTime"];
+let insightVisible = new Set(INSIGHT_DEFAULT_VISIBLE);
+let insightSort = null; // {metric, variant:'value'|'delta', dir:'desc'|'asc'}
+
+const $ = s => document.querySelector(s);
+function num(v){ return Number.isFinite(Number(v)) ? Number(v) : 0; }
+function metric(r,k){ return num(r?.metrics?.[k]?.value); }
+function projectName(r){ return r.targetName || r.targetRoot || "Unknown project"; }
+function runDate(r){ const d=new Date(r.generatedAt || r.finishedAt || r.startedAt || Date.now()); return Number.isNaN(+d)?new Date():d; }
+function runLabel(r,i){ return `${r.note ? r.note + " · " : ""}${runDate(r).toLocaleString()} · ${metricDefs.totalTime.getter(r).toFixed(0)} ms`; }
+function idFor(r){ return [projectName(r),r.generatedAt||r.finishedAt||r.startedAt||"",r.durationMs||"",metric(r,"totalTime")].join("|"); }
+function validate(r){ return r && typeof r==="object" && r.metrics && (r.mode==="extendedDiagnostics" || "totalTime" in r.metrics); }
+function normalize(r){ return {...r, targetName:projectName(r), generatedAt:runDate(r).toISOString(), __id:idFor(r)}; }
+
+function addReports(items){
+  const map=new Map(reports.map(r=>[r.__id,r]));
+  items.filter(validate).map(normalize).forEach(r=>map.set(r.__id,r));
+  reports=[...map.values()].sort((a,b)=>runDate(a)-runDate(b));
+  selectedIds=[];
+  render();
+}
+
+async function importFiles(files){
+  const good=[]; const bad=[];
+  for(const file of files){
+    try {
+      const parsed=JSON.parse(await file.text());
+      const candidates=Array.isArray(parsed)?parsed:(Array.isArray(parsed.reports)?parsed.reports:[parsed]);
+      candidates.filter(validate).forEach(r=>good.push(r));
+      if(!candidates.some(validate)) bad.push(file.name);
+    } catch { bad.push(file.name); }
+  }
+  addReports(good);
+  if(bad.length) alert(`Could not import: ${bad.join(", ")}`);
+}
+
+function render(){
+  plots.forEach(p=>p.remove()); plots=[];
+  $("#emptyState").classList.toggle("hidden", reports.length>0);
+  $("#dashboard").classList.toggle("hidden", reports.length===0);
+  if(!reports.length) return;
+
+  const projects=[...new Set(reports.map(projectName))];
+  currentProject=projects.includes(currentProject)?currentProject:projects[0];
+  document.getElementById("pageTitle").textContent=`TypeScript Performance History – ${currentProject}`;
+  renderProjectList(projects);
+
+  const runs=reports.filter(r=>projectName(r)===currentProject).sort((a,b)=>runDate(a)-runDate(b));
+  renderSelectors(runs); renderDashboard(runs);
+}
+
+function renderProjectList(projects){
+  $("#projectSelectLabel").textContent=currentProject;
+  $("#projectListbox").innerHTML=projects.map((p,i)=>`<li role="option" id="projectOption-${i}" data-project="${esc(p)}" aria-selected="${p===currentProject}" class="cursor-pointer px-3 py-2" style="color:${p===currentProject?"var(--pb-secondary-400)":"var(--pb-text-inverse)"}; background:${p===currentProject?"rgba(215,0,51,.1)":"transparent"};">${esc(p)}</li>`).join("");
+  const activeIndex=Math.max(0, projects.indexOf(currentProject));
+  $("#projectSelect").setAttribute("aria-activedescendant", `projectOption-${activeIndex}`);
+}
+
+function selectProject(project){
+  if(project===currentProject || !project) return;
+  currentProject=project;
+  document.getElementById("pageTitle").textContent=`TypeScript Performance History – ${currentProject}`;
+  const projects=[...new Set(reports.map(projectName))];
+  renderProjectList(projects);
+  const runs=reports.filter(r=>projectName(r)===currentProject).sort((a,b)=>runDate(a)-runDate(b));
+  renderSelectors(runs); renderDashboard(runs);
+}
+
+function openProjectList(){
+  projectListOpen=true;
+  $("#projectListbox").classList.remove("hidden");
+  $("#projectSelect").setAttribute("aria-expanded","true");
+}
+
+function closeProjectList(){
+  projectListOpen=false;
+  $("#projectListbox").classList.add("hidden");
+  $("#projectSelect").setAttribute("aria-expanded","false");
+}
+
+function renderSelectors(runs){
+  // All runs are always in play — the first (oldest) run is the baseline.
+  selectedIds=runs.map(r=>r.__id);
+}
+
+function selectedRuns(runs){
+  return selectedIds.map(id=>runs.find(r=>r.__id===id)).filter(Boolean);
+}
+
+function renderDashboard(runs){
+  const selected=selectedRuns(runs);
+  const baseline=selected[0] || runs[0];
+  const latest=selected.at(-1) || baseline;
+  const keyMetrics=["durationMs","totalTime","checkTime","memoryUsed"];
+  $("#summaryCards").innerHTML=keyMetrics.map(k=>{
+    const def=metricDefs[k], a=def.getter(baseline), b=def.getter(latest), d=delta(a,b);
+    return `<article class="pb-card pb-summary-card"><p class="pb-card-label">${def.label}</p><div class="pb-summary-row"><span class="pb-card-value">${formatValue(b,def.unit)}</span><span class="${goodClass(d,k!=="files")}" style="font-size:.7rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${deltaText(a,b,def.unit)} vs baseline</span></div><p class="pb-card-hint" style="margin-top:.1rem;">${selected.length || 1} runs selected</p></article>`;
+  }).join("");
+  currentSelected=selected;
+  renderPhaseTimingChart(selected); renderInsights(selected);
+}
+
+function addPlot(sel,plot,label){ plot.setAttribute("aria-label",label); $(sel).replaceChildren(plot); plots.push(plot); }
+
+// "Compiler phases by run" stacked chart — same Time/Size/Memory metric
+// selector, per-category color palette, and true leaf-level phase set (no
+// "Program", since it's a cumulative bucket already covering I/O
+// Read/Parse/Resolve*, and stacking it too would double count) as
+// container/phase-timings-panel.html's "Compiler phases by solution" chart,
+// applied to selected runs instead of solutions.
+const COMPILER_PHASE_DEFS=[
+  { key:"iOReadTime", label:"I/O Read" },
+  { key:"parseTime", label:"Parse" },
+  { key:"resolveModuleTime", label:"Resolve module" },
+  { key:"resolveTypeReferenceTime", label:"Resolve type ref" },
+  { key:"resolveLibraryTime", label:"Resolve library" },
+  { key:"bindTime", label:"Bind" },
+  { key:"checkTime", label:"Check" },
+  { key:"printTimeTime", label:"Print" },
+  { key:"iOWriteTime", label:"I/O Write" },
+  { key:"emitTime", label:"Emit" }
+];
+const COMPILER_PHASES=COMPILER_PHASE_DEFS.map((phase,i)=>({ ...phase, color: PB_CHART_PALETTE[i] }));
+
+const LINE_DEFS=[
+  { key:"linesOfLibrary", label:"Library", color:"#38bdf8" },
+  { key:"linesOfDefinitions", label:"Definitions", color:"#875bf7" },
+  { key:"linesOfTypeScript", label:"TypeScript", color:"#22c55e" },
+  { key:"linesOfJavaScript", label:"JavaScript", color:"#fbbf24" },
+  { key:"linesOfJSON", label:"JSON", color:"#f472b6" },
+  { key:"linesOfOther", label:"Other", color:"#64748b" }
+];
+
+const CACHE_DEFS=[
+  { key:"assignabilityCacheSize", label:"Assignability cache", color:"#d70033" },
+  { key:"identityCacheSize", label:"Identity cache", color:"#a48afb" },
+  { key:"subtypeCacheSize", label:"Subtype cache", color:"#14b8a6" },
+  { key:"strictSubtypeCacheSize", label:"Strict subtype cache", color:"#fbbf24" }
+];
+
+function runShortLabel(r,i){ return r.note ? r.note : `Run ${i+1}`; }
+
+function phasesByRunPlotOptions(extra={}){
+  return { width: plotWidth("timingPlot"), height:420, marginLeft:56, marginRight:20, marginTop:12, marginBottom:90,
+    style:{ color:"#f8fafc", fontFamily:"Geist, ui-sans-serif, sans-serif", background:"transparent" }, ...extra };
+}
+
+function renderPhaseTimingChart(selected){
+  const metricKey=$("#timingChartMetric").value;
+  const runOrder=selected.map(runShortLabel);
+
+  if(metricKey === "size"){
+    const lineData=selected.flatMap((r,i)=>
+      LINE_DEFS.map(def=>({ run: runShortLabel(r,i), kind: def.label, lines: metric(r,def.key) }))
+        .filter(entry=>entry.lines>0)
+    );
+    mountPlot("timingPlot", Plot.plot({
+      ...phasesByRunPlotOptions(),
+      x:{ label:null, domain:runOrder, tickRotate:-35 },
+      y:{ label:"Lines", grid:true, tickFormat:"s" },
+      color:{ domain: LINE_DEFS.map(d=>d.label), range: LINE_DEFS.map(d=>d.color), legend:true },
+      marks:[
+        Plot.barY(lineData,{ x:"run", y:"lines", fill:"kind", tip:{ ...TIP_STYLE, format:{ x:true, y:v=>v.toLocaleString(), fill:true } } }),
+        Plot.ruleY([0])
+      ]
+    }));
+    return;
+  }
+
+  if(metricKey === "memory"){
+    const cacheData=selected.flatMap((r,i)=>
+      CACHE_DEFS.map(def=>({ run: runShortLabel(r,i), kind: def.label, entries: metric(r,def.key) }))
+        .filter(entry=>entry.entries>0)
+    );
+    mountPlot("timingPlot", Plot.plot({
+      ...phasesByRunPlotOptions(),
+      x:{ label:null, domain:runOrder, tickRotate:-35 },
+      y:{ label:"Cache entries", grid:true, tickFormat:"s" },
+      color:{ domain: CACHE_DEFS.map(d=>d.label), range: CACHE_DEFS.map(d=>d.color), legend:true },
+      marks:[
+        Plot.barY(cacheData,{ x:"run", y:"entries", fill:"kind", tip:{ ...TIP_STYLE, format:{ x:true, y:v=>v.toLocaleString(), fill:true } } }),
+        Plot.ruleY([0])
+      ]
+    }));
+    return;
+  }
+
+  const phaseData=selected.flatMap((r,i)=>
+    COMPILER_PHASES.map(phase=>({ run: runShortLabel(r,i), phase: phase.label, seconds: metric(r,phase.key) }))
+      .filter(entry=>entry.seconds>0.001)
+  );
+  mountPlot("timingPlot", Plot.plot({
+    ...phasesByRunPlotOptions(),
+    x:{ label:null, domain:runOrder, tickRotate:-35 },
+    y:{ label:"Seconds", grid:true, tickFormat:"s" },
+    color:{ domain: COMPILER_PHASES.map(p=>p.label), range: COMPILER_PHASES.map(p=>p.color), legend:true },
+    marks:[
+      Plot.barY(phaseData,{ x:"run", y:"seconds", fill:"phase", tip:{ ...TIP_STYLE, format:{ x:true, y:v=>`${v.toFixed(2)}s`, fill:true } } }),
+      Plot.ruleY([0])
+    ]
+  }));
+}
+function renderInsightFilters(selected){
+  $("#insightsFilters").innerHTML=insightGroups.map(g=>{
+    const chips=g.metrics.map(k=>{
+      const active=insightVisible.has(k);
+      return `<button type="button" data-metric="${k}" class="rounded-full px-2.5 py-1 font-mono text-xs transition" style="border:1px solid ${active?"rgba(135,91,247,.4)":"var(--pb-panel-border)"}; background:${active?"rgba(135,91,247,.12)":"rgba(0,0,0,.15)"}; color:${active?"var(--pb-primary-400)":"var(--pb-text-muted)"};">${esc(insightMetricDefs[k].label)}</button>`;
+    }).join('');
+    return `<div class="flex flex-wrap items-baseline gap-2"><span class="w-32 shrink-0 text-[10px] uppercase tracking-wider" style="color: var(--pb-text-muted);">${esc(g.label)}</span><div class="flex flex-wrap gap-1.5">${chips}</div></div>`;
+  }).join('');
+
+  document.querySelectorAll('#insightsFilters [data-metric]').forEach(btn=>{
+    btn.onclick=()=>{
+      const k=btn.dataset.metric;
+      if(insightVisible.has(k)) insightVisible.delete(k); else insightVisible.add(k);
+      renderInsights(selected);
+    };
+  });
+
+  $("#insightsPresetKey").onclick=()=>{ insightVisible=new Set(INSIGHT_DEFAULT_VISIBLE); renderInsights(selected); };
+  $("#insightsPresetAll").onclick=()=>{ insightVisible=new Set(Object.keys(insightMetricDefs)); renderInsights(selected); };
+  $("#insightsPresetNone").onclick=()=>{ insightVisible=new Set(); renderInsights(selected); };
+}
+
+function renderInsights(selected){
+  renderInsightFilters(selected);
+  if(selected.length<2){ $("#insights").innerHTML='<p class="text-sm" style="color: var(--pb-text-muted);">Select at least two diagnostics to calculate impact.</p>'; return; }
+  const baseline=selected[0];
+  const visibleMetrics=g=>g.metrics.filter(k=>insightVisible.has(k));
+
+  const sortIndicator=(k,variant)=>{
+    if(insightSort && insightSort.metric===k && insightSort.variant===variant) return insightSort.dir==='asc'?'▲':'▼';
+    return '↕';
+  };
+  const sortClass=(k,variant)=>{
+    const active=insightSort && insightSort.metric===k && insightSort.variant===variant;
+    return active?'style="color: var(--pb-secondary-400);"':'style="color: var(--pb-text-muted);"';
+  };
+
+  const groupRow=insightGroups.map(g=>{
+    const count=visibleMetrics(g).length;
+    return count===0?'':`<th colspan="${count*2}" class="whitespace-nowrap px-3 py-1.5 text-left text-[10px] font-semibold uppercase tracking-wider" style="color: var(--pb-text-muted);">${esc(g.label)}</th>`;
+  }).join('');
+
+  const metricRow=insightGroups.flatMap(g=>visibleMetrics(g).map(k=>{
+    const def=insightMetricDefs[k];
+    return `<th colspan="2" class="whitespace-nowrap px-3 py-1.5 text-left text-xs font-semibold" style="color: var(--pb-text-inverse);">${esc(def.label)} <span class="font-normal" style="color: var(--pb-text-muted);">${esc(def.unit)}</span></th>`;
+  })).join('');
+
+  const subRow=insightGroups.flatMap(g=>visibleMetrics(g).map(k=>
+    `<th data-metric="${k}" data-variant="value" class="cursor-pointer select-none whitespace-nowrap px-3 py-2 text-right text-xs font-semibold" ${sortClass(k,'value')}>value <span class="text-[9px]">${sortIndicator(k,'value')}</span></th>`+
+    `<th data-metric="${k}" data-variant="delta" class="cursor-pointer select-none whitespace-nowrap px-3 py-2 text-right text-xs font-semibold" ${sortClass(k,'delta')}>&Delta;% <span class="text-[9px]">${sortIndicator(k,'delta')}</span></th>`
+  )).join('');
+
+  let rows=[...selected];
+  if(insightSort){
+    const {metric:mk,variant,dir}=insightSort, def=insightMetricDefs[mk], baseVal=def.getter(baseline);
+    rows.sort((a,b)=>{
+      const av=variant==='value'?def.getter(a):delta(baseVal,def.getter(a));
+      const bv=variant==='value'?def.getter(b):delta(baseVal,def.getter(b));
+      if(av===null && bv===null) return 0;
+      if(av===null) return 1;
+      if(bv===null) return -1;
+      return dir==='asc'?av-bv:bv-av;
+    });
+  }
+
+  const bodyRows=rows.map(r=>{
+    const isBaseline=r.__id===baseline.__id, runIndex=selected.indexOf(r)+1;
+    const cells=insightGroups.flatMap(g=>visibleMetrics(g).map(k=>{
+      const def=insightMetricDefs[k], v=def.getter(r), base=def.getter(baseline), d=isBaseline?null:delta(base,v);
+      return `<td class="whitespace-nowrap px-3 py-2 text-right" style="color: var(--pb-text-inverse);">${formatValue(v,def.unit)}</td>`+
+             `<td class="whitespace-nowrap px-3 py-2 text-right text-xs ${isBaseline?'':goodClass(d,true)}" style="${isBaseline?'color: var(--pb-text-muted);':''}">${isBaseline?'—':d===null?'new':`${d>0?'+':''}${(d*100).toFixed(1)}%`}</td>`;
+    })).join('');
+    return `<tr class="border-t" style="border-color: var(--pb-panel-border);">
+      <td class="whitespace-nowrap px-3 py-2"><div class="text-sm font-semibold" style="color: var(--pb-text-inverse);">Run ${runIndex}${isBaseline?` <span class="${badgeClass('baseline')}">baseline</span>`:''}</div><div class="text-xs" style="color: var(--pb-text-muted);">${esc(r.note||"Diagnostics run")}</div></td>
+      ${cells}
+    </tr>`;
+  }).join('');
+
+  const colCount=insightGroups.reduce((n,g)=>n+visibleMetrics(g).length,0);
+  $("#insights").innerHTML=colCount===0
+    ? '<p class="text-sm" style="color: var(--pb-text-muted);">No columns selected — pick at least one metric above.</p>'
+    : `<div class="overflow-x-auto rounded-xl" style="border: 1px solid var(--pb-panel-border);"><table class="pb-table min-w-full"><thead><tr><th></th>${groupRow}</tr><tr><th></th>${metricRow}</tr><tr><th class="px-3 py-2 text-left text-xs font-semibold" style="color: var(--pb-text-muted);">Run</th>${subRow}</tr></thead><tbody>${bodyRows}</tbody></table></div>`;
+
+  document.querySelectorAll('#insights th[data-metric]').forEach(th=>{
+    th.onclick=()=>{
+      const mk=th.dataset.metric, variant=th.dataset.variant;
+      if(insightSort && insightSort.metric===mk && insightSort.variant===variant){
+        insightSort=insightSort.dir==='desc'?{metric:mk,variant,dir:'asc'}:null;
+      } else {
+        insightSort={metric:mk,variant,dir:'desc'};
+      }
+      renderInsights(selected);
+    };
+  });
+}
+$("#fileInput").addEventListener("change",e=>importFiles(e.target.files));
+$("#loadDemo").onclick=()=>addReports(demoReports);
+$("#timingChartMetric").addEventListener("change",()=>renderPhaseTimingChart(currentSelected));
+
+const projectSelectEl=$("#projectSelect");
+const projectListboxEl=$("#projectListbox");
+
+function cycleProject(dir){
+  const projects=[...new Set(reports.map(projectName))];
+  if(!projects.length) return;
+  const idx=projects.indexOf(currentProject);
+  const next=(idx+dir+projects.length)%projects.length;
+  selectProject(projects[next]);
+}
+
+projectSelectEl.addEventListener("click",()=>{ projectListOpen?closeProjectList():openProjectList(); });
+projectSelectEl.addEventListener("keydown",e=>{
+  if(e.key==="ArrowDown"){ e.preventDefault(); if(!projectListOpen) openProjectList(); cycleProject(1); }
+  else if(e.key==="ArrowUp"){ e.preventDefault(); if(!projectListOpen) openProjectList(); cycleProject(-1); }
+  else if(e.key==="Home"){ e.preventDefault(); const projects=[...new Set(reports.map(projectName))]; if(projects.length) selectProject(projects[0]); }
+  else if(e.key==="End"){ e.preventDefault(); const projects=[...new Set(reports.map(projectName))]; if(projects.length) selectProject(projects[projects.length-1]); }
+  else if(e.key==="Enter"||e.key===" "){ e.preventDefault(); projectListOpen?closeProjectList():openProjectList(); }
+  else if(e.key==="Escape"){ closeProjectList(); }
+});
+projectListboxEl.addEventListener("click",e=>{
+  const li=e.target.closest("li[data-project]");
+  if(!li) return;
+  selectProject(li.dataset.project);
+  closeProjectList();
+});
+document.addEventListener("click",e=>{
+  if(!e.target.closest("#projectSelectWrapper")) closeProjectList();
+});
+const dz=$("#dropZone");
+["dragenter","dragover"].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.style.borderColor="var(--pb-primary-400)";dz.style.background="rgba(135,91,247,.06)";}));
+["dragleave","drop"].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.style.borderColor="var(--pb-panel-border)";dz.style.background="var(--pb-panel-bg)";}));
+dz.addEventListener("drop",e=>importFiles(e.dataTransfer.files));
+
+// Seed with embedded reports (from CLI) or fall back to demo data
+const seed = (Array.isArray(embeddedReports) && embeddedReports.length > 0) ? embeddedReports : demoReports;
+addReports(seed);
+</script>
+</body>
+</html>

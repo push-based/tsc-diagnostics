@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>tsc-diagnostics — Theme</title>
+<style>
+  :root { --bg:#0b1020; --panel:#151b2f; --text:#eef2ff; --muted:#aab3cf; --border:#29314d; --accent:#7dd3fc; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: Inter, ui-sans-serif, system-ui, sans-serif; background: linear-gradient(180deg,#0b1020 0%,#0f172a 100%); color: var(--text); }
+  header { padding: 36px 28px 8px; max-width: 1100px; margin: 0 auto; }
+  h1 { margin: 0 0 8px; font-size: clamp(1.6rem, 3vw, 2.4rem); }
+  .subtitle { color: var(--muted); max-width: 760px; line-height: 1.5; }
+  main { max-width: 1100px; margin: 0 auto; padding: 12px 28px 60px; }
+  h2 { font-size: 1rem; text-transform: uppercase; letter-spacing: .06em; color: var(--accent); margin: 36px 0 6px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+  .section-note { color: var(--muted); font-size: .85rem; margin: 0 0 14px; line-height: 1.5; }
+  ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
+  li a {
+    display: block; padding: 14px 16px; background: rgba(21,27,47,.94); border: 1px solid var(--border);
+    border-radius: 12px; color: var(--text); text-decoration: none; transition: border-color .15s;
+  }
+  li a:hover { border-color: var(--accent); }
+  li.disabled a { cursor: default; opacity: .6; }
+  li.disabled a:hover { border-color: var(--border); }
+  li .name { font-weight: 650; }
+  li .file { display:block; margin-top: 4px; font-size: .78rem; color: var(--muted); font-family: ui-monospace, monospace; }
+  code { color: #bae6fd; }
+</style>
+</head>
+<body>
+<header>
+  <h1>tsc-diagnostics — Theme</h1>
+  <div class="subtitle">
+    Single entry point into everything under <code>theme/</code>: the three standalone report
+    layouts the CLI generates, the shared template shell they're built from, the component/
+    container demo gallery, and the underlying design tokens.
+  </div>
+</header>
+<main>
+
+  <h2>Report layouts</h2>
+  <p class="section-note">
+    The three self-contained templates the CLI writes to disk, with <code>{{PLACEHOLDER}}</code>
+    tokens left unfilled — each falls back to demo/empty-state data when opened directly.
+  </p>
+  <ul>
+    <li><a href="layouts/list-layout.html"><span class="name">List layout</span><span class="file">layouts/list-layout.html — many solutions, one snapshot</span></a></li>
+    <li><a href="layouts/detail-layout.html"><span class="name">Detail layout</span><span class="file">layouts/detail-layout.html — one solution, one run</span></a></li>
+    <li><a href="layouts/comparison-layout.html"><span class="name">Comparison layout</span><span class="file">layouts/comparison-layout.html — one project, many runs</span></a></li>
+  </ul>
+
+  <h2>Shared template shell</h2>
+  <p class="section-note">
+    Reference only — the common skeleton the three layouts above are assembled from by filling in
+    its <code>{{SLOT_*}}</code> regions. Not meant to be viewed as a page.
+  </p>
+  <ul>
+    <li class="disabled"><a href="standalone-report.template.html"><span class="name">Standalone report shell</span><span class="file">standalone-report.template.html</span></a></li>
+  </ul>
+
+  <h2>Component &amp; container gallery</h2>
+  <p class="section-note">
+    One self-contained demo per UI building block, organized by which layout consumes it — see
+    <code>../UI-COMPONENTS.md</code> for the full inventory.
+  </p>
+  <ul>
+    <li><a href="components/index.html"><span class="name">Component library</span><span class="file">components/index.html</span></a></li>
+  </ul>
+
+  <h2>Design tokens</h2>
+  <p class="section-note">
+    Underlying stylesheets and shared JS — sourced by the layouts and template shell above, not
+    standalone pages.
+  </p>
+  <ul>
+    <li><a href="design-tokens.css"><span class="name">Design tokens (CSS)</span><span class="file">design-tokens.css</span></a></li>
+    <li><a href="tailwind-theme.css"><span class="name">Tailwind theme (CSS)</span><span class="file">tailwind-theme.css</span></a></li>
+    <li><a href="shared-report.js"><span class="name">Shared report helpers (JS)</span><span class="file">shared-report.js</span></a></li>
+  </ul>
+
+</main>
+</body>
+</html>

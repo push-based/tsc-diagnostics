@@ -1,0 +1,119 @@
+/*
+ * Tailwind v4 theme for the tsc-diagnostics report templates.
+ * Source of truth for values: design-tokens.css (the --pb-* custom
+ * properties) — do not hand-invent new colors/sizes here, only remap.
+ *
+ * Import this file (after `@import "tailwindcss";`) in the built stylesheet
+ * to get Tailwind utilities for every pb- token, e.g.:
+ *   bg-pb-primary-700   text-pb-text   text-pb-text-inverse
+ *   rounded-pb-base     shadow-pb-card font-pb-sans
+ *   text-pb-h1  text-pb-h2  text-pb-h3  text-pb-body  text-pb-detail
+ *   bg-pb-radial  bg-pb-card-linear
+ */
+
+@import "./design-tokens.css";
+
+@theme {
+  /* ---------------------------------------------------------------------
+   * Colors — design-system.md §1
+   * ------------------------------------------------------------------- */
+  --color-pb-neutral-900: var(--pb-neutral-900);
+  --color-pb-neutral-500: var(--pb-neutral-500);
+  --color-pb-neutral-200: var(--pb-neutral-200);
+  --color-pb-neutral-200-alt: var(--pb-neutral-200-alt);
+  --color-pb-neutral-50: var(--pb-neutral-50);
+  --color-pb-black: var(--pb-black);
+  --color-pb-white: var(--pb-white);
+
+  --color-pb-primary-700: var(--pb-primary-700);
+  --color-pb-primary-600: var(--pb-primary-600);
+  --color-pb-primary-400: var(--pb-primary-400);
+  --color-pb-primary-50: var(--pb-primary-50);
+
+  --color-pb-secondary-700: var(--pb-secondary-700);
+  --color-pb-secondary-600: var(--pb-secondary-600);
+  --color-pb-secondary-400: var(--pb-secondary-400);
+  --color-pb-secondary-50: var(--pb-secondary-50);
+
+  --color-pb-success-700: var(--pb-success-700);
+  --color-pb-success-500: var(--pb-success-500);
+  --color-pb-success-50: var(--pb-success-50);
+
+  --color-pb-warning-600: var(--pb-warning-600);
+  --color-pb-warning-400: var(--pb-warning-400);
+  --color-pb-warning-50: var(--pb-warning-50);
+
+  /* Semantic aliases */
+  --color-pb-text: var(--pb-text);
+  --color-pb-text-inverse: var(--pb-text-inverse);
+  --color-pb-text-muted: var(--pb-text-muted);
+  --color-pb-border: var(--pb-border);
+  --color-pb-link: var(--pb-link);
+
+  --color-pb-emphasis-purple: var(--pb-emphasis-purple);
+  --color-pb-emphasis-red: var(--pb-emphasis-red);
+  --color-pb-emphasis-green: var(--pb-emphasis-green);
+  --color-pb-emphasis-amber: var(--pb-emphasis-amber);
+
+  --color-pb-state-bad: var(--pb-state-bad);
+  --color-pb-state-good: var(--pb-state-good);
+  --color-pb-state-mid: var(--pb-state-mid);
+
+  /* Glass card surface — dashboard extension (design-tokens.css), not part
+   * of the slide-deck palette; same translucent-panel-over-dark-page used by
+   * every report/component. */
+  --color-pb-panel-bg: var(--pb-panel-bg);
+  --color-pb-panel-border: var(--pb-panel-border);
+  --color-pb-panel-hover: var(--pb-panel-hover);
+
+  /* ---------------------------------------------------------------------
+   * Typography — design-system.md §2
+   * font-weight-normal (400) / font-weight-bold (700) already match
+   * Tailwind's built-in font-normal / font-bold, no remap needed.
+   * ------------------------------------------------------------------- */
+  --font-pb-sans: var(--pb-font-family);
+
+  --text-pb-big-min: var(--pb-font-size-big-min);
+  --text-pb-big-max: var(--pb-font-size-big-max);
+  --text-pb-h1: var(--pb-font-size-h1);
+  --text-pb-h2: var(--pb-font-size-h2);
+  --text-pb-h3: var(--pb-font-size-h3);
+  --text-pb-body: var(--pb-font-size-body);
+  --text-pb-detail: var(--pb-font-size-detail);
+  --text-pb-hint: var(--pb-font-size-hint);
+  --text-pb-footer: var(--pb-font-size-footer);
+  --text-pb-card-value: var(--pb-font-size-card-value); /* dashboard KPI number size, see design-tokens.css */
+
+  /* ---------------------------------------------------------------------
+   * Border radius & shadow — design-system.md §4
+   * ------------------------------------------------------------------- */
+  --radius-pb-none: var(--pb-radius-none);
+  --radius-pb-base: var(--pb-radius-base);
+  --shadow-pb-card: var(--pb-shadow-card);
+
+  /* ---------------------------------------------------------------------
+   * Gradients — design-system.md §5 (each scoped to one surface, never mixed)
+   * Exposed as bg-image utilities: bg-pb-radial, bg-pb-card-linear
+   * ------------------------------------------------------------------- */
+  --background-image-pb-radial: var(--pb-gradient-bg-radial);
+  --background-image-pb-card-linear: var(--pb-gradient-card-linear);
+}
+
+/*
+ * Surface utilities (design-system.md §6 contrast map) — background + its
+ * required default text color, applied together via
+ * [data-pb-surface="light|purple|dark|red"] same as in design-tokens.css.
+ * Requires the Tailwind build step (CLI/PostCSS) to resolve @apply.
+ */
+[data-pb-surface="light"] {
+  @apply bg-pb-neutral-50 text-pb-text;
+}
+[data-pb-surface="purple"] {
+  @apply bg-pb-primary-700 text-pb-text-inverse;
+}
+[data-pb-surface="dark"] {
+  @apply bg-pb-neutral-900 text-pb-text-inverse;
+}
+[data-pb-surface="red"] {
+  @apply bg-pb-secondary-700 text-pb-text-inverse;
+}

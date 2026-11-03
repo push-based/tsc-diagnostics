@@ -1,0 +1,385 @@
+/*
+ * PushBased design tokens for the tsc-diagnostics report templates.
+ * Source of truth: tools/theme/design-system.md — keep in sync with that file,
+ * do not hand-invent new colors/sizes here.
+ *
+ * pt → rem conversion used throughout the type scale: 1pt = 1.3333px, 16px = 1rem.
+ */
+
+:root {
+  /* ---------------------------------------------------------------------
+   * 1. Brand palette (design-system.md §1)
+   * ------------------------------------------------------------------- */
+
+  /* Neutrals — text & background */
+  --pb-neutral-900: #121926; /* near-black — primary text / dark background */
+  --pb-neutral-500: #697586; /* muted / secondary text */
+  --pb-neutral-200: #eef2f6; /* light divider / fill */
+  --pb-neutral-200-alt: #e3e8ef; /* neutral 200 variant (reference/gradient surfaces) */
+  --pb-neutral-50: #f8fafc; /* near-white — light background */
+  --pb-black: #000000;
+  --pb-white: #ffffff;
+
+  /* Primary — purple (hero brand) */
+  --pb-primary-700: #6927da; /* HERO — titles, purple bg, "good/AI/after" */
+  --pb-primary-600: #875bf7; /* hyperlink color */
+  --pb-primary-400: #a48afb; /* light purple accent */
+  --pb-primary-50: #f5f3ff; /* light tint — card linear-gradient end */
+
+  /* Secondary — pink/red */
+  --pb-secondary-700: #d70033; /* kicker, red bg, "bad/before" */
+  --pb-secondary-600: #ff003c; /* strong red */
+  --pb-secondary-400: #ff577f; /* strong pink */
+  --pb-secondary-50: #fff0f4; /* light pink tint */
+
+  /* Success — green */
+  --pb-success-700: #15803d; /* emphasis / "after-good" */
+  --pb-success-500: #22c55e; /* fill */
+  --pb-success-50: #f0fdf4; /* light tint */
+
+  /* Warning — amber */
+  --pb-warning-600: #f59e0b; /* emphasis / "middle state" */
+  --pb-warning-400: #fbbf24; /* fill */
+  --pb-warning-50: #fffbeb; /* light tint */
+
+  /* ---------------------------------------------------------------------
+   * Semantic aliases
+   * Chart/state semantics (design-system.md §3): RED = bad/legacy/before,
+   * PURPLE = good/AI/after, AMBER = middle/transitional. Only these four
+   * colors (§3) are ever used for emphasis: primary-700, secondary-700,
+   * success-700, warning-600.
+   * ------------------------------------------------------------------- */
+  --pb-text: var(--pb-neutral-900);
+  --pb-text-inverse: var(--pb-neutral-50);
+  --pb-text-muted: var(--pb-neutral-500);
+  --pb-border: var(--pb-neutral-200);
+  --pb-link: var(--pb-primary-600);
+
+  --pb-emphasis-purple: var(--pb-primary-700);
+  --pb-emphasis-red: var(--pb-secondary-700);
+  --pb-emphasis-green: var(--pb-success-700);
+  --pb-emphasis-amber: var(--pb-warning-600);
+
+  --pb-state-bad: var(--pb-secondary-700); /* red = bad / manual / legacy / slow / before */
+  --pb-state-good: var(--pb-primary-700); /* purple = good / AI / new / fast / after */
+  --pb-state-mid: var(--pb-warning-600); /* amber = middle / transitional */
+
+  /* ---------------------------------------------------------------------
+   * 2. Type scale — Geist (design-system.md §2)
+   * ------------------------------------------------------------------- */
+  --pb-font-family: "Geist", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+  --pb-font-weight-normal: 400;
+  --pb-font-weight-bold: 700;
+
+  --pb-font-size-big-min: 2.5rem; /* 30pt — Main Point statements, hero numbers */
+  --pb-font-size-big-max: 10rem; /* 120pt */
+  --pb-font-size-h1: 2.333rem; /* 28pt — slide/page title */
+  --pb-font-size-h2: 1.25rem; /* 15pt — card titles, section sub-labels, KPI names */
+  --pb-font-size-h3: 0.833rem; /* 10pt — small labels, eyebrows, chart/axis headers */
+  --pb-font-size-body: 1.5rem; /* 18pt — primary paragraph / list text */
+  --pb-font-size-detail: 1.25rem; /* 15pt — secondary/support text, card descriptions */
+  --pb-font-size-hint: 0.833rem; /* 10pt — insight-bar text, captions, annotations */
+  --pb-font-size-footer: 0.583rem; /* 7pt — footer lockup */
+
+  /* ---------------------------------------------------------------------
+   * 4. Border radius (design-system.md §4)
+   * ------------------------------------------------------------------- */
+  --pb-radius-none: 0; /* full-bleed panels, color blocks, dividers, backdrops */
+  --pb-radius-base: 12px; /* all cards — always paired with --pb-shadow-card */
+  --pb-shadow-card: 0 12px 30px rgba(18, 25, 38, 0.12);
+
+  /* ---------------------------------------------------------------------
+   * 5. Gradients (design-system.md §5) — each scoped to one surface, never mixed
+   * ------------------------------------------------------------------- */
+  --pb-gradient-bg-radial: radial-gradient(
+    circle at center,
+    rgba(255, 255, 255, 0.35) 0%,
+    rgba(255, 255, 255, 0) 70%
+  ); /* backgrounds only */
+  --pb-gradient-card-linear: linear-gradient(
+    135deg,
+    var(--pb-primary-50) 0%,
+    var(--pb-white) 100%
+  ); /* cards only — swap --pb-primary-50 for the card's own tint color */
+}
+
+/*
+ * Contrast Map (design-system.md §6) — background → allowed text colors.
+ * Apply a surface with [data-pb-surface="light|purple|dark|red"] on a
+ * container to get the correct default text color for that background;
+ * emphasis colors still must be hand-picked from the allowed set per element
+ * (see the table in design-system.md, this only sets the *default*).
+ */
+[data-pb-surface="light"] {
+  background: var(--pb-neutral-50);
+  color: var(--pb-text);
+}
+[data-pb-surface="purple"] {
+  background: var(--pb-primary-700);
+  color: var(--pb-text-inverse);
+}
+[data-pb-surface="dark"] {
+  background: var(--pb-neutral-900);
+  color: var(--pb-text-inverse);
+}
+[data-pb-surface="red"] {
+  background: var(--pb-secondary-700);
+  color: var(--pb-text-inverse);
+}
+
+/* =========================================================================
+ * Dashboard component classes
+ * design-system.md only specifies slide chrome; the tsc-diagnostics HTML
+ * reports need the same brand tokens applied to a web dashboard, which the
+ * slide spec doesn't define directly. Nothing below introduces a new brand
+ * color — every rule resolves to a --pb-* token above. Reports run on a dark
+ * surface ([data-pb-surface="dark"]), so per the Contrast Map (§6): running
+ * *text* (H1/H2/H3/Body/Detail) never uses purple on dark — only T&BG2,
+ * Accent 2 (red), and Warning amber. Purple is still used for links (its
+ * documented "Link" role) and as a fill/border accent (chart marks, badges),
+ * since §6 restricts text legibility, not decorative fills.
+ * ========================================================================= */
+
+:root {
+  /* Glass card surface for a dark dashboard (translucent near-white over neutral-900) */
+  --pb-panel-bg: rgba(248, 250, 252, 0.04);
+  --pb-panel-border: rgba(248, 250, 252, 0.1);
+  --pb-panel-hover: rgba(248, 250, 252, 0.06);
+
+  /* Dashboard KPI number size — distinct from the slide "Big Text" scale (§2), which is sized for a 720pt-wide slide, not a card. */
+  --pb-font-size-card-value: 1.875rem;
+}
+
+.pb-page {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--pb-font-family);
+  background: var(--pb-neutral-900);
+  color: var(--pb-text-inverse);
+  -webkit-font-smoothing: antialiased;
+}
+.pb-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 3rem;
+}
+
+/* Eyebrow / kicker — always Accent 2 pink per design-system.md §7 */
+.pb-eyebrow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  font-size: var(--pb-font-size-h3);
+  font-weight: var(--pb-font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--pb-secondary-400);
+}
+.pb-eyebrow-tag {
+  border: 1px solid rgba(255, 87, 127, 0.35);
+  background: rgba(215, 0, 51, 0.12);
+  border-radius: 999px;
+  padding: 0.25rem 0.75rem;
+}
+.pb-eyebrow-note {
+  color: var(--pb-text-muted);
+  text-transform: none;
+  letter-spacing: normal;
+  font-weight: var(--pb-font-weight-normal);
+}
+
+/* Page title (H1) — near-white on dark; purple H1 is a light-surface-only choice per §6 */
+.pb-h1 {
+  margin: 0;
+  font-weight: var(--pb-font-weight-bold);
+  font-size: var(--pb-font-size-h1);
+  color: var(--pb-text-inverse);
+  letter-spacing: -0.01em;
+}
+
+.pb-subtitle {
+  margin-top: 0.75rem;
+  max-width: 46rem;
+  font-size: var(--pb-font-size-detail);
+  line-height: 1.6;
+  color: var(--pb-text-muted);
+}
+.pb-subtitle strong {
+  color: var(--pb-text-inverse);
+  font-weight: var(--pb-font-weight-bold);
+}
+.pb-mono {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  color: var(--pb-primary-400);
+}
+
+.pb-header-row {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding-bottom: 1.75rem;
+  margin-bottom: 1.75rem;
+  border-bottom: 1px solid var(--pb-panel-border);
+}
+@media (min-width: 1024px) {
+  .pb-header-row { flex-direction: row; align-items: flex-end; justify-content: space-between; }
+}
+.pb-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+
+/* Card — glass surface, radius-base + shadow-card always paired (§4) */
+.pb-card {
+  background: var(--pb-panel-bg);
+  border: 1px solid var(--pb-panel-border);
+  border-radius: var(--pb-radius-base);
+  box-shadow: var(--pb-shadow-card);
+  padding: 1.25rem;
+}
+.pb-card-label {
+  font-size: var(--pb-font-size-h3);
+  font-weight: var(--pb-font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--pb-text-muted);
+}
+.pb-card-value {
+  margin-top: 0.5rem;
+  font-size: var(--pb-font-size-card-value);
+  font-weight: 800;
+  color: var(--pb-text-inverse);
+}
+.pb-card-hint {
+  margin-top: 0.4rem;
+  font-size: var(--pb-font-size-hint);
+  color: var(--pb-text-muted);
+}
+.pb-card--good { border-color: rgba(21, 128, 61, 0.35); }
+.pb-card--bad { border-color: rgba(215, 0, 51, 0.35); }
+.pb-card--mid { border-color: rgba(245, 158, 11, 0.35); }
+.pb-card--info { border-color: rgba(135, 91, 247, 0.35); }
+
+/* Compact summary card — same surface as .pb-card, tightened for a dense KPI row */
+.pb-summary-card { padding: 0.4rem 0.65rem; }
+.pb-summary-card .pb-card-label {
+  font-size: 0.6rem;
+  letter-spacing: 0.06em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pb-summary-card .pb-summary-row {
+  margin-top: 0.1rem;
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+.pb-summary-card .pb-card-value { margin-top: 0; font-size: 1.05rem; white-space: nowrap; }
+.pb-summary-card .pb-card-hint {
+  margin-top: 0;
+  font-size: 0.65rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Badge / pill — severity + status; colors mirror the §3 chart/state semantics */
+.pb-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  padding: 0.15em 0.6em;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: var(--pb-font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.pb-badge--error,
+.pb-badge--bad { background: rgba(215, 0, 51, 0.18); color: var(--pb-secondary-400); }
+.pb-badge--warn,
+.pb-badge--mid { background: rgba(245, 158, 11, 0.18); color: var(--pb-warning-400); }
+.pb-badge--info { background: rgba(248, 250, 252, 0.12); color: var(--pb-text-inverse); }
+.pb-badge--pass,
+.pb-badge--good { background: rgba(21, 128, 61, 0.18); color: var(--pb-success-500); }
+.pb-badge--baseline { background: rgba(135, 91, 247, 0.18); color: var(--pb-primary-400); font-size: 0.65rem; }
+
+/* Delta / trend text — good=green, bad=red, flat=muted (never purple text on dark, per §6) */
+.pb-delta-good { color: var(--pb-success-500); }
+.pb-delta-bad { color: var(--pb-secondary-400); }
+.pb-delta-flat { color: var(--pb-text-muted); }
+
+/* Buttons */
+.pb-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  border-radius: 0.75rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: var(--pb-font-weight-bold);
+  border: 1px solid var(--pb-panel-border);
+  background: var(--pb-panel-bg);
+  color: var(--pb-text-inverse);
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s;
+  text-decoration: none;
+}
+.pb-btn:hover { background: var(--pb-panel-hover); }
+.pb-btn--primary {
+  border-color: transparent;
+  background: var(--pb-secondary-400);
+  color: var(--pb-neutral-900);
+}
+.pb-btn--primary:hover { background: var(--pb-secondary-700); color: var(--pb-text-inverse); }
+
+/* Links — the brand's documented hyperlink token, used regardless of surface */
+.pb-link, a.pb-link { color: var(--pb-link); text-decoration: underline; }
+
+/* Table */
+.pb-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.pb-table th, .pb-table td { text-align: left; padding: 0.6rem 0.75rem; border-bottom: 1px solid var(--pb-panel-border); vertical-align: top; }
+.pb-table th { color: var(--pb-text-muted); font-weight: var(--pb-font-weight-bold); text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.08em; }
+.pb-table tr:hover td { background: var(--pb-panel-hover); }
+
+/* Chart mount point */
+.pb-chart {
+  background: var(--pb-panel-bg);
+  border: 1px solid var(--pb-panel-border);
+  border-radius: var(--pb-radius-base);
+  box-shadow: var(--pb-shadow-card);
+  padding: 1rem 0.75rem 0.5rem;
+  overflow: hidden;
+}
+.pb-chart-title { margin: 0 0 0.5rem 0.5rem; font-size: var(--pb-font-size-h2); font-weight: var(--pb-font-weight-bold); color: var(--pb-text-inverse); }
+.pb-plot-root { width: 100%; overflow-x: auto; }
+.pb-plot-root figure, .pb-plot-root svg { display: block; margin: 0 auto; max-width: 100%; background: transparent !important; }
+.pb-plot-root g[aria-label="tip"] { --plot-background: #ffffff; }
+.pb-plot-root g[aria-label="tip"] text { fill: #000000 !important; }
+
+/* Footer chrome */
+.pb-footer {
+  margin-top: 2rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--pb-panel-border);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: var(--pb-font-size-footer);
+  color: var(--pb-text-muted);
+}
+
+/* Print support */
+@media print {
+  .pb-page { background: #ffffff !important; color: var(--pb-text) !important; }
+  .pb-no-print { display: none !important; }
+  .pb-card, .pb-chart { border-color: var(--pb-border) !important; background: #ffffff !important; box-shadow: none !important; }
+  .pb-subtitle, .pb-card-label, .pb-card-hint, .pb-footer, .pb-eyebrow-note { color: #475569 !important; }
+  .pb-h1 { color: var(--pb-emphasis-purple) !important; } /* on printed paper the surface is light again, so purple H1 is legal per §6 */
+}

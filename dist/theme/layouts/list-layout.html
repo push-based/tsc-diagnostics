@@ -1,0 +1,5030 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark" />
+  <title>TypeScript Extended Diagnostics Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <style>
+/* SHARED_STYLES:START */
+/*
+ * PushBased design tokens for the tsc-diagnostics report templates.
+ * Source of truth: tools/theme/design-system.md — keep in sync with that file,
+ * do not hand-invent new colors/sizes here.
+ *
+ * pt → rem conversion used throughout the type scale: 1pt = 1.3333px, 16px = 1rem.
+ */
+
+:root {
+  /* ---------------------------------------------------------------------
+   * 1. Brand palette (design-system.md §1)
+   * ------------------------------------------------------------------- */
+
+  /* Neutrals — text & background */
+  --pb-neutral-900: #121926; /* near-black — primary text / dark background */
+  --pb-neutral-500: #697586; /* muted / secondary text */
+  --pb-neutral-200: #eef2f6; /* light divider / fill */
+  --pb-neutral-200-alt: #e3e8ef; /* neutral 200 variant (reference/gradient surfaces) */
+  --pb-neutral-50: #f8fafc; /* near-white — light background */
+  --pb-black: #000000;
+  --pb-white: #ffffff;
+
+  /* Primary — purple (hero brand) */
+  --pb-primary-700: #6927da; /* HERO — titles, purple bg, "good/AI/after" */
+  --pb-primary-600: #875bf7; /* hyperlink color */
+  --pb-primary-400: #a48afb; /* light purple accent */
+  --pb-primary-50: #f5f3ff; /* light tint — card linear-gradient end */
+
+  /* Secondary — pink/red */
+  --pb-secondary-700: #d70033; /* kicker, red bg, "bad/before" */
+  --pb-secondary-600: #ff003c; /* strong red */
+  --pb-secondary-400: #ff577f; /* strong pink */
+  --pb-secondary-50: #fff0f4; /* light pink tint */
+
+  /* Success — green */
+  --pb-success-700: #15803d; /* emphasis / "after-good" */
+  --pb-success-500: #22c55e; /* fill */
+  --pb-success-50: #f0fdf4; /* light tint */
+
+  /* Warning — amber */
+  --pb-warning-600: #f59e0b; /* emphasis / "middle state" */
+  --pb-warning-400: #fbbf24; /* fill */
+  --pb-warning-50: #fffbeb; /* light tint */
+
+  /* ---------------------------------------------------------------------
+   * Semantic aliases
+   * Chart/state semantics (design-system.md §3): RED = bad/legacy/before,
+   * PURPLE = good/AI/after, AMBER = middle/transitional. Only these four
+   * colors (§3) are ever used for emphasis: primary-700, secondary-700,
+   * success-700, warning-600.
+   * ------------------------------------------------------------------- */
+  --pb-text: var(--pb-neutral-900);
+  --pb-text-inverse: var(--pb-neutral-50);
+  --pb-text-muted: var(--pb-neutral-500);
+  --pb-border: var(--pb-neutral-200);
+  --pb-link: var(--pb-primary-600);
+
+  --pb-emphasis-purple: var(--pb-primary-700);
+  --pb-emphasis-red: var(--pb-secondary-700);
+  --pb-emphasis-green: var(--pb-success-700);
+  --pb-emphasis-amber: var(--pb-warning-600);
+
+  --pb-state-bad: var(--pb-secondary-700); /* red = bad / manual / legacy / slow / before */
+  --pb-state-good: var(--pb-primary-700); /* purple = good / AI / new / fast / after */
+  --pb-state-mid: var(--pb-warning-600); /* amber = middle / transitional */
+
+  /* ---------------------------------------------------------------------
+   * 2. Type scale — Geist (design-system.md §2)
+   * ------------------------------------------------------------------- */
+  --pb-font-family: "Geist", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+  --pb-font-weight-normal: 400;
+  --pb-font-weight-bold: 700;
+
+  --pb-font-size-big-min: 2.5rem; /* 30pt — Main Point statements, hero numbers */
+  --pb-font-size-big-max: 10rem; /* 120pt */
+  --pb-font-size-h1: 2.333rem; /* 28pt — slide/page title */
+  --pb-font-size-h2: 1.25rem; /* 15pt — card titles, section sub-labels, KPI names */
+  --pb-font-size-h3: 0.833rem; /* 10pt — small labels, eyebrows, chart/axis headers */
+  --pb-font-size-body: 1.5rem; /* 18pt — primary paragraph / list text */
+  --pb-font-size-detail: 1.25rem; /* 15pt — secondary/support text, card descriptions */
+  --pb-font-size-hint: 0.833rem; /* 10pt — insight-bar text, captions, annotations */
+  --pb-font-size-footer: 0.583rem; /* 7pt — footer lockup */
+
+  /* ---------------------------------------------------------------------
+   * 4. Border radius (design-system.md §4)
+   * ------------------------------------------------------------------- */
+  --pb-radius-none: 0; /* full-bleed panels, color blocks, dividers, backdrops */
+  --pb-radius-base: 12px; /* all cards — always paired with --pb-shadow-card */
+  --pb-shadow-card: 0 12px 30px rgba(18, 25, 38, 0.12);
+
+  /* ---------------------------------------------------------------------
+   * 5. Gradients (design-system.md §5) — each scoped to one surface, never mixed
+   * ------------------------------------------------------------------- */
+  --pb-gradient-bg-radial: radial-gradient(
+    circle at center,
+    rgba(255, 255, 255, 0.35) 0%,
+    rgba(255, 255, 255, 0) 70%
+  ); /* backgrounds only */
+  --pb-gradient-card-linear: linear-gradient(
+    135deg,
+    var(--pb-primary-50) 0%,
+    var(--pb-white) 100%
+  ); /* cards only — swap --pb-primary-50 for the card's own tint color */
+}
+
+/*
+ * Contrast Map (design-system.md §6) — background → allowed text colors.
+ * Apply a surface with [data-pb-surface="light|purple|dark|red"] on a
+ * container to get the correct default text color for that background;
+ * emphasis colors still must be hand-picked from the allowed set per element
+ * (see the table in design-system.md, this only sets the *default*).
+ */
+[data-pb-surface="light"] {
+  background: var(--pb-neutral-50);
+  color: var(--pb-text);
+}
+[data-pb-surface="purple"] {
+  background: var(--pb-primary-700);
+  color: var(--pb-text-inverse);
+}
+[data-pb-surface="dark"] {
+  background: var(--pb-neutral-900);
+  color: var(--pb-text-inverse);
+}
+[data-pb-surface="red"] {
+  background: var(--pb-secondary-700);
+  color: var(--pb-text-inverse);
+}
+
+/* =========================================================================
+ * Dashboard component classes
+ * design-system.md only specifies slide chrome; the tsc-diagnostics HTML
+ * reports need the same brand tokens applied to a web dashboard, which the
+ * slide spec doesn't define directly. Nothing below introduces a new brand
+ * color — every rule resolves to a --pb-* token above. Reports run on a dark
+ * surface ([data-pb-surface="dark"]), so per the Contrast Map (§6): running
+ * *text* (H1/H2/H3/Body/Detail) never uses purple on dark — only T&BG2,
+ * Accent 2 (red), and Warning amber. Purple is still used for links (its
+ * documented "Link" role) and as a fill/border accent (chart marks, badges),
+ * since §6 restricts text legibility, not decorative fills.
+ * ========================================================================= */
+
+:root {
+  /* Glass card surface for a dark dashboard (translucent near-white over neutral-900) */
+  --pb-panel-bg: rgba(248, 250, 252, 0.04);
+  --pb-panel-border: rgba(248, 250, 252, 0.1);
+  --pb-panel-hover: rgba(248, 250, 252, 0.06);
+
+  /* Dashboard KPI number size — distinct from the slide "Big Text" scale (§2), which is sized for a 720pt-wide slide, not a card. */
+  --pb-font-size-card-value: 1.875rem;
+}
+
+.pb-page {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--pb-font-family);
+  background: var(--pb-neutral-900);
+  color: var(--pb-text-inverse);
+  -webkit-font-smoothing: antialiased;
+}
+.pb-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 3rem;
+}
+
+/* Eyebrow / kicker — always Accent 2 pink per design-system.md §7 */
+.pb-eyebrow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  font-size: var(--pb-font-size-h3);
+  font-weight: var(--pb-font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--pb-secondary-400);
+}
+.pb-eyebrow-tag {
+  border: 1px solid rgba(255, 87, 127, 0.35);
+  background: rgba(215, 0, 51, 0.12);
+  border-radius: 999px;
+  padding: 0.25rem 0.75rem;
+}
+.pb-eyebrow-note {
+  color: var(--pb-text-muted);
+  text-transform: none;
+  letter-spacing: normal;
+  font-weight: var(--pb-font-weight-normal);
+}
+
+/* Page title (H1) — near-white on dark; purple H1 is a light-surface-only choice per §6 */
+.pb-h1 {
+  margin: 0;
+  font-weight: var(--pb-font-weight-bold);
+  font-size: var(--pb-font-size-h1);
+  color: var(--pb-text-inverse);
+  letter-spacing: -0.01em;
+}
+
+.pb-subtitle {
+  margin-top: 0.75rem;
+  max-width: 46rem;
+  font-size: var(--pb-font-size-detail);
+  line-height: 1.6;
+  color: var(--pb-text-muted);
+}
+.pb-subtitle strong {
+  color: var(--pb-text-inverse);
+  font-weight: var(--pb-font-weight-bold);
+}
+.pb-mono {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  color: var(--pb-primary-400);
+}
+
+.pb-header-row {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding-bottom: 1.75rem;
+  margin-bottom: 1.75rem;
+  border-bottom: 1px solid var(--pb-panel-border);
+}
+@media (min-width: 1024px) {
+  .pb-header-row { flex-direction: row; align-items: flex-end; justify-content: space-between; }
+}
+.pb-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+
+/* Card — glass surface, radius-base + shadow-card always paired (§4) */
+.pb-card {
+  background: var(--pb-panel-bg);
+  border: 1px solid var(--pb-panel-border);
+  border-radius: var(--pb-radius-base);
+  box-shadow: var(--pb-shadow-card);
+  padding: 1.25rem;
+}
+.pb-card-label {
+  font-size: var(--pb-font-size-h3);
+  font-weight: var(--pb-font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--pb-text-muted);
+}
+.pb-card-value {
+  margin-top: 0.5rem;
+  font-size: var(--pb-font-size-card-value);
+  font-weight: 800;
+  color: var(--pb-text-inverse);
+}
+.pb-card-hint {
+  margin-top: 0.4rem;
+  font-size: var(--pb-font-size-hint);
+  color: var(--pb-text-muted);
+}
+.pb-card--good { border-color: rgba(21, 128, 61, 0.35); }
+.pb-card--bad { border-color: rgba(215, 0, 51, 0.35); }
+.pb-card--mid { border-color: rgba(245, 158, 11, 0.35); }
+.pb-card--info { border-color: rgba(135, 91, 247, 0.35); }
+
+/* Compact summary card — same surface as .pb-card, tightened for a dense KPI row */
+.pb-summary-card { padding: 0.4rem 0.65rem; }
+.pb-summary-card .pb-card-label {
+  font-size: 0.6rem;
+  letter-spacing: 0.06em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pb-summary-card .pb-summary-row {
+  margin-top: 0.1rem;
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+.pb-summary-card .pb-card-value { margin-top: 0; font-size: 1.05rem; white-space: nowrap; }
+.pb-summary-card .pb-card-hint {
+  margin-top: 0;
+  font-size: 0.65rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Badge / pill — severity + status; colors mirror the §3 chart/state semantics */
+.pb-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  padding: 0.15em 0.6em;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: var(--pb-font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.pb-badge--error,
+.pb-badge--bad { background: rgba(215, 0, 51, 0.18); color: var(--pb-secondary-400); }
+.pb-badge--warn,
+.pb-badge--mid { background: rgba(245, 158, 11, 0.18); color: var(--pb-warning-400); }
+.pb-badge--info { background: rgba(248, 250, 252, 0.12); color: var(--pb-text-inverse); }
+.pb-badge--pass,
+.pb-badge--good { background: rgba(21, 128, 61, 0.18); color: var(--pb-success-500); }
+.pb-badge--baseline { background: rgba(135, 91, 247, 0.18); color: var(--pb-primary-400); font-size: 0.65rem; }
+
+/* Delta / trend text — good=green, bad=red, flat=muted (never purple text on dark, per §6) */
+.pb-delta-good { color: var(--pb-success-500); }
+.pb-delta-bad { color: var(--pb-secondary-400); }
+.pb-delta-flat { color: var(--pb-text-muted); }
+
+/* Buttons */
+.pb-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  border-radius: 0.75rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: var(--pb-font-weight-bold);
+  border: 1px solid var(--pb-panel-border);
+  background: var(--pb-panel-bg);
+  color: var(--pb-text-inverse);
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s;
+  text-decoration: none;
+}
+.pb-btn:hover { background: var(--pb-panel-hover); }
+.pb-btn--primary {
+  border-color: transparent;
+  background: var(--pb-secondary-400);
+  color: var(--pb-neutral-900);
+}
+.pb-btn--primary:hover { background: var(--pb-secondary-700); color: var(--pb-text-inverse); }
+
+/* Links — the brand's documented hyperlink token, used regardless of surface */
+.pb-link, a.pb-link { color: var(--pb-link); text-decoration: underline; }
+
+/* Table */
+.pb-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.pb-table th, .pb-table td { text-align: left; padding: 0.6rem 0.75rem; border-bottom: 1px solid var(--pb-panel-border); vertical-align: top; }
+.pb-table th { color: var(--pb-text-muted); font-weight: var(--pb-font-weight-bold); text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.08em; }
+.pb-table tr:hover td { background: var(--pb-panel-hover); }
+
+/* Chart mount point */
+.pb-chart {
+  background: var(--pb-panel-bg);
+  border: 1px solid var(--pb-panel-border);
+  border-radius: var(--pb-radius-base);
+  box-shadow: var(--pb-shadow-card);
+  padding: 1rem 0.75rem 0.5rem;
+  overflow: hidden;
+}
+.pb-chart-title { margin: 0 0 0.5rem 0.5rem; font-size: var(--pb-font-size-h2); font-weight: var(--pb-font-weight-bold); color: var(--pb-text-inverse); }
+.pb-plot-root { width: 100%; overflow-x: auto; }
+.pb-plot-root figure, .pb-plot-root svg { display: block; margin: 0 auto; max-width: 100%; background: transparent !important; }
+.pb-plot-root g[aria-label="tip"] { --plot-background: #ffffff; }
+.pb-plot-root g[aria-label="tip"] text { fill: #000000 !important; }
+
+/* Footer chrome */
+.pb-footer {
+  margin-top: 2rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--pb-panel-border);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: var(--pb-font-size-footer);
+  color: var(--pb-text-muted);
+}
+
+/* Print support */
+@media print {
+  .pb-page { background: #ffffff !important; color: var(--pb-text) !important; }
+  .pb-no-print { display: none !important; }
+  .pb-card, .pb-chart { border-color: var(--pb-border) !important; background: #ffffff !important; box-shadow: none !important; }
+  .pb-subtitle, .pb-card-label, .pb-card-hint, .pb-footer, .pb-eyebrow-note { color: #475569 !important; }
+  .pb-h1 { color: var(--pb-emphasis-purple) !important; } /* on printed paper the surface is light again, so purple H1 is legal per §6 */
+}
+/* SHARED_STYLES:END */
+  </style>
+</head>
+<body class="pb-page">
+<!-- Embedded aggregate data, isolated in its own classic script so that an
+     unreplaced AGGREGATED_REPORT placeholder (i.e. this template opened
+     directly instead of through the report generator) only fails to parse
+     this one tag — the module script below still runs and falls back to
+     the bundled demo data as an "idle" state. -->
+<script>
+  try { window.__PB_AGGREGATED_REPORT__ = {{AGGREGATED_REPORT}}; } catch (e) { /* raw template — no embedded data */ }
+</script>
+<!-- SLOT_DECORATIVE_BG: the list layout has no decorative background blobs. -->
+<main class="pb-container">
+  <!-- HEADER + SLOT_HEADER_ACTIONS: Load demo data button -->
+  <header class="pb-header-row">
+    <div>
+      <div class="pb-eyebrow"><span class="pb-eyebrow-tag">TypeScript Compiler</span><span class="pb-eyebrow-note">extended diagnostics · aggregate</span></div>
+      <h1 class="pb-h1">TypeScript Extended Diagnostics</h1>
+      <p class="pb-subtitle">
+        Observable Plot dashboard for <code class="pb-mono">tsc -b --extendedDiagnostics</code> runs across workspace solution tsconfigs.
+      </p>
+    </div>
+    <div class="pb-no-print pb-actions">
+      <button id="loadDemoButton" class="pb-btn">Load demo data</button>
+    </div>
+  </header>
+
+  <!-- SLOT_BELOW_HEADER: status bar (container/header-status.html) -->
+  <div class="pb-card pb-no-print mb-4 flex items-center gap-3">
+    <span class="inline-block h-2.5 w-2.5 rounded-full" style="background: var(--pb-secondary-400);"></span>
+    <span id="status" class="text-sm" style="color: var(--pb-text-muted);">Loading external JSON…</span>
+  </div>
+
+  <!-- SLOT_SUMMARY: summary-cards-plain.html -->
+  <section id="cards" class="grid grid-cols-2 gap-2 xl:grid-cols-4 mb-4"></section>
+
+  <!-- SLOT_PRIMARY: chart-phases.html -->
+  <section class="grid gap-6 xl:grid-cols-2 mb-4">
+    <div class="pb-chart xl:col-span-2">
+      <div style="display:flex; flex-wrap:wrap; align-items:flex-start; justify-content:space-between; gap:.75rem;">
+        <h3 class="pb-chart-title" style="margin-bottom:0;">Compiler phases by solution</h3>
+        <label style="font-size:.9rem; color: var(--pb-text-muted);">Metric
+          <select id="timeChartMetric" style="margin-left:.5rem; border-radius:.5rem; padding:.375rem .5rem; border:1px solid var(--pb-panel-border); background: rgba(0,0,0,.2); color: var(--pb-text-inverse);">
+            <option value="time">Time</option>
+            <option value="size">Size</option>
+            <option value="memory">Memory</option>
+          </select>
+        </label>
+      </div>
+      <div id="timeChart"></div>
+    </div>
+
+    <!-- Phase timings: rollup summed across every solution, linked to the Metric select above -->
+    <div class="pb-chart xl:col-span-2">
+      <h3 class="pb-chart-title" id="phasePanelTitle">Phase timings</h3>
+      <div class="mt-1 flex items-start justify-between gap-4">
+        <div class="pb-card-hint" style="margin:0;" id="phasePanelSubtitle">Program → Bind → Check → Emit</div>
+        <div style="text-align:right; white-space:nowrap;">
+          <span id="phaseTotalValue" style="display:block; font-size:1.375rem; font-weight:800; line-height:1.1; color: var(--pb-text-inverse);"></span>
+          <span class="pb-card-hint" id="phaseTotalLabel">total time</span>
+        </div>
+      </div>
+      <div id="phasePlot" class="pb-plot-root" style="margin-top:.75rem;"></div>
+      <div id="phaseLegend" style="margin-top:.75rem; display:flex; flex-wrap:wrap; gap:.4rem 1.25rem;"></div>
+    </div>
+  </section>
+
+  <!-- SLOT_SECONDARY: notes grid (notes.html) -->
+  <section id="notes" class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 mb-4"></section>
+
+  <!-- SLOT_DETAIL: tsconfig performance check (container/config-check.html) -->
+  <section id="configCheck"></section>
+
+  <!-- SLOT_REPORT_DETAIL: per-run drill-down, mirrors detail-layout.html, scoped to the selected report -->
+  <section class="mt-2 mb-4">
+    <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+      <h2 style="font-size: var(--pb-font-size-h1); font-weight: var(--pb-font-weight-bold); color: var(--pb-text-inverse);">Report detail</h2>
+      <label style="font-size:.9rem; color: var(--pb-text-muted);">Report
+        <select id="reportDetailSelect" style="margin-left:.5rem; border-radius:.5rem; padding:.375rem .5rem; border:1px solid var(--pb-panel-border); background: rgba(0,0,0,.2); color: var(--pb-text-inverse);"></select>
+      </label>
+    </div>
+
+    <section id="detailSummaryCards" class="grid grid-cols-2 gap-2 xl:grid-cols-4 mb-6"></section>
+
+    <section class="grid gap-6 xl:grid-cols-[1.4fr_1fr] mb-6">
+      <article class="pb-card">
+        <div class="mb-4 flex items-start justify-between gap-4">
+          <div>
+            <h3 id="detailTimingChartTitle" style="font-size: var(--pb-font-size-h2); font-weight: var(--pb-font-weight-bold); color: var(--pb-text-inverse);">Compiler phase timings</h3>
+            <p id="detailTimingChartHint" class="pb-card-hint mt-1"></p>
+          </div>
+          <span id="detailTimingChartBadge" class="pb-badge pb-badge--good">Healthy</span>
+        </div>
+        <div class="mb-3 flex justify-end">
+          <label style="font-size:.8rem; color: var(--pb-text-muted);">Metric
+            <select id="detailTimingChartMetric" style="margin-left:.4rem; border-radius:.5rem; padding:.3rem .5rem; border:1px solid var(--pb-panel-border); background: rgba(0,0,0,.2); color: var(--pb-text-inverse); font-size:.8rem;">
+              <option value="time">Time</option>
+              <option value="size">Size</option>
+              <option value="memory">Memory</option>
+            </select>
+          </label>
+        </div>
+        <div id="detailTimingPlot" class="pb-plot-root min-h-80"></div>
+      </article>
+
+      <article class="pb-card">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 style="font-size: var(--pb-font-size-h2); font-weight: var(--pb-font-weight-bold); color: var(--pb-text-inverse);">Source composition</h3>
+            <p class="pb-card-hint mt-1">Definitions account for nearly all analyzed source lines.</p>
+          </div>
+          <div class="shrink-0 text-right">
+            <span id="detailTotalSourceLinesValue" class="block text-[1.375rem] font-extrabold leading-tight" style="color: var(--pb-text-inverse);"></span>
+            <span class="pb-card-hint">total lines</span>
+          </div>
+        </div>
+        <div id="detailLinesPlot" class="pb-plot-root mt-4"></div>
+        <div id="detailCompositionLegend" class="mt-3 flex flex-wrap gap-x-5 gap-y-1.5"></div>
+      </article>
+    </section>
+
+    <article class="pb-card mb-6">
+      <h3 style="font-size: var(--pb-font-size-h2); font-weight: var(--pb-font-weight-bold); color: var(--pb-text-inverse);">Interpretation</h3>
+      <div id="detailInsights" class="mt-4 grid gap-3 sm:grid-cols-2"></div>
+    </article>
+
+    <section id="detailTraceAnalysisSection" class="mb-6 hidden pb-card">
+      <details open>
+        <summary class="cursor-pointer list-none -m-5 mb-0 p-5">
+          <div class="flex items-center justify-between gap-4">
+            <div>
+              <h3 style="font-size: var(--pb-font-size-h2); font-weight: var(--pb-font-weight-bold); color: var(--pb-text-inverse);">Trace analysis</h3>
+              <p class="pb-card-hint mt-1">Output from <code class="pb-mono">@typescript/analyze-trace</code>.</p>
+            </div>
+            <span class="pb-badge pb-badge--info">Collapse</span>
+          </div>
+        </summary>
+        <div class="border-t mt-5 pt-5" style="border-color: var(--pb-panel-border);">
+          <div id="detailTraceAnalysisMeta" class="pb-card-hint mb-3"></div>
+          <pre id="detailTraceAnalysisOutput" class="overflow-x-auto rounded-xl p-4 text-xs leading-6" style="border: 1px solid var(--pb-panel-border); background: rgba(0,0,0,.25); color: var(--pb-text-inverse);"></pre>
+        </div>
+      </details>
+    </section>
+
+    <section class="mb-6 pb-card">
+      <details>
+        <summary class="cursor-pointer list-none -m-5 mb-0 p-5">
+          <div class="flex items-center justify-between gap-4">
+            <div>
+              <h3 style="font-size: var(--pb-font-size-h2); font-weight: var(--pb-font-weight-bold); color: var(--pb-text-inverse);">All metrics</h3>
+              <p class="pb-card-hint mt-1">Raw values captured from <code class="pb-mono">tsc --<span id="detailModeCliFlag"></span></code>.</p>
+            </div>
+            <span class="pb-badge pb-badge--info">Expand</span>
+          </div>
+        </summary>
+        <div class="border-t mt-5 pt-5" style="border-color: var(--pb-panel-border);">
+          <div id="detailMetricsTable" class="overflow-x-auto"></div>
+        </div>
+      </details>
+    </section>
+
+    <section class="pb-card">
+      <details>
+        <summary class="cursor-pointer list-none -m-5 mb-0 p-5">
+          <div class="flex items-center justify-between gap-4">
+            <h3 style="font-size: var(--pb-font-size-h2); font-weight: var(--pb-font-weight-bold); color: var(--pb-text-inverse);">Run metadata</h3>
+            <span class="pb-badge pb-badge--info">Expand</span>
+          </div>
+        </summary>
+        <dl id="detailMetadata" class="mt-5 space-y-4 border-t pt-5 text-sm" style="border-color: var(--pb-panel-border);"></dl>
+      </details>
+    </section>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="pb-footer">
+    <span>Generated from TypeScript extended diagnostics</span>
+    <span id="footerGeneratedAt"></span>
+  </footer>
+</main>
+
+<script type="module">
+import * as Plot from "https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6.17/+esm";
+
+    /* SHARED_SCRIPT:START */
+/*
+ * Shared report helpers — inlined into theme/layouts/list-layout.html,
+ * theme/layouts/detail-layout.html, and theme/layouts/comparison-layout.html
+ * between their SHARED_SCRIPT:START/END marker comments. Each layout template
+ * already carries a working copy of this file so it renders correctly when
+ * opened directly; src/theme-splice.ts refreshes that copy from this file at
+ * report-generation time, so the two never drift apart. Keep this the single
+ * source of truth for formatting/chart-mounting logic used across all three
+ * reports; don't re-implement fmt/toSeconds/mountPlot/etc. locally in a
+ * template again.
+ *
+ * Written as plain top-level declarations (no import/export) since it is
+ * spliced as text into each template's `<script type="module">` block, not
+ * loaded as a separate module file — the shipped HTML report stays a single
+ * self-contained file.
+ */
+
+const fmtNumber = new Intl.NumberFormat("en-US");
+const fmtPercent = new Intl.NumberFormat("en-US", { style: "percent", maximumFractionDigits: 1 });
+
+function fmt(n, digits = 1) {
+  return new Intl.NumberFormat(undefined, { maximumFractionDigits: digits }).format(n);
+}
+
+function toSeconds(metric) {
+  if (!metric) return 0;
+  const value = Number(metric.value);
+  if (!Number.isFinite(value)) return 0;
+  if (metric.unit === "milliseconds") return value / 1000;
+  return value;
+}
+
+function toMiB(metric) {
+  if (!metric) return 0;
+  const value = Number(metric.value);
+  if (!Number.isFinite(value)) return 0;
+  if (metric.unit === "KiB") return value / 1024;
+  if (metric.unit === "bytes") return value / (1024 * 1024);
+  return value;
+}
+
+function toCount(metric) {
+  if (!metric) return 0;
+  const value = Number(metric.value);
+  return Number.isFinite(value) ? value : 0;
+}
+
+// camelCase metric key -> "Human Label" (e.g. "checkTime" -> "Check time")
+function labelize(key) {
+  return key
+    .replace(/TimeTime$/, " time")
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/^i O/i, "I/O")
+    .replace(/^./, (s) => s.toUpperCase());
+}
+
+// Format a raw {value, unit} metric object for display (ms / MiB / count).
+function formatMetric(metric) {
+  if (metric.unit === "seconds") return `${(metric.value * 1000).toFixed(0)} ms`;
+  if (metric.unit === "milliseconds") return `${metric.value.toFixed(0)} ms`;
+  if (metric.unit === "KiB") return `${(metric.value / 1024).toFixed(1)} MiB`;
+  return fmtNumber.format(metric.value);
+}
+
+// Format an already-normalized plain number for a given display unit.
+function formatValue(value, unit) {
+  if (unit === "ms") return `${value.toFixed(value < 10 ? 1 : 0)} ms`;
+  if (unit === "MiB" || unit === "MB") return `${value.toFixed(1)} ${unit}`;
+  return fmtNumber.format(Math.round(value));
+}
+
+// Relative change from a to b, or null when there's no meaningful baseline.
+function delta(a, b) {
+  return a === 0 ? (b === 0 ? 0 : null) : (b - a) / a;
+}
+
+function deltaText(a, b, unit = "") {
+  const d = delta(a, b);
+  if (d === null) return "new value";
+  const signedAbs = Math.abs(b - a) >= 100 ? (b - a).toFixed(0) : (b - a).toFixed(1);
+  return `${d > 0 ? "+" : ""}${(d * 100).toFixed(1)}% (${b - a > 0 ? "+" : ""}${signedAbs}${unit ? ` ${unit}` : ""})`;
+}
+
+// CSS class for a delta value — lower-is-better by default (time/memory metrics).
+function deltaClass(d, lowerIsBetter = true) {
+  if (d === null || Math.abs(d) < 0.001) return "pb-delta-flat";
+  const good = lowerIsBetter ? d < 0 : d > 0;
+  return good ? "pb-delta-good" : "pb-delta-bad";
+}
+
+// Severity/status -> badge class (see .pb-badge* in design-tokens.css).
+function badgeClass(kind) {
+  const map = {
+    error: "pb-badge pb-badge--error",
+    bad: "pb-badge pb-badge--bad",
+    warn: "pb-badge pb-badge--warn",
+    mid: "pb-badge pb-badge--mid",
+    info: "pb-badge pb-badge--info",
+    pass: "pb-badge pb-badge--pass",
+    good: "pb-badge pb-badge--good",
+    baseline: "pb-badge pb-badge--baseline",
+  };
+  return map[kind] || "pb-badge pb-badge--info";
+}
+
+function escapeHtml(value) {
+  return String(value).replace(/[&<>'"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" }[c]));
+}
+
+// Qualitative chart palette — brand-tinted but wider than the 4 legal emphasis
+// colors, since charts with many series (e.g. 11 compiler phases) need more
+// distinguishable hues than the slide-deck emphasis-color rule allows.
+const PB_CHART_PALETTE = [
+  "#38bdf8", // sky (I/O read)
+  "#875bf7", // pb-primary-600 (parse)
+  "#a48afb", // pb-primary-400 (resolve module)
+  "#c4b5fd", // light violet (resolve type ref)
+  "#f472b6", // pink (resolve library)
+  "#fbbf24", // pb-warning-400 (bind)
+  "#d70033", // pb-secondary-700 (check — the expensive phase)
+  "#84cc16", // lime (print)
+  "#14b8a6", // teal (I/O write)
+  "#22c55e", // pb-success-500 (emit)
+  "#64748b", // slate (other)
+];
+
+// Tooltip styling shared by every Plot chart across all three reports.
+const TIP_STYLE = { fill: "#ffffff", stroke: "#94a3b8", strokeWidth: 1 };
+
+function plotWidth(containerId) {
+  const el = document.getElementById(containerId);
+  return Math.max(320, el.clientWidth - 24);
+}
+
+// Mount an Observable Plot chart into a `.pb-chart` container, wiring up the
+// `data-title` heading and the scrollable `.pb-plot-root` wrapper.
+function mountPlot(containerId, plot) {
+  const el = document.getElementById(containerId);
+  el.replaceChildren();
+
+  const title = el.dataset.title;
+  if (title) {
+    const heading = document.createElement("h3");
+    heading.className = "pb-chart-title";
+    heading.textContent = title;
+    el.appendChild(heading);
+  }
+
+  const wrap = document.createElement("div");
+  wrap.className = "pb-plot-root";
+  wrap.append(plot);
+  el.appendChild(wrap);
+}
+/* SHARED_SCRIPT:END */
+
+// Idle-state sample so this template renders something real when opened
+// directly (outside the report generator) and so "Load demo data" has
+// something to show inside a generated report.
+const DEMO_AGGREGATED_REPORT = {
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-13T02:15:00.000Z",
+  "reportCount": 20,
+  "reports": [
+    {
+      "schemaVersion": 1,
+      "mode": "extendedDiagnostics",
+      "targetRoot": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/projects/test-lib-1",
+      "targetName": "test-lib-1",
+      "project": "tsconfig.slow.json",
+      "generatedAt": "2026-07-12T23:14:09.331Z",
+      "command": [
+        "/Users/michael_hladky/.nvm/versions/node/v24.1.0/bin/node",
+        "/Users/michael_hladky/WebstormProjects/ts-perf-ws/node_modules/typescript/bin/tsc",
+        "--project",
+        "tsconfig.slow.json",
+        "--extendedDiagnostics",
+        "--pretty",
+        "false"
+      ],
+      "cwd": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/projects/test-lib-1",
+      "startedAt": "2026-07-12T23:14:06.406Z",
+      "finishedAt": "2026-07-12T23:14:09.331Z",
+      "durationMs": 2925.00325,
+      "exitCode": 2,
+      "signal": null,
+      "metrics": {
+        "srcExamples09WorkspacePackageAsSourceConsumerExampleTs833": {
+          "raw": "error TS2307: Cannot find module '@workspace/config' or its corresponding type declarations.",
+          "value": "error TS2307: Cannot find module '@workspace/config' or its corresponding type declarations."
+        },
+        "files": {
+          "raw": "871",
+          "value": 871,
+          "unit": "count"
+        },
+        "linesOfLibrary": {
+          "raw": "9894",
+          "value": 9894,
+          "unit": "count"
+        },
+        "linesOfDefinitions": {
+          "raw": "113104",
+          "value": 113104,
+          "unit": "count"
+        },
+        "linesOfTypeScript": {
+          "raw": "11534",
+          "value": 11534,
+          "unit": "count"
+        },
+        "linesOfJavaScript": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfJSON": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfOther": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "identifiers": {
+          "raw": "131584",
+          "value": 131584,
+          "unit": "count"
+        },
+        "symbols": {
+          "raw": "1017925",
+          "value": 1017925,
+          "unit": "count"
+        },
+        "types": {
+          "raw": "550780",
+          "value": 550780,
+          "unit": "count"
+        },
+        "instantiations": {
+          "raw": "740895",
+          "value": 740895,
+          "unit": "count"
+        },
+        "memoryUsed": {
+          "raw": "704070K",
+          "value": 704070,
+          "unit": "KiB"
+        },
+        "assignabilityCacheSize": {
+          "raw": "242528",
+          "value": 242528,
+          "unit": "count"
+        },
+        "identityCacheSize": {
+          "raw": "140",
+          "value": 140,
+          "unit": "count"
+        },
+        "subtypeCacheSize": {
+          "raw": "21",
+          "value": 21,
+          "unit": "count"
+        },
+        "strictSubtypeCacheSize": {
+          "raw": "531",
+          "value": 531,
+          "unit": "count"
+        },
+        "iOReadTime": {
+          "raw": "0.12s",
+          "value": 0.12,
+          "unit": "seconds"
+        },
+        "parseTime": {
+          "raw": "0.19s",
+          "value": 0.19,
+          "unit": "seconds"
+        },
+        "resolveModuleTime": {
+          "raw": "0.07s",
+          "value": 0.07,
+          "unit": "seconds"
+        },
+        "resolveTypeReferenceTime": {
+          "raw": "0.00s",
+          "value": 0,
+          "unit": "seconds"
+        },
+        "resolveLibraryTime": {
+          "raw": "0.00s",
+          "value": 0,
+          "unit": "seconds"
+        },
+        "programTime": {
+          "raw": "0.43s",
+          "value": 0.43,
+          "unit": "seconds"
+        },
+        "bindTime": {
+          "raw": "0.10s",
+          "value": 0.1,
+          "unit": "seconds"
+        },
+        "checkTime": {
+          "raw": "2.13s",
+          "value": 2.13,
+          "unit": "seconds"
+        },
+        "transformTimeTime": {
+          "raw": "0.04s",
+          "value": 0.04,
+          "unit": "seconds"
+        },
+        "sourceMapTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "commentTimeTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "iOWriteTime": {
+          "raw": "0.07s",
+          "value": 0.07,
+          "unit": "seconds"
+        },
+        "printTimeTime": {
+          "raw": "0.16s",
+          "value": 0.16,
+          "unit": "seconds"
+        },
+        "emitTime": {
+          "raw": "0.16s",
+          "value": 0.16,
+          "unit": "seconds"
+        },
+        "totalTime": {
+          "raw": "2.82s",
+          "value": 2.82,
+          "unit": "seconds"
+        }
+      },
+      "stdout": "src/examples/09-workspace-package-as-source/consumer-example.ts(8,33): error TS2307: Cannot find module '@workspace/config' or its corresponding type declarations.\nFiles:                         871\nLines of Library:             9894\nLines of Definitions:       113104\nLines of TypeScript:         11534\nLines of JavaScript:             0\nLines of JSON:                   0\nLines of Other:                  0\nIdentifiers:                131584\nSymbols:                   1017925\nTypes:                      550780\nInstantiations:             740895\nMemory used:               704070K\nAssignability cache size:   242528\nIdentity cache size:           140\nSubtype cache size:             21\nStrict subtype cache size:     531\nI/O Read time:               0.12s\nParse time:                  0.19s\nResolveModule time:          0.07s\nResolveTypeReference time:   0.00s\nResolveLibrary time:         0.00s\nProgram time:                0.43s\nBind time:                   0.10s\nCheck time:                  2.13s\ntransformTime time:          0.04s\nSource Map time:             0.01s\ncommentTime time:            0.01s\nI/O Write time:              0.07s\nprintTime time:              0.16s\nEmit time:                   0.16s\nTotal time:                  2.82s\n",
+      "stderr": ""
+    },
+    {
+      "schemaVersion": 1,
+      "mode": "diagnostics",
+      "targetRoot": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/projects/test-lib-2",
+      "targetName": "test-lib-2",
+      "generatedAt": "2026-07-11T21:10:21.325Z",
+      "command": [
+        "/Users/michael_hladky/.nvm/versions/node/v24.1.0/bin/node",
+        "/Users/michael_hladky/WebstormProjects/ts-perf-ws/node_modules/typescript/bin/tsc",
+        "--diagnostics",
+        "--pretty",
+        "false"
+      ],
+      "cwd": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/projects/test-lib-2",
+      "startedAt": "2026-07-11T21:10:20.955Z",
+      "finishedAt": "2026-07-11T21:10:21.325Z",
+      "durationMs": 370.60875,
+      "exitCode": 0,
+      "signal": null,
+      "metrics": {
+        "files": {
+          "raw": "165",
+          "value": 165,
+          "unit": "count"
+        },
+        "lines": {
+          "raw": "68264",
+          "value": 68264,
+          "unit": "count"
+        },
+        "identifiers": {
+          "raw": "74310",
+          "value": 74310,
+          "unit": "count"
+        },
+        "symbols": {
+          "raw": "44550",
+          "value": 44550,
+          "unit": "count"
+        },
+        "types": {
+          "raw": "124",
+          "value": 124,
+          "unit": "count"
+        },
+        "instantiations": {
+          "raw": "3",
+          "value": 3,
+          "unit": "count"
+        },
+        "memoryUsed": {
+          "raw": "96764K",
+          "value": 96764,
+          "unit": "KiB"
+        },
+        "iORead": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "iOWrite": {
+          "raw": "0.00s",
+          "value": 0,
+          "unit": "seconds"
+        },
+        "parseTime": {
+          "raw": "0.15s",
+          "value": 0.15,
+          "unit": "seconds"
+        },
+        "bindTime": {
+          "raw": "0.10s",
+          "value": 0.1,
+          "unit": "seconds"
+        },
+        "checkTime": {
+          "raw": "0.02s",
+          "value": 0.02,
+          "unit": "seconds"
+        },
+        "emitTime": {
+          "raw": "0.02s",
+          "value": 0.02,
+          "unit": "seconds"
+        },
+        "totalTime": {
+          "raw": "0.29s",
+          "value": 0.29,
+          "unit": "seconds"
+        }
+      },
+      "stdout": "Files:             165\nLines:           68264\nIdentifiers:     74310\nSymbols:         44550\nTypes:             124\nInstantiations:      3\nMemory used:    96764K\nI/O read:        0.01s\nI/O write:       0.00s\nParse time:      0.15s\nBind time:       0.10s\nCheck time:      0.02s\nEmit time:       0.02s\nTotal time:      0.29s\n",
+      "stderr": ""
+    },
+    {
+      "schemaVersion": 1,
+      "mode": "extendedDiagnostics",
+      "targetRoot": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/tools/tsc-diagnostics",
+      "targetName": "tsc-diagnostics",
+      "project": "tsconfig.json",
+      "generatedAt": "2026-07-13T01:10:42.055Z",
+      "command": [
+        "/Users/michael_hladky/.nvm/versions/node/v24.1.0/bin/node",
+        "/Users/michael_hladky/WebstormProjects/ts-perf-ws/node_modules/typescript/bin/tsc",
+        "--project",
+        "tsconfig.json",
+        "--extendedDiagnostics",
+        "--pretty",
+        "false"
+      ],
+      "cwd": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/tools/tsc-diagnostics",
+      "startedAt": "2026-07-13T01:10:41.545Z",
+      "finishedAt": "2026-07-13T01:10:42.055Z",
+      "durationMs": 509.428417,
+      "exitCode": 0,
+      "signal": null,
+      "metrics": {
+        "files": {
+          "raw": "178",
+          "value": 178,
+          "unit": "count"
+        },
+        "linesOfLibrary": {
+          "raw": "10247",
+          "value": 10247,
+          "unit": "count"
+        },
+        "linesOfDefinitions": {
+          "raw": "58345",
+          "value": 58345,
+          "unit": "count"
+        },
+        "linesOfTypeScript": {
+          "raw": "2870",
+          "value": 2870,
+          "unit": "count"
+        },
+        "linesOfJavaScript": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfJSON": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfOther": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "identifiers": {
+          "raw": "77957",
+          "value": 77957,
+          "unit": "count"
+        },
+        "symbols": {
+          "raw": "49269",
+          "value": 49269,
+          "unit": "count"
+        },
+        "types": {
+          "raw": "3065",
+          "value": 3065,
+          "unit": "count"
+        },
+        "instantiations": {
+          "raw": "2580",
+          "value": 2580,
+          "unit": "count"
+        },
+        "memoryUsed": {
+          "raw": "102459K",
+          "value": 102459,
+          "unit": "KiB"
+        },
+        "assignabilityCacheSize": {
+          "raw": "361",
+          "value": 361,
+          "unit": "count"
+        },
+        "identityCacheSize": {
+          "raw": "48",
+          "value": 48,
+          "unit": "count"
+        },
+        "subtypeCacheSize": {
+          "raw": "141",
+          "value": 141,
+          "unit": "count"
+        },
+        "strictSubtypeCacheSize": {
+          "raw": "13",
+          "value": 13,
+          "unit": "count"
+        },
+        "iOReadTime": {
+          "raw": "0.03s",
+          "value": 0.03,
+          "unit": "seconds"
+        },
+        "parseTime": {
+          "raw": "0.12s",
+          "value": 0.12,
+          "unit": "seconds"
+        },
+        "resolveModuleTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "resolveTypeReferenceTime": {
+          "raw": "0.00s",
+          "value": 0,
+          "unit": "seconds"
+        },
+        "resolveLibraryTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "programTime": {
+          "raw": "0.19s",
+          "value": 0.19,
+          "unit": "seconds"
+        },
+        "bindTime": {
+          "raw": "0.09s",
+          "value": 0.09,
+          "unit": "seconds"
+        },
+        "checkTime": {
+          "raw": "0.11s",
+          "value": 0.11,
+          "unit": "seconds"
+        },
+        "transformTimeTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "sourceMapTime": {
+          "raw": "0.00s",
+          "value": 0,
+          "unit": "seconds"
+        },
+        "commentTimeTime": {
+          "raw": "0.00s",
+          "value": 0,
+          "unit": "seconds"
+        },
+        "iOWriteTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "printTimeTime": {
+          "raw": "0.06s",
+          "value": 0.06,
+          "unit": "seconds"
+        },
+        "emitTime": {
+          "raw": "0.06s",
+          "value": 0.06,
+          "unit": "seconds"
+        },
+        "totalTime": {
+          "raw": "0.45s",
+          "value": 0.45,
+          "unit": "seconds"
+        }
+      },
+      "stdout": "Files:                         178\nLines of Library:            10247\nLines of Definitions:        58345\nLines of TypeScript:          2870\nLines of JavaScript:             0\nLines of JSON:                   0\nLines of Other:                  0\nIdentifiers:                 77957\nSymbols:                     49269\nTypes:                        3065\nInstantiations:               2580\nMemory used:               102459K\nAssignability cache size:      361\nIdentity cache size:            48\nSubtype cache size:            141\nStrict subtype cache size:      13\nI/O Read time:               0.03s\nParse time:                  0.12s\nResolveModule time:          0.01s\nResolveTypeReference time:   0.00s\nResolveLibrary time:         0.01s\nProgram time:                0.19s\nBind time:                   0.09s\nCheck time:                  0.11s\ntransformTime time:          0.01s\nSource Map time:             0.00s\ncommentTime time:            0.00s\nI/O Write time:              0.01s\nprintTime time:              0.06s\nEmit time:                   0.06s\nTotal time:                  0.45s\n",
+      "stderr": ""
+    },
+    {
+      "schemaVersion": 1,
+      "mode": "extendedDiagnostics",
+      "targetRoot": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/ui-components",
+      "targetName": "ui-components",
+      "project": "tsconfig.json",
+      "generatedAt": "2026-07-13T02:00:02.947Z",
+      "command": [
+        "/Users/michael_hladky/.nvm/versions/node/v24.1.0/bin/node",
+        "/Users/michael_hladky/WebstormProjects/ts-perf-ws/node_modules/typescript/bin/tsc",
+        "--project",
+        "tsconfig.json",
+        "--extendedDiagnostics",
+        "--pretty",
+        "false"
+      ],
+      "cwd": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/ui-components",
+      "startedAt": "2026-07-13T02:00:00.000Z",
+      "finishedAt": "2026-07-13T02:00:02.917Z",
+      "durationMs": 2917,
+      "exitCode": 0,
+      "signal": null,
+      "metrics": {
+        "files": {
+          "raw": "587",
+          "value": 587,
+          "unit": "count"
+        },
+        "linesOfLibrary": {
+          "raw": "10009",
+          "value": 10009,
+          "unit": "count"
+        },
+        "linesOfDefinitions": {
+          "raw": "112001",
+          "value": 112001,
+          "unit": "count"
+        },
+        "linesOfTypeScript": {
+          "raw": "33399",
+          "value": 33399,
+          "unit": "count"
+        },
+        "linesOfJavaScript": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfJSON": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfOther": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "identifiers": {
+          "raw": "156950",
+          "value": 156950,
+          "unit": "count"
+        },
+        "symbols": {
+          "raw": "96674",
+          "value": 96674,
+          "unit": "count"
+        },
+        "types": {
+          "raw": "16612",
+          "value": 16612,
+          "unit": "count"
+        },
+        "instantiations": {
+          "raw": "65386",
+          "value": 65386,
+          "unit": "count"
+        },
+        "memoryUsed": {
+          "raw": "284351K",
+          "value": 284351,
+          "unit": "KiB"
+        },
+        "assignabilityCacheSize": {
+          "raw": "6461",
+          "value": 6461,
+          "unit": "count"
+        },
+        "identityCacheSize": {
+          "raw": "54",
+          "value": 54,
+          "unit": "count"
+        },
+        "subtypeCacheSize": {
+          "raw": "159",
+          "value": 159,
+          "unit": "count"
+        },
+        "strictSubtypeCacheSize": {
+          "raw": "45",
+          "value": 45,
+          "unit": "count"
+        },
+        "iOReadTime": {
+          "raw": "0.03s",
+          "value": 0.03,
+          "unit": "seconds"
+        },
+        "parseTime": {
+          "raw": "0.11s",
+          "value": 0.11,
+          "unit": "seconds"
+        },
+        "resolveModuleTime": {
+          "raw": "0.05s",
+          "value": 0.05,
+          "unit": "seconds"
+        },
+        "resolveTypeReferenceTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "resolveLibraryTime": {
+          "raw": "0.03s",
+          "value": 0.03,
+          "unit": "seconds"
+        },
+        "programTime": {
+          "raw": "0.10s",
+          "value": 0.1,
+          "unit": "seconds"
+        },
+        "bindTime": {
+          "raw": "0.12s",
+          "value": 0.12,
+          "unit": "seconds"
+        },
+        "checkTime": {
+          "raw": "2.02s",
+          "value": 2.02,
+          "unit": "seconds"
+        },
+        "transformTimeTime": {
+          "raw": "0.00s",
+          "value": 0,
+          "unit": "seconds"
+        },
+        "sourceMapTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "commentTimeTime": {
+          "raw": "0.00s",
+          "value": 0,
+          "unit": "seconds"
+        },
+        "iOWriteTime": {
+          "raw": "0.03s",
+          "value": 0.03,
+          "unit": "seconds"
+        },
+        "printTimeTime": {
+          "raw": "0.03s",
+          "value": 0.03,
+          "unit": "seconds"
+        },
+        "emitTime": {
+          "raw": "0.06s",
+          "value": 0.06,
+          "unit": "seconds"
+        },
+        "totalTime": {
+          "raw": "2.60s",
+          "value": 2.6,
+          "unit": "seconds"
+        }
+      },
+      "stdout": "Files:                         587\nLines of Library:             10009\nLines of Definitions:       112001\nLines of TypeScript:         33399\nLines of JavaScript:             0\nLines of JSON:                   0\nLines of Other:                  0\nIdentifiers:                156950\nSymbols:                   96674\nTypes:                      16612\nInstantiations:             65386\nMemory used:               284351K\nAssignability cache size:   6461\nIdentity cache size:           54\nSubtype cache size:             159\nStrict subtype cache size:     45\nI/O Read time:               0.03s\nParse time:                  0.11s\nResolveModule time:          0.05s\nResolveTypeReference time:   0.01s\nResolveLibrary time:         0.03s\nProgram time:                0.10s\nBind time:                   0.12s\nCheck time:                  2.02s\ntransformTime time:          0.00s\nSource Map time:             0.01s\ncommentTime time:            0.00s\nI/O Write time:              0.03s\nprintTime time:              0.03s\nEmit time:                   0.06s\nTotal time:                  2.60s\n",
+      "stderr": ""
+    },
+    {
+      "schemaVersion": 1,
+      "mode": "extendedDiagnostics",
+      "targetRoot": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/design-system",
+      "targetName": "design-system",
+      "project": "tsconfig.json",
+      "generatedAt": "2026-07-13T02:00:46.856Z",
+      "command": [
+        "/Users/michael_hladky/.nvm/versions/node/v24.1.0/bin/node",
+        "/Users/michael_hladky/WebstormProjects/ts-perf-ws/node_modules/typescript/bin/tsc",
+        "--project",
+        "tsconfig.json",
+        "--extendedDiagnostics",
+        "--pretty",
+        "false"
+      ],
+      "cwd": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/design-system",
+      "startedAt": "2026-07-13T02:00:45.000Z",
+      "finishedAt": "2026-07-13T02:00:46.826Z",
+      "durationMs": 1826,
+      "exitCode": 0,
+      "signal": null,
+      "metrics": {
+        "files": {
+          "raw": "523",
+          "value": 523,
+          "unit": "count"
+        },
+        "linesOfLibrary": {
+          "raw": "10528",
+          "value": 10528,
+          "unit": "count"
+        },
+        "linesOfDefinitions": {
+          "raw": "29107",
+          "value": 29107,
+          "unit": "count"
+        },
+        "linesOfTypeScript": {
+          "raw": "16541",
+          "value": 16541,
+          "unit": "count"
+        },
+        "linesOfJavaScript": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfJSON": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfOther": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "identifiers": {
+          "raw": "98435",
+          "value": 98435,
+          "unit": "count"
+        },
+        "symbols": {
+          "raw": "77312",
+          "value": 77312,
+          "unit": "count"
+        },
+        "types": {
+          "raw": "19372",
+          "value": 19372,
+          "unit": "count"
+        },
+        "instantiations": {
+          "raw": "57621",
+          "value": 57621,
+          "unit": "count"
+        },
+        "memoryUsed": {
+          "raw": "64921K",
+          "value": 64921,
+          "unit": "KiB"
+        },
+        "assignabilityCacheSize": {
+          "raw": "4273",
+          "value": 4273,
+          "unit": "count"
+        },
+        "identityCacheSize": {
+          "raw": "114",
+          "value": 114,
+          "unit": "count"
+        },
+        "subtypeCacheSize": {
+          "raw": "109",
+          "value": 109,
+          "unit": "count"
+        },
+        "strictSubtypeCacheSize": {
+          "raw": "15",
+          "value": 15,
+          "unit": "count"
+        },
+        "iOReadTime": {
+          "raw": "0.06s",
+          "value": 0.06,
+          "unit": "seconds"
+        },
+        "parseTime": {
+          "raw": "0.11s",
+          "value": 0.11,
+          "unit": "seconds"
+        },
+        "resolveModuleTime": {
+          "raw": "0.03s",
+          "value": 0.03,
+          "unit": "seconds"
+        },
+        "resolveTypeReferenceTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "resolveLibraryTime": {
+          "raw": "0.04s",
+          "value": 0.04,
+          "unit": "seconds"
+        },
+        "programTime": {
+          "raw": "0.30s",
+          "value": 0.3,
+          "unit": "seconds"
+        },
+        "bindTime": {
+          "raw": "0.07s",
+          "value": 0.07,
+          "unit": "seconds"
+        },
+        "checkTime": {
+          "raw": "0.72s",
+          "value": 0.72,
+          "unit": "seconds"
+        },
+        "transformTimeTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "sourceMapTime": {
+          "raw": "0.00s",
+          "value": 0,
+          "unit": "seconds"
+        },
+        "commentTimeTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "iOWriteTime": {
+          "raw": "0.06s",
+          "value": 0.06,
+          "unit": "seconds"
+        },
+        "printTimeTime": {
+          "raw": "0.14s",
+          "value": 0.14,
+          "unit": "seconds"
+        },
+        "emitTime": {
+          "raw": "0.21s",
+          "value": 0.21,
+          "unit": "seconds"
+        },
+        "totalTime": {
+          "raw": "1.77s",
+          "value": 1.77,
+          "unit": "seconds"
+        }
+      },
+      "stdout": "Files:                         523\nLines of Library:             10528\nLines of Definitions:       29107\nLines of TypeScript:         16541\nLines of JavaScript:             0\nLines of JSON:                   0\nLines of Other:                  0\nIdentifiers:                98435\nSymbols:                   77312\nTypes:                      19372\nInstantiations:             57621\nMemory used:               64921K\nAssignability cache size:   4273\nIdentity cache size:           114\nSubtype cache size:             109\nStrict subtype cache size:     15\nI/O Read time:               0.06s\nParse time:                  0.11s\nResolveModule time:          0.03s\nResolveTypeReference time:   0.01s\nResolveLibrary time:         0.04s\nProgram time:                0.30s\nBind time:                   0.07s\nCheck time:                  0.72s\ntransformTime time:          0.01s\nSource Map time:             0.00s\ncommentTime time:            0.01s\nI/O Write time:              0.06s\nprintTime time:              0.14s\nEmit time:                   0.21s\nTotal time:                  1.77s\n",
+      "stderr": ""
+    },
+    {
+      "schemaVersion": 1,
+      "mode": "extendedDiagnostics",
+      "targetRoot": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/api-client",
+      "targetName": "api-client",
+      "project": "tsconfig.json",
+      "generatedAt": "2026-07-13T02:01:32.717Z",
+      "command": [
+        "/Users/michael_hladky/.nvm/versions/node/v24.1.0/bin/node",
+        "/Users/michael_hladky/WebstormProjects/ts-perf-ws/node_modules/typescript/bin/tsc",
+        "--project",
+        "tsconfig.json",
+        "--extendedDiagnostics",
+        "--pretty",
+        "false"
+      ],
+      "cwd": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/api-client",
+      "startedAt": "2026-07-13T02:01:30.000Z",
+      "finishedAt": "2026-07-13T02:01:32.687Z",
+      "durationMs": 2687,
+      "exitCode": 0,
+      "signal": null,
+      "metrics": {
+        "files": {
+          "raw": "899",
+          "value": 899,
+          "unit": "count"
+        },
+        "linesOfLibrary": {
+          "raw": "8412",
+          "value": 8412,
+          "unit": "count"
+        },
+        "linesOfDefinitions": {
+          "raw": "122960",
+          "value": 122960,
+          "unit": "count"
+        },
+        "linesOfTypeScript": {
+          "raw": "50226",
+          "value": 50226,
+          "unit": "count"
+        },
+        "linesOfJavaScript": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfJSON": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfOther": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "identifiers": {
+          "raw": "223193",
+          "value": 223193,
+          "unit": "count"
+        },
+        "symbols": {
+          "raw": "69080",
+          "value": 69080,
+          "unit": "count"
+        },
+        "types": {
+          "raw": "21819",
+          "value": 21819,
+          "unit": "count"
+        },
+        "instantiations": {
+          "raw": "68718",
+          "value": 68718,
+          "unit": "count"
+        },
+        "memoryUsed": {
+          "raw": "217159K",
+          "value": 217159,
+          "unit": "KiB"
+        },
+        "assignabilityCacheSize": {
+          "raw": "12215",
+          "value": 12215,
+          "unit": "count"
+        },
+        "identityCacheSize": {
+          "raw": "20",
+          "value": 20,
+          "unit": "count"
+        },
+        "subtypeCacheSize": {
+          "raw": "131",
+          "value": 131,
+          "unit": "count"
+        },
+        "strictSubtypeCacheSize": {
+          "raw": "56",
+          "value": 56,
+          "unit": "count"
+        },
+        "iOReadTime": {
+          "raw": "0.03s",
+          "value": 0.03,
+          "unit": "seconds"
+        },
+        "parseTime": {
+          "raw": "0.26s",
+          "value": 0.26,
+          "unit": "seconds"
+        },
+        "resolveModuleTime": {
+          "raw": "0.02s",
+          "value": 0.02,
+          "unit": "seconds"
+        },
+        "resolveTypeReferenceTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "resolveLibraryTime": {
+          "raw": "0.04s",
+          "value": 0.04,
+          "unit": "seconds"
+        },
+        "programTime": {
+          "raw": "0.15s",
+          "value": 0.15,
+          "unit": "seconds"
+        },
+        "bindTime": {
+          "raw": "0.22s",
+          "value": 0.22,
+          "unit": "seconds"
+        },
+        "checkTime": {
+          "raw": "1.37s",
+          "value": 1.37,
+          "unit": "seconds"
+        },
+        "transformTimeTime": {
+          "raw": "0.05s",
+          "value": 0.05,
+          "unit": "seconds"
+        },
+        "sourceMapTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "commentTimeTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "iOWriteTime": {
+          "raw": "0.03s",
+          "value": 0.03,
+          "unit": "seconds"
+        },
+        "printTimeTime": {
+          "raw": "0.13s",
+          "value": 0.13,
+          "unit": "seconds"
+        },
+        "emitTime": {
+          "raw": "0.08s",
+          "value": 0.08,
+          "unit": "seconds"
+        },
+        "totalTime": {
+          "raw": "2.41s",
+          "value": 2.41,
+          "unit": "seconds"
+        }
+      },
+      "stdout": "Files:                         899\nLines of Library:             8412\nLines of Definitions:       122960\nLines of TypeScript:         50226\nLines of JavaScript:             0\nLines of JSON:                   0\nLines of Other:                  0\nIdentifiers:                223193\nSymbols:                   69080\nTypes:                      21819\nInstantiations:             68718\nMemory used:               217159K\nAssignability cache size:   12215\nIdentity cache size:           20\nSubtype cache size:             131\nStrict subtype cache size:     56\nI/O Read time:               0.03s\nParse time:                  0.26s\nResolveModule time:          0.02s\nResolveTypeReference time:   0.01s\nResolveLibrary time:         0.04s\nProgram time:                0.15s\nBind time:                   0.22s\nCheck time:                  1.37s\ntransformTime time:          0.05s\nSource Map time:             0.01s\ncommentTime time:            0.01s\nI/O Write time:              0.03s\nprintTime time:              0.13s\nEmit time:                   0.08s\nTotal time:                  2.41s\n",
+      "stderr": ""
+    },
+    {
+      "schemaVersion": 1,
+      "mode": "extendedDiagnostics",
+      "targetRoot": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/auth-service",
+      "targetName": "auth-service",
+      "project": "tsconfig.json",
+      "generatedAt": "2026-07-13T02:02:17.951Z",
+      "command": [
+        "/Users/michael_hladky/.nvm/versions/node/v24.1.0/bin/node",
+        "/Users/michael_hladky/WebstormProjects/ts-perf-ws/node_modules/typescript/bin/tsc",
+        "--project",
+        "tsconfig.json",
+        "--extendedDiagnostics",
+        "--pretty",
+        "false"
+      ],
+      "cwd": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/auth-service",
+      "startedAt": "2026-07-13T02:02:15.000Z",
+      "finishedAt": "2026-07-13T02:02:17.921Z",
+      "durationMs": 2921,
+      "exitCode": 0,
+      "signal": null,
+      "metrics": {
+        "files": {
+          "raw": "309",
+          "value": 309,
+          "unit": "count"
+        },
+        "linesOfLibrary": {
+          "raw": "10085",
+          "value": 10085,
+          "unit": "count"
+        },
+        "linesOfDefinitions": {
+          "raw": "110861",
+          "value": 110861,
+          "unit": "count"
+        },
+        "linesOfTypeScript": {
+          "raw": "17609",
+          "value": 17609,
+          "unit": "count"
+        },
+        "linesOfJavaScript": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfJSON": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfOther": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "identifiers": {
+          "raw": "140450",
+          "value": 140450,
+          "unit": "count"
+        },
+        "symbols": {
+          "raw": "117152",
+          "value": 117152,
+          "unit": "count"
+        },
+        "types": {
+          "raw": "26084",
+          "value": 26084,
+          "unit": "count"
+        },
+        "instantiations": {
+          "raw": "91259",
+          "value": 91259,
+          "unit": "count"
+        },
+        "memoryUsed": {
+          "raw": "133421K",
+          "value": 133421,
+          "unit": "KiB"
+        },
+        "assignabilityCacheSize": {
+          "raw": "6269",
+          "value": 6269,
+          "unit": "count"
+        },
+        "identityCacheSize": {
+          "raw": "141",
+          "value": 141,
+          "unit": "count"
+        },
+        "subtypeCacheSize": {
+          "raw": "60",
+          "value": 60,
+          "unit": "count"
+        },
+        "strictSubtypeCacheSize": {
+          "raw": "47",
+          "value": 47,
+          "unit": "count"
+        },
+        "iOReadTime": {
+          "raw": "0.07s",
+          "value": 0.07,
+          "unit": "seconds"
+        },
+        "parseTime": {
+          "raw": "0.08s",
+          "value": 0.08,
+          "unit": "seconds"
+        },
+        "resolveModuleTime": {
+          "raw": "0.05s",
+          "value": 0.05,
+          "unit": "seconds"
+        },
+        "resolveTypeReferenceTime": {
+          "raw": "0.02s",
+          "value": 0.02,
+          "unit": "seconds"
+        },
+        "resolveLibraryTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "programTime": {
+          "raw": "0.49s",
+          "value": 0.49,
+          "unit": "seconds"
+        },
+        "bindTime": {
+          "raw": "0.06s",
+          "value": 0.06,
+          "unit": "seconds"
+        },
+        "checkTime": {
+          "raw": "1.72s",
+          "value": 1.72,
+          "unit": "seconds"
+        },
+        "transformTimeTime": {
+          "raw": "0.03s",
+          "value": 0.03,
+          "unit": "seconds"
+        },
+        "sourceMapTime": {
+          "raw": "0.00s",
+          "value": 0,
+          "unit": "seconds"
+        },
+        "commentTimeTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "iOWriteTime": {
+          "raw": "0.02s",
+          "value": 0.02,
+          "unit": "seconds"
+        },
+        "printTimeTime": {
+          "raw": "0.14s",
+          "value": 0.14,
+          "unit": "seconds"
+        },
+        "emitTime": {
+          "raw": "0.09s",
+          "value": 0.09,
+          "unit": "seconds"
+        },
+        "totalTime": {
+          "raw": "2.79s",
+          "value": 2.79,
+          "unit": "seconds"
+        }
+      },
+      "stdout": "Files:                         309\nLines of Library:             10085\nLines of Definitions:       110861\nLines of TypeScript:         17609\nLines of JavaScript:             0\nLines of JSON:                   0\nLines of Other:                  0\nIdentifiers:                140450\nSymbols:                   117152\nTypes:                      26084\nInstantiations:             91259\nMemory used:               133421K\nAssignability cache size:   6269\nIdentity cache size:           141\nSubtype cache size:             60\nStrict subtype cache size:     47\nI/O Read time:               0.07s\nParse time:                  0.08s\nResolveModule time:          0.05s\nResolveTypeReference time:   0.02s\nResolveLibrary time:         0.01s\nProgram time:                0.49s\nBind time:                   0.06s\nCheck time:                  1.72s\ntransformTime time:          0.03s\nSource Map time:             0.00s\ncommentTime time:            0.01s\nI/O Write time:              0.02s\nprintTime time:              0.14s\nEmit time:                   0.09s\nTotal time:                  2.79s\n",
+      "stderr": ""
+    },
+    {
+      "schemaVersion": 1,
+      "mode": "extendedDiagnostics",
+      "targetRoot": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/billing-service",
+      "targetName": "billing-service",
+      "project": "tsconfig.json",
+      "generatedAt": "2026-07-13T02:03:02.281Z",
+      "command": [
+        "/Users/michael_hladky/.nvm/versions/node/v24.1.0/bin/node",
+        "/Users/michael_hladky/WebstormProjects/ts-perf-ws/node_modules/typescript/bin/tsc",
+        "--project",
+        "tsconfig.json",
+        "--extendedDiagnostics",
+        "--pretty",
+        "false"
+      ],
+      "cwd": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/billing-service",
+      "startedAt": "2026-07-13T02:03:00.000Z",
+      "finishedAt": "2026-07-13T02:03:02.251Z",
+      "durationMs": 2251,
+      "exitCode": 0,
+      "signal": null,
+      "metrics": {
+        "files": {
+          "raw": "612",
+          "value": 612,
+          "unit": "count"
+        },
+        "linesOfLibrary": {
+          "raw": "10377",
+          "value": 10377,
+          "unit": "count"
+        },
+        "linesOfDefinitions": {
+          "raw": "47818",
+          "value": 47818,
+          "unit": "count"
+        },
+        "linesOfTypeScript": {
+          "raw": "50926",
+          "value": 50926,
+          "unit": "count"
+        },
+        "linesOfJavaScript": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfJSON": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfOther": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "identifiers": {
+          "raw": "283749",
+          "value": 283749,
+          "unit": "count"
+        },
+        "symbols": {
+          "raw": "107494",
+          "value": 107494,
+          "unit": "count"
+        },
+        "types": {
+          "raw": "51863",
+          "value": 51863,
+          "unit": "count"
+        },
+        "instantiations": {
+          "raw": "131390",
+          "value": 131390,
+          "unit": "count"
+        },
+        "memoryUsed": {
+          "raw": "57524K",
+          "value": 57524,
+          "unit": "KiB"
+        },
+        "assignabilityCacheSize": {
+          "raw": "25671",
+          "value": 25671,
+          "unit": "count"
+        },
+        "identityCacheSize": {
+          "raw": "129",
+          "value": 129,
+          "unit": "count"
+        },
+        "subtypeCacheSize": {
+          "raw": "158",
+          "value": 158,
+          "unit": "count"
+        },
+        "strictSubtypeCacheSize": {
+          "raw": "54",
+          "value": 54,
+          "unit": "count"
+        },
+        "iOReadTime": {
+          "raw": "0.02s",
+          "value": 0.02,
+          "unit": "seconds"
+        },
+        "parseTime": {
+          "raw": "0.23s",
+          "value": 0.23,
+          "unit": "seconds"
+        },
+        "resolveModuleTime": {
+          "raw": "0.05s",
+          "value": 0.05,
+          "unit": "seconds"
+        },
+        "resolveTypeReferenceTime": {
+          "raw": "0.00s",
+          "value": 0,
+          "unit": "seconds"
+        },
+        "resolveLibraryTime": {
+          "raw": "0.00s",
+          "value": 0,
+          "unit": "seconds"
+        },
+        "programTime": {
+          "raw": "0.38s",
+          "value": 0.38,
+          "unit": "seconds"
+        },
+        "bindTime": {
+          "raw": "0.16s",
+          "value": 0.16,
+          "unit": "seconds"
+        },
+        "checkTime": {
+          "raw": "0.74s",
+          "value": 0.74,
+          "unit": "seconds"
+        },
+        "transformTimeTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "sourceMapTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "commentTimeTime": {
+          "raw": "0.00s",
+          "value": 0,
+          "unit": "seconds"
+        },
+        "iOWriteTime": {
+          "raw": "0.03s",
+          "value": 0.03,
+          "unit": "seconds"
+        },
+        "printTimeTime": {
+          "raw": "0.20s",
+          "value": 0.2,
+          "unit": "seconds"
+        },
+        "emitTime": {
+          "raw": "0.13s",
+          "value": 0.13,
+          "unit": "seconds"
+        },
+        "totalTime": {
+          "raw": "1.96s",
+          "value": 1.96,
+          "unit": "seconds"
+        }
+      },
+      "stdout": "Files:                         612\nLines of Library:             10377\nLines of Definitions:       47818\nLines of TypeScript:         50926\nLines of JavaScript:             0\nLines of JSON:                   0\nLines of Other:                  0\nIdentifiers:                283749\nSymbols:                   107494\nTypes:                      51863\nInstantiations:             131390\nMemory used:               57524K\nAssignability cache size:   25671\nIdentity cache size:           129\nSubtype cache size:             158\nStrict subtype cache size:     54\nI/O Read time:               0.02s\nParse time:                  0.23s\nResolveModule time:          0.05s\nResolveTypeReference time:   0.00s\nResolveLibrary time:         0.00s\nProgram time:                0.38s\nBind time:                   0.16s\nCheck time:                  0.74s\ntransformTime time:          0.01s\nSource Map time:             0.01s\ncommentTime time:            0.00s\nI/O Write time:              0.03s\nprintTime time:              0.20s\nEmit time:                   0.13s\nTotal time:                  1.96s\n",
+      "stderr": ""
+    },
+    {
+      "schemaVersion": 1,
+      "mode": "extendedDiagnostics",
+      "targetRoot": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/notification-service",
+      "targetName": "notification-service",
+      "project": "tsconfig.json",
+      "generatedAt": "2026-07-13T02:03:47.532Z",
+      "command": [
+        "/Users/michael_hladky/.nvm/versions/node/v24.1.0/bin/node",
+        "/Users/michael_hladky/WebstormProjects/ts-perf-ws/node_modules/typescript/bin/tsc",
+        "--project",
+        "tsconfig.json",
+        "--extendedDiagnostics",
+        "--pretty",
+        "false"
+      ],
+      "cwd": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/notification-service",
+      "startedAt": "2026-07-13T02:03:45.000Z",
+      "finishedAt": "2026-07-13T02:03:47.502Z",
+      "durationMs": 2502,
+      "exitCode": 0,
+      "signal": null,
+      "metrics": {
+        "files": {
+          "raw": "189",
+          "value": 189,
+          "unit": "count"
+        },
+        "linesOfLibrary": {
+          "raw": "8878",
+          "value": 8878,
+          "unit": "count"
+        },
+        "linesOfDefinitions": {
+          "raw": "76438",
+          "value": 76438,
+          "unit": "count"
+        },
+        "linesOfTypeScript": {
+          "raw": "7607",
+          "value": 7607,
+          "unit": "count"
+        },
+        "linesOfJavaScript": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfJSON": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfOther": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "identifiers": {
+          "raw": "42437",
+          "value": 42437,
+          "unit": "count"
+        },
+        "symbols": {
+          "raw": "23792",
+          "value": 23792,
+          "unit": "count"
+        },
+        "types": {
+          "raw": "25276",
+          "value": 25276,
+          "unit": "count"
+        },
+        "instantiations": {
+          "raw": "108023",
+          "value": 108023,
+          "unit": "count"
+        },
+        "memoryUsed": {
+          "raw": "160606K",
+          "value": 160606,
+          "unit": "KiB"
+        },
+        "assignabilityCacheSize": {
+          "raw": "8454",
+          "value": 8454,
+          "unit": "count"
+        },
+        "identityCacheSize": {
+          "raw": "180",
+          "value": 180,
+          "unit": "count"
+        },
+        "subtypeCacheSize": {
+          "raw": "62",
+          "value": 62,
+          "unit": "count"
+        },
+        "strictSubtypeCacheSize": {
+          "raw": "30",
+          "value": 30,
+          "unit": "count"
+        },
+        "iOReadTime": {
+          "raw": "0.05s",
+          "value": 0.05,
+          "unit": "seconds"
+        },
+        "parseTime": {
+          "raw": "0.21s",
+          "value": 0.21,
+          "unit": "seconds"
+        },
+        "resolveModuleTime": {
+          "raw": "0.06s",
+          "value": 0.06,
+          "unit": "seconds"
+        },
+        "resolveTypeReferenceTime": {
+          "raw": "0.00s",
+          "value": 0,
+          "unit": "seconds"
+        },
+        "resolveLibraryTime": {
+          "raw": "0.02s",
+          "value": 0.02,
+          "unit": "seconds"
+        },
+        "programTime": {
+          "raw": "0.22s",
+          "value": 0.22,
+          "unit": "seconds"
+        },
+        "bindTime": {
+          "raw": "0.09s",
+          "value": 0.09,
+          "unit": "seconds"
+        },
+        "checkTime": {
+          "raw": "1.62s",
+          "value": 1.62,
+          "unit": "seconds"
+        },
+        "transformTimeTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "sourceMapTime": {
+          "raw": "0.00s",
+          "value": 0,
+          "unit": "seconds"
+        },
+        "commentTimeTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "iOWriteTime": {
+          "raw": "0.03s",
+          "value": 0.03,
+          "unit": "seconds"
+        },
+        "printTimeTime": {
+          "raw": "0.04s",
+          "value": 0.04,
+          "unit": "seconds"
+        },
+        "emitTime": {
+          "raw": "0.08s",
+          "value": 0.08,
+          "unit": "seconds"
+        },
+        "totalTime": {
+          "raw": "2.44s",
+          "value": 2.44,
+          "unit": "seconds"
+        }
+      },
+      "stdout": "Files:                         189\nLines of Library:             8878\nLines of Definitions:       76438\nLines of TypeScript:         7607\nLines of JavaScript:             0\nLines of JSON:                   0\nLines of Other:                  0\nIdentifiers:                42437\nSymbols:                   23792\nTypes:                      25276\nInstantiations:             108023\nMemory used:               160606K\nAssignability cache size:   8454\nIdentity cache size:           180\nSubtype cache size:             62\nStrict subtype cache size:     30\nI/O Read time:               0.05s\nParse time:                  0.21s\nResolveModule time:          0.06s\nResolveTypeReference time:   0.00s\nResolveLibrary time:         0.02s\nProgram time:                0.22s\nBind time:                   0.09s\nCheck time:                  1.62s\ntransformTime time:          0.01s\nSource Map time:             0.00s\ncommentTime time:            0.01s\nI/O Write time:              0.03s\nprintTime time:              0.04s\nEmit time:                   0.08s\nTotal time:                  2.44s\n",
+      "stderr": ""
+    },
+    {
+      "schemaVersion": 1,
+      "mode": "extendedDiagnostics",
+      "targetRoot": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/search-service",
+      "targetName": "search-service",
+      "project": "tsconfig.json",
+      "generatedAt": "2026-07-13T02:04:33.312Z",
+      "command": [
+        "/Users/michael_hladky/.nvm/versions/node/v24.1.0/bin/node",
+        "/Users/michael_hladky/WebstormProjects/ts-perf-ws/node_modules/typescript/bin/tsc",
+        "--project",
+        "tsconfig.json",
+        "--extendedDiagnostics",
+        "--pretty",
+        "false"
+      ],
+      "cwd": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/search-service",
+      "startedAt": "2026-07-13T02:04:30.000Z",
+      "finishedAt": "2026-07-13T02:04:33.282Z",
+      "durationMs": 3282,
+      "exitCode": 0,
+      "signal": null,
+      "metrics": {
+        "files": {
+          "raw": "566",
+          "value": 566,
+          "unit": "count"
+        },
+        "linesOfLibrary": {
+          "raw": "9140",
+          "value": 9140,
+          "unit": "count"
+        },
+        "linesOfDefinitions": {
+          "raw": "66747",
+          "value": 66747,
+          "unit": "count"
+        },
+        "linesOfTypeScript": {
+          "raw": "24033",
+          "value": 24033,
+          "unit": "count"
+        },
+        "linesOfJavaScript": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfJSON": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfOther": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "identifiers": {
+          "raw": "164583",
+          "value": 164583,
+          "unit": "count"
+        },
+        "symbols": {
+          "raw": "139497",
+          "value": 139497,
+          "unit": "count"
+        },
+        "types": {
+          "raw": "48758",
+          "value": 48758,
+          "unit": "count"
+        },
+        "instantiations": {
+          "raw": "142202",
+          "value": 142202,
+          "unit": "count"
+        },
+        "memoryUsed": {
+          "raw": "95848K",
+          "value": 95848,
+          "unit": "KiB"
+        },
+        "assignabilityCacheSize": {
+          "raw": "26673",
+          "value": 26673,
+          "unit": "count"
+        },
+        "identityCacheSize": {
+          "raw": "108",
+          "value": 108,
+          "unit": "count"
+        },
+        "subtypeCacheSize": {
+          "raw": "152",
+          "value": 152,
+          "unit": "count"
+        },
+        "strictSubtypeCacheSize": {
+          "raw": "54",
+          "value": 54,
+          "unit": "count"
+        },
+        "iOReadTime": {
+          "raw": "0.04s",
+          "value": 0.04,
+          "unit": "seconds"
+        },
+        "parseTime": {
+          "raw": "0.09s",
+          "value": 0.09,
+          "unit": "seconds"
+        },
+        "resolveModuleTime": {
+          "raw": "0.06s",
+          "value": 0.06,
+          "unit": "seconds"
+        },
+        "resolveTypeReferenceTime": {
+          "raw": "0.02s",
+          "value": 0.02,
+          "unit": "seconds"
+        },
+        "resolveLibraryTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "programTime": {
+          "raw": "0.26s",
+          "value": 0.26,
+          "unit": "seconds"
+        },
+        "bindTime": {
+          "raw": "0.13s",
+          "value": 0.13,
+          "unit": "seconds"
+        },
+        "checkTime": {
+          "raw": "2.36s",
+          "value": 2.36,
+          "unit": "seconds"
+        },
+        "transformTimeTime": {
+          "raw": "0.02s",
+          "value": 0.02,
+          "unit": "seconds"
+        },
+        "sourceMapTime": {
+          "raw": "0.02s",
+          "value": 0.02,
+          "unit": "seconds"
+        },
+        "commentTimeTime": {
+          "raw": "0.02s",
+          "value": 0.02,
+          "unit": "seconds"
+        },
+        "iOWriteTime": {
+          "raw": "0.06s",
+          "value": 0.06,
+          "unit": "seconds"
+        },
+        "printTimeTime": {
+          "raw": "0.03s",
+          "value": 0.03,
+          "unit": "seconds"
+        },
+        "emitTime": {
+          "raw": "0.03s",
+          "value": 0.03,
+          "unit": "seconds"
+        },
+        "totalTime": {
+          "raw": "3.15s",
+          "value": 3.15,
+          "unit": "seconds"
+        }
+      },
+      "stdout": "Files:                         566\nLines of Library:             9140\nLines of Definitions:       66747\nLines of TypeScript:         24033\nLines of JavaScript:             0\nLines of JSON:                   0\nLines of Other:                  0\nIdentifiers:                164583\nSymbols:                   139497\nTypes:                      48758\nInstantiations:             142202\nMemory used:               95848K\nAssignability cache size:   26673\nIdentity cache size:           108\nSubtype cache size:             152\nStrict subtype cache size:     54\nI/O Read time:               0.04s\nParse time:                  0.09s\nResolveModule time:          0.06s\nResolveTypeReference time:   0.02s\nResolveLibrary time:         0.01s\nProgram time:                0.26s\nBind time:                   0.13s\nCheck time:                  2.36s\ntransformTime time:          0.02s\nSource Map time:             0.02s\ncommentTime time:            0.02s\nI/O Write time:              0.06s\nprintTime time:              0.03s\nEmit time:                   0.03s\nTotal time:                  3.15s\n",
+      "stderr": ""
+    },
+    {
+      "schemaVersion": 1,
+      "mode": "extendedDiagnostics",
+      "targetRoot": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/data-pipeline",
+      "targetName": "data-pipeline",
+      "project": "tsconfig.json",
+      "generatedAt": "2026-07-13T02:05:16.387Z",
+      "command": [
+        "/Users/michael_hladky/.nvm/versions/node/v24.1.0/bin/node",
+        "/Users/michael_hladky/WebstormProjects/ts-perf-ws/node_modules/typescript/bin/tsc",
+        "--project",
+        "tsconfig.json",
+        "--extendedDiagnostics",
+        "--pretty",
+        "false"
+      ],
+      "cwd": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/data-pipeline",
+      "startedAt": "2026-07-13T02:05:15.000Z",
+      "finishedAt": "2026-07-13T02:05:16.357Z",
+      "durationMs": 1357,
+      "exitCode": 0,
+      "signal": null,
+      "metrics": {
+        "files": {
+          "raw": "501",
+          "value": 501,
+          "unit": "count"
+        },
+        "linesOfLibrary": {
+          "raw": "10974",
+          "value": 10974,
+          "unit": "count"
+        },
+        "linesOfDefinitions": {
+          "raw": "100818",
+          "value": 100818,
+          "unit": "count"
+        },
+        "linesOfTypeScript": {
+          "raw": "35370",
+          "value": 35370,
+          "unit": "count"
+        },
+        "linesOfJavaScript": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfJSON": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfOther": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "identifiers": {
+          "raw": "256924",
+          "value": 256924,
+          "unit": "count"
+        },
+        "symbols": {
+          "raw": "174443",
+          "value": 174443,
+          "unit": "count"
+        },
+        "types": {
+          "raw": "50267",
+          "value": 50267,
+          "unit": "count"
+        },
+        "instantiations": {
+          "raw": "260951",
+          "value": 260951,
+          "unit": "count"
+        },
+        "memoryUsed": {
+          "raw": "213838K",
+          "value": 213838,
+          "unit": "KiB"
+        },
+        "assignabilityCacheSize": {
+          "raw": "17113",
+          "value": 17113,
+          "unit": "count"
+        },
+        "identityCacheSize": {
+          "raw": "92",
+          "value": 92,
+          "unit": "count"
+        },
+        "subtypeCacheSize": {
+          "raw": "159",
+          "value": 159,
+          "unit": "count"
+        },
+        "strictSubtypeCacheSize": {
+          "raw": "41",
+          "value": 41,
+          "unit": "count"
+        },
+        "iOReadTime": {
+          "raw": "0.03s",
+          "value": 0.03,
+          "unit": "seconds"
+        },
+        "parseTime": {
+          "raw": "0.33s",
+          "value": 0.33,
+          "unit": "seconds"
+        },
+        "resolveModuleTime": {
+          "raw": "0.06s",
+          "value": 0.06,
+          "unit": "seconds"
+        },
+        "resolveTypeReferenceTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "resolveLibraryTime": {
+          "raw": "0.04s",
+          "value": 0.04,
+          "unit": "seconds"
+        },
+        "programTime": {
+          "raw": "0.16s",
+          "value": 0.16,
+          "unit": "seconds"
+        },
+        "bindTime": {
+          "raw": "0.10s",
+          "value": 0.1,
+          "unit": "seconds"
+        },
+        "checkTime": {
+          "raw": "0.10s",
+          "value": 0.1,
+          "unit": "seconds"
+        },
+        "transformTimeTime": {
+          "raw": "0.00s",
+          "value": 0,
+          "unit": "seconds"
+        },
+        "sourceMapTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "commentTimeTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "iOWriteTime": {
+          "raw": "0.08s",
+          "value": 0.08,
+          "unit": "seconds"
+        },
+        "printTimeTime": {
+          "raw": "0.18s",
+          "value": 0.18,
+          "unit": "seconds"
+        },
+        "emitTime": {
+          "raw": "0.11s",
+          "value": 0.11,
+          "unit": "seconds"
+        },
+        "totalTime": {
+          "raw": "1.22s",
+          "value": 1.22,
+          "unit": "seconds"
+        }
+      },
+      "stdout": "Files:                         501\nLines of Library:             10974\nLines of Definitions:       100818\nLines of TypeScript:         35370\nLines of JavaScript:             0\nLines of JSON:                   0\nLines of Other:                  0\nIdentifiers:                256924\nSymbols:                   174443\nTypes:                      50267\nInstantiations:             260951\nMemory used:               213838K\nAssignability cache size:   17113\nIdentity cache size:           92\nSubtype cache size:             159\nStrict subtype cache size:     41\nI/O Read time:               0.03s\nParse time:                  0.33s\nResolveModule time:          0.06s\nResolveTypeReference time:   0.01s\nResolveLibrary time:         0.04s\nProgram time:                0.16s\nBind time:                   0.10s\nCheck time:                  0.10s\ntransformTime time:          0.00s\nSource Map time:             0.01s\ncommentTime time:            0.01s\nI/O Write time:              0.08s\nprintTime time:              0.18s\nEmit time:                   0.11s\nTotal time:                  1.22s\n",
+      "stderr": ""
+    },
+    {
+      "schemaVersion": 1,
+      "mode": "extendedDiagnostics",
+      "targetRoot": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/shared-utils",
+      "targetName": "shared-utils",
+      "project": "tsconfig.json",
+      "generatedAt": "2026-07-13T02:06:02.142Z",
+      "command": [
+        "/Users/michael_hladky/.nvm/versions/node/v24.1.0/bin/node",
+        "/Users/michael_hladky/WebstormProjects/ts-perf-ws/node_modules/typescript/bin/tsc",
+        "--project",
+        "tsconfig.json",
+        "--extendedDiagnostics",
+        "--pretty",
+        "false"
+      ],
+      "cwd": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/shared-utils",
+      "startedAt": "2026-07-13T02:06:00.000Z",
+      "finishedAt": "2026-07-13T02:06:02.112Z",
+      "durationMs": 2112,
+      "exitCode": 0,
+      "signal": null,
+      "metrics": {
+        "files": {
+          "raw": "172",
+          "value": 172,
+          "unit": "count"
+        },
+        "linesOfLibrary": {
+          "raw": "8143",
+          "value": 8143,
+          "unit": "count"
+        },
+        "linesOfDefinitions": {
+          "raw": "24975",
+          "value": 24975,
+          "unit": "count"
+        },
+        "linesOfTypeScript": {
+          "raw": "7978",
+          "value": 7978,
+          "unit": "count"
+        },
+        "linesOfJavaScript": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfJSON": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfOther": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "identifiers": {
+          "raw": "41198",
+          "value": 41198,
+          "unit": "count"
+        },
+        "symbols": {
+          "raw": "23260",
+          "value": 23260,
+          "unit": "count"
+        },
+        "types": {
+          "raw": "34255",
+          "value": 34255,
+          "unit": "count"
+        },
+        "instantiations": {
+          "raw": "152094",
+          "value": 152094,
+          "unit": "count"
+        },
+        "memoryUsed": {
+          "raw": "265296K",
+          "value": 265296,
+          "unit": "KiB"
+        },
+        "assignabilityCacheSize": {
+          "raw": "17604",
+          "value": 17604,
+          "unit": "count"
+        },
+        "identityCacheSize": {
+          "raw": "43",
+          "value": 43,
+          "unit": "count"
+        },
+        "subtypeCacheSize": {
+          "raw": "122",
+          "value": 122,
+          "unit": "count"
+        },
+        "strictSubtypeCacheSize": {
+          "raw": "31",
+          "value": 31,
+          "unit": "count"
+        },
+        "iOReadTime": {
+          "raw": "0.04s",
+          "value": 0.04,
+          "unit": "seconds"
+        },
+        "parseTime": {
+          "raw": "0.19s",
+          "value": 0.19,
+          "unit": "seconds"
+        },
+        "resolveModuleTime": {
+          "raw": "0.05s",
+          "value": 0.05,
+          "unit": "seconds"
+        },
+        "resolveTypeReferenceTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "resolveLibraryTime": {
+          "raw": "0.02s",
+          "value": 0.02,
+          "unit": "seconds"
+        },
+        "programTime": {
+          "raw": "0.22s",
+          "value": 0.22,
+          "unit": "seconds"
+        },
+        "bindTime": {
+          "raw": "0.06s",
+          "value": 0.06,
+          "unit": "seconds"
+        },
+        "checkTime": {
+          "raw": "1.24s",
+          "value": 1.24,
+          "unit": "seconds"
+        },
+        "transformTimeTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "sourceMapTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "commentTimeTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "iOWriteTime": {
+          "raw": "0.06s",
+          "value": 0.06,
+          "unit": "seconds"
+        },
+        "printTimeTime": {
+          "raw": "0.10s",
+          "value": 0.1,
+          "unit": "seconds"
+        },
+        "emitTime": {
+          "raw": "0.05s",
+          "value": 0.05,
+          "unit": "seconds"
+        },
+        "totalTime": {
+          "raw": "2.07s",
+          "value": 2.07,
+          "unit": "seconds"
+        }
+      },
+      "stdout": "Files:                         172\nLines of Library:             8143\nLines of Definitions:       24975\nLines of TypeScript:         7978\nLines of JavaScript:             0\nLines of JSON:                   0\nLines of Other:                  0\nIdentifiers:                41198\nSymbols:                   23260\nTypes:                      34255\nInstantiations:             152094\nMemory used:               265296K\nAssignability cache size:   17604\nIdentity cache size:           43\nSubtype cache size:             122\nStrict subtype cache size:     31\nI/O Read time:               0.04s\nParse time:                  0.19s\nResolveModule time:          0.05s\nResolveTypeReference time:   0.01s\nResolveLibrary time:         0.02s\nProgram time:                0.22s\nBind time:                   0.06s\nCheck time:                  1.24s\ntransformTime time:          0.01s\nSource Map time:             0.01s\ncommentTime time:            0.01s\nI/O Write time:              0.06s\nprintTime time:              0.10s\nEmit time:                   0.05s\nTotal time:                  2.07s\n",
+      "stderr": ""
+    },
+    {
+      "schemaVersion": 1,
+      "mode": "extendedDiagnostics",
+      "targetRoot": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/feature-flags",
+      "targetName": "feature-flags",
+      "project": "tsconfig.json",
+      "generatedAt": "2026-07-13T02:06:47.808Z",
+      "command": [
+        "/Users/michael_hladky/.nvm/versions/node/v24.1.0/bin/node",
+        "/Users/michael_hladky/WebstormProjects/ts-perf-ws/node_modules/typescript/bin/tsc",
+        "--project",
+        "tsconfig.json",
+        "--extendedDiagnostics",
+        "--pretty",
+        "false"
+      ],
+      "cwd": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/feature-flags",
+      "startedAt": "2026-07-13T02:06:45.000Z",
+      "finishedAt": "2026-07-13T02:06:47.778Z",
+      "durationMs": 2778,
+      "exitCode": 0,
+      "signal": null,
+      "metrics": {
+        "files": {
+          "raw": "175",
+          "value": 175,
+          "unit": "count"
+        },
+        "linesOfLibrary": {
+          "raw": "10612",
+          "value": 10612,
+          "unit": "count"
+        },
+        "linesOfDefinitions": {
+          "raw": "16454",
+          "value": 16454,
+          "unit": "count"
+        },
+        "linesOfTypeScript": {
+          "raw": "15154",
+          "value": 15154,
+          "unit": "count"
+        },
+        "linesOfJavaScript": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfJSON": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfOther": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "identifiers": {
+          "raw": "86705",
+          "value": 86705,
+          "unit": "count"
+        },
+        "symbols": {
+          "raw": "52151",
+          "value": 52151,
+          "unit": "count"
+        },
+        "types": {
+          "raw": "6198",
+          "value": 6198,
+          "unit": "count"
+        },
+        "instantiations": {
+          "raw": "31109",
+          "value": 31109,
+          "unit": "count"
+        },
+        "memoryUsed": {
+          "raw": "70035K",
+          "value": 70035,
+          "unit": "KiB"
+        },
+        "assignabilityCacheSize": {
+          "raw": "2158",
+          "value": 2158,
+          "unit": "count"
+        },
+        "identityCacheSize": {
+          "raw": "50",
+          "value": 50,
+          "unit": "count"
+        },
+        "subtypeCacheSize": {
+          "raw": "128",
+          "value": 128,
+          "unit": "count"
+        },
+        "strictSubtypeCacheSize": {
+          "raw": "34",
+          "value": 34,
+          "unit": "count"
+        },
+        "iOReadTime": {
+          "raw": "0.02s",
+          "value": 0.02,
+          "unit": "seconds"
+        },
+        "parseTime": {
+          "raw": "0.34s",
+          "value": 0.34,
+          "unit": "seconds"
+        },
+        "resolveModuleTime": {
+          "raw": "0.07s",
+          "value": 0.07,
+          "unit": "seconds"
+        },
+        "resolveTypeReferenceTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "resolveLibraryTime": {
+          "raw": "0.04s",
+          "value": 0.04,
+          "unit": "seconds"
+        },
+        "programTime": {
+          "raw": "0.32s",
+          "value": 0.32,
+          "unit": "seconds"
+        },
+        "bindTime": {
+          "raw": "0.18s",
+          "value": 0.18,
+          "unit": "seconds"
+        },
+        "checkTime": {
+          "raw": "1.29s",
+          "value": 1.29,
+          "unit": "seconds"
+        },
+        "transformTimeTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "sourceMapTime": {
+          "raw": "0.00s",
+          "value": 0,
+          "unit": "seconds"
+        },
+        "commentTimeTime": {
+          "raw": "0.00s",
+          "value": 0,
+          "unit": "seconds"
+        },
+        "iOWriteTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "printTimeTime": {
+          "raw": "0.07s",
+          "value": 0.07,
+          "unit": "seconds"
+        },
+        "emitTime": {
+          "raw": "0.15s",
+          "value": 0.15,
+          "unit": "seconds"
+        },
+        "totalTime": {
+          "raw": "2.51s",
+          "value": 2.51,
+          "unit": "seconds"
+        }
+      },
+      "stdout": "Files:                         175\nLines of Library:             10612\nLines of Definitions:       16454\nLines of TypeScript:         15154\nLines of JavaScript:             0\nLines of JSON:                   0\nLines of Other:                  0\nIdentifiers:                86705\nSymbols:                   52151\nTypes:                      6198\nInstantiations:             31109\nMemory used:               70035K\nAssignability cache size:   2158\nIdentity cache size:           50\nSubtype cache size:             128\nStrict subtype cache size:     34\nI/O Read time:               0.02s\nParse time:                  0.34s\nResolveModule time:          0.07s\nResolveTypeReference time:   0.01s\nResolveLibrary time:         0.04s\nProgram time:                0.32s\nBind time:                   0.18s\nCheck time:                  1.29s\ntransformTime time:          0.01s\nSource Map time:             0.00s\ncommentTime time:            0.00s\nI/O Write time:              0.01s\nprintTime time:              0.07s\nEmit time:                   0.15s\nTotal time:                  2.51s\n",
+      "stderr": ""
+    },
+    {
+      "schemaVersion": 1,
+      "mode": "extendedDiagnostics",
+      "targetRoot": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/analytics-sdk",
+      "targetName": "analytics-sdk",
+      "project": "tsconfig.json",
+      "generatedAt": "2026-07-13T02:07:33.579Z",
+      "command": [
+        "/Users/michael_hladky/.nvm/versions/node/v24.1.0/bin/node",
+        "/Users/michael_hladky/WebstormProjects/ts-perf-ws/node_modules/typescript/bin/tsc",
+        "--project",
+        "tsconfig.json",
+        "--extendedDiagnostics",
+        "--pretty",
+        "false"
+      ],
+      "cwd": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/analytics-sdk",
+      "startedAt": "2026-07-13T02:07:30.000Z",
+      "finishedAt": "2026-07-13T02:07:33.549Z",
+      "durationMs": 3549,
+      "exitCode": 0,
+      "signal": null,
+      "metrics": {
+        "files": {
+          "raw": "551",
+          "value": 551,
+          "unit": "count"
+        },
+        "linesOfLibrary": {
+          "raw": "9190",
+          "value": 9190,
+          "unit": "count"
+        },
+        "linesOfDefinitions": {
+          "raw": "10700",
+          "value": 10700,
+          "unit": "count"
+        },
+        "linesOfTypeScript": {
+          "raw": "48818",
+          "value": 48818,
+          "unit": "count"
+        },
+        "linesOfJavaScript": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfJSON": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfOther": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "identifiers": {
+          "raw": "261242",
+          "value": 261242,
+          "unit": "count"
+        },
+        "symbols": {
+          "raw": "122909",
+          "value": 122909,
+          "unit": "count"
+        },
+        "types": {
+          "raw": "50036",
+          "value": 50036,
+          "unit": "count"
+        },
+        "instantiations": {
+          "raw": "172709",
+          "value": 172709,
+          "unit": "count"
+        },
+        "memoryUsed": {
+          "raw": "109316K",
+          "value": 109316,
+          "unit": "KiB"
+        },
+        "assignabilityCacheSize": {
+          "raw": "28907",
+          "value": 28907,
+          "unit": "count"
+        },
+        "identityCacheSize": {
+          "raw": "191",
+          "value": 191,
+          "unit": "count"
+        },
+        "subtypeCacheSize": {
+          "raw": "52",
+          "value": 52,
+          "unit": "count"
+        },
+        "strictSubtypeCacheSize": {
+          "raw": "31",
+          "value": 31,
+          "unit": "count"
+        },
+        "iOReadTime": {
+          "raw": "0.07s",
+          "value": 0.07,
+          "unit": "seconds"
+        },
+        "parseTime": {
+          "raw": "0.33s",
+          "value": 0.33,
+          "unit": "seconds"
+        },
+        "resolveModuleTime": {
+          "raw": "0.06s",
+          "value": 0.06,
+          "unit": "seconds"
+        },
+        "resolveTypeReferenceTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "resolveLibraryTime": {
+          "raw": "0.04s",
+          "value": 0.04,
+          "unit": "seconds"
+        },
+        "programTime": {
+          "raw": "0.22s",
+          "value": 0.22,
+          "unit": "seconds"
+        },
+        "bindTime": {
+          "raw": "0.12s",
+          "value": 0.12,
+          "unit": "seconds"
+        },
+        "checkTime": {
+          "raw": "1.81s",
+          "value": 1.81,
+          "unit": "seconds"
+        },
+        "transformTimeTime": {
+          "raw": "0.03s",
+          "value": 0.03,
+          "unit": "seconds"
+        },
+        "sourceMapTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "commentTimeTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "iOWriteTime": {
+          "raw": "0.05s",
+          "value": 0.05,
+          "unit": "seconds"
+        },
+        "printTimeTime": {
+          "raw": "0.19s",
+          "value": 0.19,
+          "unit": "seconds"
+        },
+        "emitTime": {
+          "raw": "0.22s",
+          "value": 0.22,
+          "unit": "seconds"
+        },
+        "totalTime": {
+          "raw": "3.17s",
+          "value": 3.17,
+          "unit": "seconds"
+        }
+      },
+      "stdout": "Files:                         551\nLines of Library:             9190\nLines of Definitions:       10700\nLines of TypeScript:         48818\nLines of JavaScript:             0\nLines of JSON:                   0\nLines of Other:                  0\nIdentifiers:                261242\nSymbols:                   122909\nTypes:                      50036\nInstantiations:             172709\nMemory used:               109316K\nAssignability cache size:   28907\nIdentity cache size:           191\nSubtype cache size:             52\nStrict subtype cache size:     31\nI/O Read time:               0.07s\nParse time:                  0.33s\nResolveModule time:          0.06s\nResolveTypeReference time:   0.01s\nResolveLibrary time:         0.04s\nProgram time:                0.22s\nBind time:                   0.12s\nCheck time:                  1.81s\ntransformTime time:          0.03s\nSource Map time:             0.01s\ncommentTime time:            0.01s\nI/O Write time:              0.05s\nprintTime time:              0.19s\nEmit time:                   0.22s\nTotal time:                  3.17s\n",
+      "stderr": ""
+    },
+    {
+      "schemaVersion": 1,
+      "mode": "extendedDiagnostics",
+      "targetRoot": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/payments-sdk",
+      "targetName": "payments-sdk",
+      "project": "tsconfig.json",
+      "generatedAt": "2026-07-13T02:08:18.041Z",
+      "command": [
+        "/Users/michael_hladky/.nvm/versions/node/v24.1.0/bin/node",
+        "/Users/michael_hladky/WebstormProjects/ts-perf-ws/node_modules/typescript/bin/tsc",
+        "--project",
+        "tsconfig.json",
+        "--extendedDiagnostics",
+        "--pretty",
+        "false"
+      ],
+      "cwd": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/payments-sdk",
+      "startedAt": "2026-07-13T02:08:15.000Z",
+      "finishedAt": "2026-07-13T02:08:18.011Z",
+      "durationMs": 3011,
+      "exitCode": 0,
+      "signal": null,
+      "metrics": {
+        "files": {
+          "raw": "321",
+          "value": 321,
+          "unit": "count"
+        },
+        "linesOfLibrary": {
+          "raw": "10594",
+          "value": 10594,
+          "unit": "count"
+        },
+        "linesOfDefinitions": {
+          "raw": "89486",
+          "value": 89486,
+          "unit": "count"
+        },
+        "linesOfTypeScript": {
+          "raw": "21794",
+          "value": 21794,
+          "unit": "count"
+        },
+        "linesOfJavaScript": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfJSON": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfOther": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "identifiers": {
+          "raw": "120900",
+          "value": 120900,
+          "unit": "count"
+        },
+        "symbols": {
+          "raw": "99955",
+          "value": 99955,
+          "unit": "count"
+        },
+        "types": {
+          "raw": "19222",
+          "value": 19222,
+          "unit": "count"
+        },
+        "instantiations": {
+          "raw": "102632",
+          "value": 102632,
+          "unit": "count"
+        },
+        "memoryUsed": {
+          "raw": "164510K",
+          "value": 164510,
+          "unit": "KiB"
+        },
+        "assignabilityCacheSize": {
+          "raw": "6456",
+          "value": 6456,
+          "unit": "count"
+        },
+        "identityCacheSize": {
+          "raw": "109",
+          "value": 109,
+          "unit": "count"
+        },
+        "subtypeCacheSize": {
+          "raw": "151",
+          "value": 151,
+          "unit": "count"
+        },
+        "strictSubtypeCacheSize": {
+          "raw": "37",
+          "value": 37,
+          "unit": "count"
+        },
+        "iOReadTime": {
+          "raw": "0.07s",
+          "value": 0.07,
+          "unit": "seconds"
+        },
+        "parseTime": {
+          "raw": "0.26s",
+          "value": 0.26,
+          "unit": "seconds"
+        },
+        "resolveModuleTime": {
+          "raw": "0.02s",
+          "value": 0.02,
+          "unit": "seconds"
+        },
+        "resolveTypeReferenceTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "resolveLibraryTime": {
+          "raw": "0.05s",
+          "value": 0.05,
+          "unit": "seconds"
+        },
+        "programTime": {
+          "raw": "0.29s",
+          "value": 0.29,
+          "unit": "seconds"
+        },
+        "bindTime": {
+          "raw": "0.08s",
+          "value": 0.08,
+          "unit": "seconds"
+        },
+        "checkTime": {
+          "raw": "1.53s",
+          "value": 1.53,
+          "unit": "seconds"
+        },
+        "transformTimeTime": {
+          "raw": "0.04s",
+          "value": 0.04,
+          "unit": "seconds"
+        },
+        "sourceMapTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "commentTimeTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "iOWriteTime": {
+          "raw": "0.02s",
+          "value": 0.02,
+          "unit": "seconds"
+        },
+        "printTimeTime": {
+          "raw": "0.17s",
+          "value": 0.17,
+          "unit": "seconds"
+        },
+        "emitTime": {
+          "raw": "0.20s",
+          "value": 0.2,
+          "unit": "seconds"
+        },
+        "totalTime": {
+          "raw": "2.76s",
+          "value": 2.76,
+          "unit": "seconds"
+        }
+      },
+      "stdout": "Files:                         321\nLines of Library:             10594\nLines of Definitions:       89486\nLines of TypeScript:         21794\nLines of JavaScript:             0\nLines of JSON:                   0\nLines of Other:                  0\nIdentifiers:                120900\nSymbols:                   99955\nTypes:                      19222\nInstantiations:             102632\nMemory used:               164510K\nAssignability cache size:   6456\nIdentity cache size:           109\nSubtype cache size:             151\nStrict subtype cache size:     37\nI/O Read time:               0.07s\nParse time:                  0.26s\nResolveModule time:          0.02s\nResolveTypeReference time:   0.01s\nResolveLibrary time:         0.05s\nProgram time:                0.29s\nBind time:                   0.08s\nCheck time:                  1.53s\ntransformTime time:          0.04s\nSource Map time:             0.01s\ncommentTime time:            0.01s\nI/O Write time:              0.02s\nprintTime time:              0.17s\nEmit time:                   0.20s\nTotal time:                  2.76s\n",
+      "stderr": ""
+    },
+    {
+      "schemaVersion": 1,
+      "mode": "extendedDiagnostics",
+      "targetRoot": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/graphql-gateway",
+      "targetName": "graphql-gateway",
+      "project": "tsconfig.json",
+      "generatedAt": "2026-07-13T02:09:01.808Z",
+      "command": [
+        "/Users/michael_hladky/.nvm/versions/node/v24.1.0/bin/node",
+        "/Users/michael_hladky/WebstormProjects/ts-perf-ws/node_modules/typescript/bin/tsc",
+        "--project",
+        "tsconfig.json",
+        "--extendedDiagnostics",
+        "--pretty",
+        "false"
+      ],
+      "cwd": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/graphql-gateway",
+      "startedAt": "2026-07-13T02:09:00.000Z",
+      "finishedAt": "2026-07-13T02:09:01.778Z",
+      "durationMs": 1778,
+      "exitCode": 0,
+      "signal": null,
+      "metrics": {
+        "files": {
+          "raw": "469",
+          "value": 469,
+          "unit": "count"
+        },
+        "linesOfLibrary": {
+          "raw": "10680",
+          "value": 10680,
+          "unit": "count"
+        },
+        "linesOfDefinitions": {
+          "raw": "68989",
+          "value": 68989,
+          "unit": "count"
+        },
+        "linesOfTypeScript": {
+          "raw": "16110",
+          "value": 16110,
+          "unit": "count"
+        },
+        "linesOfJavaScript": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfJSON": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfOther": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "identifiers": {
+          "raw": "107953",
+          "value": 107953,
+          "unit": "count"
+        },
+        "symbols": {
+          "raw": "59663",
+          "value": 59663,
+          "unit": "count"
+        },
+        "types": {
+          "raw": "26734",
+          "value": 26734,
+          "unit": "count"
+        },
+        "instantiations": {
+          "raw": "103922",
+          "value": 103922,
+          "unit": "count"
+        },
+        "memoryUsed": {
+          "raw": "245077K",
+          "value": 245077,
+          "unit": "KiB"
+        },
+        "assignabilityCacheSize": {
+          "raw": "10885",
+          "value": 10885,
+          "unit": "count"
+        },
+        "identityCacheSize": {
+          "raw": "13",
+          "value": 13,
+          "unit": "count"
+        },
+        "subtypeCacheSize": {
+          "raw": "34",
+          "value": 34,
+          "unit": "count"
+        },
+        "strictSubtypeCacheSize": {
+          "raw": "6",
+          "value": 6,
+          "unit": "count"
+        },
+        "iOReadTime": {
+          "raw": "0.02s",
+          "value": 0.02,
+          "unit": "seconds"
+        },
+        "parseTime": {
+          "raw": "0.16s",
+          "value": 0.16,
+          "unit": "seconds"
+        },
+        "resolveModuleTime": {
+          "raw": "0.08s",
+          "value": 0.08,
+          "unit": "seconds"
+        },
+        "resolveTypeReferenceTime": {
+          "raw": "0.02s",
+          "value": 0.02,
+          "unit": "seconds"
+        },
+        "resolveLibraryTime": {
+          "raw": "0.03s",
+          "value": 0.03,
+          "unit": "seconds"
+        },
+        "programTime": {
+          "raw": "0.13s",
+          "value": 0.13,
+          "unit": "seconds"
+        },
+        "bindTime": {
+          "raw": "0.04s",
+          "value": 0.04,
+          "unit": "seconds"
+        },
+        "checkTime": {
+          "raw": "0.69s",
+          "value": 0.69,
+          "unit": "seconds"
+        },
+        "transformTimeTime": {
+          "raw": "0.04s",
+          "value": 0.04,
+          "unit": "seconds"
+        },
+        "sourceMapTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "commentTimeTime": {
+          "raw": "0.02s",
+          "value": 0.02,
+          "unit": "seconds"
+        },
+        "iOWriteTime": {
+          "raw": "0.05s",
+          "value": 0.05,
+          "unit": "seconds"
+        },
+        "printTimeTime": {
+          "raw": "0.18s",
+          "value": 0.18,
+          "unit": "seconds"
+        },
+        "emitTime": {
+          "raw": "0.20s",
+          "value": 0.2,
+          "unit": "seconds"
+        },
+        "totalTime": {
+          "raw": "1.67s",
+          "value": 1.67,
+          "unit": "seconds"
+        }
+      },
+      "stdout": "Files:                         469\nLines of Library:             10680\nLines of Definitions:       68989\nLines of TypeScript:         16110\nLines of JavaScript:             0\nLines of JSON:                   0\nLines of Other:                  0\nIdentifiers:                107953\nSymbols:                   59663\nTypes:                      26734\nInstantiations:             103922\nMemory used:               245077K\nAssignability cache size:   10885\nIdentity cache size:           13\nSubtype cache size:             34\nStrict subtype cache size:     6\nI/O Read time:               0.02s\nParse time:                  0.16s\nResolveModule time:          0.08s\nResolveTypeReference time:   0.02s\nResolveLibrary time:         0.03s\nProgram time:                0.13s\nBind time:                   0.04s\nCheck time:                  0.69s\ntransformTime time:          0.04s\nSource Map time:             0.01s\ncommentTime time:            0.02s\nI/O Write time:              0.05s\nprintTime time:              0.18s\nEmit time:                   0.20s\nTotal time:                  1.67s\n",
+      "stderr": ""
+    },
+    {
+      "schemaVersion": 1,
+      "mode": "extendedDiagnostics",
+      "targetRoot": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/admin-dashboard",
+      "targetName": "admin-dashboard",
+      "project": "tsconfig.json",
+      "generatedAt": "2026-07-13T02:09:48.570Z",
+      "command": [
+        "/Users/michael_hladky/.nvm/versions/node/v24.1.0/bin/node",
+        "/Users/michael_hladky/WebstormProjects/ts-perf-ws/node_modules/typescript/bin/tsc",
+        "--project",
+        "tsconfig.json",
+        "--extendedDiagnostics",
+        "--pretty",
+        "false"
+      ],
+      "cwd": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/admin-dashboard",
+      "startedAt": "2026-07-13T02:09:45.000Z",
+      "finishedAt": "2026-07-13T02:09:48.540Z",
+      "durationMs": 3540,
+      "exitCode": 0,
+      "signal": null,
+      "metrics": {
+        "files": {
+          "raw": "131",
+          "value": 131,
+          "unit": "count"
+        },
+        "linesOfLibrary": {
+          "raw": "9441",
+          "value": 9441,
+          "unit": "count"
+        },
+        "linesOfDefinitions": {
+          "raw": "37256",
+          "value": 37256,
+          "unit": "count"
+        },
+        "linesOfTypeScript": {
+          "raw": "8860",
+          "value": 8860,
+          "unit": "count"
+        },
+        "linesOfJavaScript": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfJSON": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfOther": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "identifiers": {
+          "raw": "45318",
+          "value": 45318,
+          "unit": "count"
+        },
+        "symbols": {
+          "raw": "20669",
+          "value": 20669,
+          "unit": "count"
+        },
+        "types": {
+          "raw": "43311",
+          "value": 43311,
+          "unit": "count"
+        },
+        "instantiations": {
+          "raw": "145298",
+          "value": 145298,
+          "unit": "count"
+        },
+        "memoryUsed": {
+          "raw": "184348K",
+          "value": 184348,
+          "unit": "KiB"
+        },
+        "assignabilityCacheSize": {
+          "raw": "18917",
+          "value": 18917,
+          "unit": "count"
+        },
+        "identityCacheSize": {
+          "raw": "26",
+          "value": 26,
+          "unit": "count"
+        },
+        "subtypeCacheSize": {
+          "raw": "142",
+          "value": 142,
+          "unit": "count"
+        },
+        "strictSubtypeCacheSize": {
+          "raw": "41",
+          "value": 41,
+          "unit": "count"
+        },
+        "iOReadTime": {
+          "raw": "0.07s",
+          "value": 0.07,
+          "unit": "seconds"
+        },
+        "parseTime": {
+          "raw": "0.08s",
+          "value": 0.08,
+          "unit": "seconds"
+        },
+        "resolveModuleTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "resolveTypeReferenceTime": {
+          "raw": "0.00s",
+          "value": 0,
+          "unit": "seconds"
+        },
+        "resolveLibraryTime": {
+          "raw": "0.02s",
+          "value": 0.02,
+          "unit": "seconds"
+        },
+        "programTime": {
+          "raw": "0.20s",
+          "value": 0.2,
+          "unit": "seconds"
+        },
+        "bindTime": {
+          "raw": "0.07s",
+          "value": 0.07,
+          "unit": "seconds"
+        },
+        "checkTime": {
+          "raw": "2.38s",
+          "value": 2.38,
+          "unit": "seconds"
+        },
+        "transformTimeTime": {
+          "raw": "0.03s",
+          "value": 0.03,
+          "unit": "seconds"
+        },
+        "sourceMapTime": {
+          "raw": "0.02s",
+          "value": 0.02,
+          "unit": "seconds"
+        },
+        "commentTimeTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "iOWriteTime": {
+          "raw": "0.06s",
+          "value": 0.06,
+          "unit": "seconds"
+        },
+        "printTimeTime": {
+          "raw": "0.03s",
+          "value": 0.03,
+          "unit": "seconds"
+        },
+        "emitTime": {
+          "raw": "0.17s",
+          "value": 0.17,
+          "unit": "seconds"
+        },
+        "totalTime": {
+          "raw": "3.15s",
+          "value": 3.15,
+          "unit": "seconds"
+        }
+      },
+      "stdout": "Files:                         131\nLines of Library:             9441\nLines of Definitions:       37256\nLines of TypeScript:         8860\nLines of JavaScript:             0\nLines of JSON:                   0\nLines of Other:                  0\nIdentifiers:                45318\nSymbols:                   20669\nTypes:                      43311\nInstantiations:             145298\nMemory used:               184348K\nAssignability cache size:   18917\nIdentity cache size:           26\nSubtype cache size:             142\nStrict subtype cache size:     41\nI/O Read time:               0.07s\nParse time:                  0.08s\nResolveModule time:          0.01s\nResolveTypeReference time:   0.00s\nResolveLibrary time:         0.02s\nProgram time:                0.20s\nBind time:                   0.07s\nCheck time:                  2.38s\ntransformTime time:          0.03s\nSource Map time:             0.02s\ncommentTime time:            0.01s\nI/O Write time:              0.06s\nprintTime time:              0.03s\nEmit time:                   0.17s\nTotal time:                  3.15s\n",
+      "stderr": ""
+    },
+    {
+      "schemaVersion": 1,
+      "mode": "extendedDiagnostics",
+      "targetRoot": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/mobile-bridge",
+      "targetName": "mobile-bridge",
+      "project": "tsconfig.json",
+      "generatedAt": "2026-07-13T02:10:32.689Z",
+      "command": [
+        "/Users/michael_hladky/.nvm/versions/node/v24.1.0/bin/node",
+        "/Users/michael_hladky/WebstormProjects/ts-perf-ws/node_modules/typescript/bin/tsc",
+        "--project",
+        "tsconfig.json",
+        "--extendedDiagnostics",
+        "--pretty",
+        "false"
+      ],
+      "cwd": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/mobile-bridge",
+      "startedAt": "2026-07-13T02:10:30.000Z",
+      "finishedAt": "2026-07-13T02:10:32.659Z",
+      "durationMs": 2659,
+      "exitCode": 0,
+      "signal": null,
+      "metrics": {
+        "files": {
+          "raw": "382",
+          "value": 382,
+          "unit": "count"
+        },
+        "linesOfLibrary": {
+          "raw": "9515",
+          "value": 9515,
+          "unit": "count"
+        },
+        "linesOfDefinitions": {
+          "raw": "103829",
+          "value": 103829,
+          "unit": "count"
+        },
+        "linesOfTypeScript": {
+          "raw": "16146",
+          "value": 16146,
+          "unit": "count"
+        },
+        "linesOfJavaScript": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfJSON": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfOther": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "identifiers": {
+          "raw": "73504",
+          "value": 73504,
+          "unit": "count"
+        },
+        "symbols": {
+          "raw": "25689",
+          "value": 25689,
+          "unit": "count"
+        },
+        "types": {
+          "raw": "46421",
+          "value": 46421,
+          "unit": "count"
+        },
+        "instantiations": {
+          "raw": "133412",
+          "value": 133412,
+          "unit": "count"
+        },
+        "memoryUsed": {
+          "raw": "285648K",
+          "value": 285648,
+          "unit": "KiB"
+        },
+        "assignabilityCacheSize": {
+          "raw": "23993",
+          "value": 23993,
+          "unit": "count"
+        },
+        "identityCacheSize": {
+          "raw": "101",
+          "value": 101,
+          "unit": "count"
+        },
+        "subtypeCacheSize": {
+          "raw": "172",
+          "value": 172,
+          "unit": "count"
+        },
+        "strictSubtypeCacheSize": {
+          "raw": "11",
+          "value": 11,
+          "unit": "count"
+        },
+        "iOReadTime": {
+          "raw": "0.02s",
+          "value": 0.02,
+          "unit": "seconds"
+        },
+        "parseTime": {
+          "raw": "0.22s",
+          "value": 0.22,
+          "unit": "seconds"
+        },
+        "resolveModuleTime": {
+          "raw": "0.06s",
+          "value": 0.06,
+          "unit": "seconds"
+        },
+        "resolveTypeReferenceTime": {
+          "raw": "0.00s",
+          "value": 0,
+          "unit": "seconds"
+        },
+        "resolveLibraryTime": {
+          "raw": "0.04s",
+          "value": 0.04,
+          "unit": "seconds"
+        },
+        "programTime": {
+          "raw": "0.20s",
+          "value": 0.2,
+          "unit": "seconds"
+        },
+        "bindTime": {
+          "raw": "0.06s",
+          "value": 0.06,
+          "unit": "seconds"
+        },
+        "checkTime": {
+          "raw": "1.60s",
+          "value": 1.6,
+          "unit": "seconds"
+        },
+        "transformTimeTime": {
+          "raw": "0.03s",
+          "value": 0.03,
+          "unit": "seconds"
+        },
+        "sourceMapTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "commentTimeTime": {
+          "raw": "0.00s",
+          "value": 0,
+          "unit": "seconds"
+        },
+        "iOWriteTime": {
+          "raw": "0.07s",
+          "value": 0.07,
+          "unit": "seconds"
+        },
+        "printTimeTime": {
+          "raw": "0.11s",
+          "value": 0.11,
+          "unit": "seconds"
+        },
+        "emitTime": {
+          "raw": "0.17s",
+          "value": 0.17,
+          "unit": "seconds"
+        },
+        "totalTime": {
+          "raw": "2.59s",
+          "value": 2.59,
+          "unit": "seconds"
+        }
+      },
+      "stdout": "Files:                         382\nLines of Library:             9515\nLines of Definitions:       103829\nLines of TypeScript:         16146\nLines of JavaScript:             0\nLines of JSON:                   0\nLines of Other:                  0\nIdentifiers:                73504\nSymbols:                   25689\nTypes:                      46421\nInstantiations:             133412\nMemory used:               285648K\nAssignability cache size:   23993\nIdentity cache size:           101\nSubtype cache size:             172\nStrict subtype cache size:     11\nI/O Read time:               0.02s\nParse time:                  0.22s\nResolveModule time:          0.06s\nResolveTypeReference time:   0.00s\nResolveLibrary time:         0.04s\nProgram time:                0.20s\nBind time:                   0.06s\nCheck time:                  1.60s\ntransformTime time:          0.03s\nSource Map time:             0.01s\ncommentTime time:            0.00s\nI/O Write time:              0.07s\nprintTime time:              0.11s\nEmit time:                   0.17s\nTotal time:                  2.59s\n",
+      "stderr": ""
+    },
+    {
+      "schemaVersion": 1,
+      "mode": "extendedDiagnostics",
+      "targetRoot": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/e2e-tests",
+      "targetName": "e2e-tests",
+      "project": "tsconfig.json",
+      "generatedAt": "2026-07-13T02:11:17.597Z",
+      "command": [
+        "/Users/michael_hladky/.nvm/versions/node/v24.1.0/bin/node",
+        "/Users/michael_hladky/WebstormProjects/ts-perf-ws/node_modules/typescript/bin/tsc",
+        "--project",
+        "tsconfig.json",
+        "--extendedDiagnostics",
+        "--pretty",
+        "false"
+      ],
+      "cwd": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/e2e-tests",
+      "startedAt": "2026-07-13T02:11:15.000Z",
+      "finishedAt": "2026-07-13T02:11:17.567Z",
+      "durationMs": 2567,
+      "exitCode": 0,
+      "signal": null,
+      "metrics": {
+        "files": {
+          "raw": "911",
+          "value": 911,
+          "unit": "count"
+        },
+        "linesOfLibrary": {
+          "raw": "8141",
+          "value": 8141,
+          "unit": "count"
+        },
+        "linesOfDefinitions": {
+          "raw": "42641",
+          "value": 42641,
+          "unit": "count"
+        },
+        "linesOfTypeScript": {
+          "raw": "59053",
+          "value": 59053,
+          "unit": "count"
+        },
+        "linesOfJavaScript": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfJSON": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfOther": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "identifiers": {
+          "raw": "313281",
+          "value": 313281,
+          "unit": "count"
+        },
+        "symbols": {
+          "raw": "227809",
+          "value": 227809,
+          "unit": "count"
+        },
+        "types": {
+          "raw": "45732",
+          "value": 45732,
+          "unit": "count"
+        },
+        "instantiations": {
+          "raw": "86008",
+          "value": 86008,
+          "unit": "count"
+        },
+        "memoryUsed": {
+          "raw": "283636K",
+          "value": 283636,
+          "unit": "KiB"
+        },
+        "assignabilityCacheSize": {
+          "raw": "17484",
+          "value": 17484,
+          "unit": "count"
+        },
+        "identityCacheSize": {
+          "raw": "41",
+          "value": 41,
+          "unit": "count"
+        },
+        "subtypeCacheSize": {
+          "raw": "117",
+          "value": 117,
+          "unit": "count"
+        },
+        "strictSubtypeCacheSize": {
+          "raw": "30",
+          "value": 30,
+          "unit": "count"
+        },
+        "iOReadTime": {
+          "raw": "0.02s",
+          "value": 0.02,
+          "unit": "seconds"
+        },
+        "parseTime": {
+          "raw": "0.31s",
+          "value": 0.31,
+          "unit": "seconds"
+        },
+        "resolveModuleTime": {
+          "raw": "0.02s",
+          "value": 0.02,
+          "unit": "seconds"
+        },
+        "resolveTypeReferenceTime": {
+          "raw": "0.00s",
+          "value": 0,
+          "unit": "seconds"
+        },
+        "resolveLibraryTime": {
+          "raw": "0.05s",
+          "value": 0.05,
+          "unit": "seconds"
+        },
+        "programTime": {
+          "raw": "0.18s",
+          "value": 0.18,
+          "unit": "seconds"
+        },
+        "bindTime": {
+          "raw": "0.12s",
+          "value": 0.12,
+          "unit": "seconds"
+        },
+        "checkTime": {
+          "raw": "1.25s",
+          "value": 1.25,
+          "unit": "seconds"
+        },
+        "transformTimeTime": {
+          "raw": "0.03s",
+          "value": 0.03,
+          "unit": "seconds"
+        },
+        "sourceMapTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "commentTimeTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "iOWriteTime": {
+          "raw": "0.02s",
+          "value": 0.02,
+          "unit": "seconds"
+        },
+        "printTimeTime": {
+          "raw": "0.20s",
+          "value": 0.2,
+          "unit": "seconds"
+        },
+        "emitTime": {
+          "raw": "0.19s",
+          "value": 0.19,
+          "unit": "seconds"
+        },
+        "totalTime": {
+          "raw": "2.41s",
+          "value": 2.41,
+          "unit": "seconds"
+        }
+      },
+      "stdout": "Files:                         911\nLines of Library:             8141\nLines of Definitions:       42641\nLines of TypeScript:         59053\nLines of JavaScript:             0\nLines of JSON:                   0\nLines of Other:                  0\nIdentifiers:                313281\nSymbols:                   227809\nTypes:                      45732\nInstantiations:             86008\nMemory used:               283636K\nAssignability cache size:   17484\nIdentity cache size:           41\nSubtype cache size:             117\nStrict subtype cache size:     30\nI/O Read time:               0.02s\nParse time:                  0.31s\nResolveModule time:          0.02s\nResolveTypeReference time:   0.00s\nResolveLibrary time:         0.05s\nProgram time:                0.18s\nBind time:                   0.12s\nCheck time:                  1.25s\ntransformTime time:          0.03s\nSource Map time:             0.01s\ncommentTime time:            0.01s\nI/O Write time:              0.02s\nprintTime time:              0.20s\nEmit time:                   0.19s\nTotal time:                  2.41s\n",
+      "stderr": ""
+    },
+    {
+      "schemaVersion": 1,
+      "mode": "extendedDiagnostics",
+      "targetRoot": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/storybook-docs",
+      "targetName": "storybook-docs",
+      "project": "tsconfig.json",
+      "generatedAt": "2026-07-13T02:12:01.541Z",
+      "command": [
+        "/Users/michael_hladky/.nvm/versions/node/v24.1.0/bin/node",
+        "/Users/michael_hladky/WebstormProjects/ts-perf-ws/node_modules/typescript/bin/tsc",
+        "--project",
+        "tsconfig.json",
+        "--extendedDiagnostics",
+        "--pretty",
+        "false"
+      ],
+      "cwd": "/Users/michael_hladky/WebstormProjects/ts-perf-ws/packages/storybook-docs",
+      "startedAt": "2026-07-13T02:12:00.000Z",
+      "finishedAt": "2026-07-13T02:12:01.511Z",
+      "durationMs": 1511,
+      "exitCode": 0,
+      "signal": null,
+      "metrics": {
+        "files": {
+          "raw": "226",
+          "value": 226,
+          "unit": "count"
+        },
+        "linesOfLibrary": {
+          "raw": "9338",
+          "value": 9338,
+          "unit": "count"
+        },
+        "linesOfDefinitions": {
+          "raw": "100989",
+          "value": 100989,
+          "unit": "count"
+        },
+        "linesOfTypeScript": {
+          "raw": "13806",
+          "value": 13806,
+          "unit": "count"
+        },
+        "linesOfJavaScript": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfJSON": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "linesOfOther": {
+          "raw": "0",
+          "value": 0,
+          "unit": "count"
+        },
+        "identifiers": {
+          "raw": "82017",
+          "value": 82017,
+          "unit": "count"
+        },
+        "symbols": {
+          "raw": "37015",
+          "value": 37015,
+          "unit": "count"
+        },
+        "types": {
+          "raw": "30111",
+          "value": 30111,
+          "unit": "count"
+        },
+        "instantiations": {
+          "raw": "20822",
+          "value": 20822,
+          "unit": "count"
+        },
+        "memoryUsed": {
+          "raw": "283349K",
+          "value": 283349,
+          "unit": "KiB"
+        },
+        "assignabilityCacheSize": {
+          "raw": "10402",
+          "value": 10402,
+          "unit": "count"
+        },
+        "identityCacheSize": {
+          "raw": "88",
+          "value": 88,
+          "unit": "count"
+        },
+        "subtypeCacheSize": {
+          "raw": "49",
+          "value": 49,
+          "unit": "count"
+        },
+        "strictSubtypeCacheSize": {
+          "raw": "30",
+          "value": 30,
+          "unit": "count"
+        },
+        "iOReadTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "parseTime": {
+          "raw": "0.25s",
+          "value": 0.25,
+          "unit": "seconds"
+        },
+        "resolveModuleTime": {
+          "raw": "0.02s",
+          "value": 0.02,
+          "unit": "seconds"
+        },
+        "resolveTypeReferenceTime": {
+          "raw": "0.02s",
+          "value": 0.02,
+          "unit": "seconds"
+        },
+        "resolveLibraryTime": {
+          "raw": "0.04s",
+          "value": 0.04,
+          "unit": "seconds"
+        },
+        "programTime": {
+          "raw": "0.36s",
+          "value": 0.36,
+          "unit": "seconds"
+        },
+        "bindTime": {
+          "raw": "0.18s",
+          "value": 0.18,
+          "unit": "seconds"
+        },
+        "checkTime": {
+          "raw": "0.18s",
+          "value": 0.18,
+          "unit": "seconds"
+        },
+        "transformTimeTime": {
+          "raw": "0.03s",
+          "value": 0.03,
+          "unit": "seconds"
+        },
+        "sourceMapTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "commentTimeTime": {
+          "raw": "0.01s",
+          "value": 0.01,
+          "unit": "seconds"
+        },
+        "iOWriteTime": {
+          "raw": "0.05s",
+          "value": 0.05,
+          "unit": "seconds"
+        },
+        "printTimeTime": {
+          "raw": "0.11s",
+          "value": 0.11,
+          "unit": "seconds"
+        },
+        "emitTime": {
+          "raw": "0.11s",
+          "value": 0.11,
+          "unit": "seconds"
+        },
+        "totalTime": {
+          "raw": "1.38s",
+          "value": 1.38,
+          "unit": "seconds"
+        }
+      },
+      "stdout": "Files:                         226\nLines of Library:             9338\nLines of Definitions:       100989\nLines of TypeScript:         13806\nLines of JavaScript:             0\nLines of JSON:                   0\nLines of Other:                  0\nIdentifiers:                82017\nSymbols:                   37015\nTypes:                      30111\nInstantiations:             20822\nMemory used:               283349K\nAssignability cache size:   10402\nIdentity cache size:           88\nSubtype cache size:             49\nStrict subtype cache size:     30\nI/O Read time:               0.01s\nParse time:                  0.25s\nResolveModule time:          0.02s\nResolveTypeReference time:   0.02s\nResolveLibrary time:         0.04s\nProgram time:                0.36s\nBind time:                   0.18s\nCheck time:                  0.18s\ntransformTime time:          0.03s\nSource Map time:             0.01s\ncommentTime time:            0.01s\nI/O Write time:              0.05s\nprintTime time:              0.11s\nEmit time:                   0.11s\nTotal time:                  1.38s\n",
+      "stderr": ""
+    }
+  ]
+};
+
+const embeddedAggregatedReport = window.__PB_AGGREGATED_REPORT__ ?? DEMO_AGGREGATED_REPORT;
+
+const COMPILER_PHASE_DEFS = [
+  { key: "io_read_s", label: "I/O Read" },
+  { key: "parse_s", label: "Parse" },
+  { key: "resolve_module_s", label: "Resolve module" },
+  { key: "resolve_type_reference_s", label: "Resolve type ref" },
+  { key: "resolve_library_s", label: "Resolve library" },
+  { key: "bind_s", label: "Bind" },
+  { key: "check_s", label: "Check" },
+  { key: "print_s", label: "Print" },
+  { key: "io_write_s", label: "I/O Write" },
+  { key: "emit_s", label: "Emit" },
+  { key: "other_s", label: "Other" }
+];
+const COMPILER_PHASES = COMPILER_PHASE_DEFS.map((phase, i) => ({ ...phase, color: PB_CHART_PALETTE[i] }));
+
+const LINE_DEFS = [
+  { key: "library", label: "Library", color: "#38bdf8" },
+  { key: "definitions", label: "Definitions", color: "#875bf7" },
+  { key: "typescript", label: "TypeScript", color: "#22c55e" },
+  { key: "javascript", label: "JavaScript", color: "#fbbf24" },
+  { key: "json", label: "JSON", color: "#f472b6" },
+  { key: "other", label: "Other", color: "#64748b" }
+];
+
+const CACHE_DEFS = [
+  { key: "assignability", label: "Assignability cache", color: "#d70033" },
+  { key: "identity", label: "Identity cache", color: "#a48afb" },
+  { key: "subtype", label: "Subtype cache", color: "#14b8a6" },
+  { key: "strictSubtype", label: "Strict subtype cache", color: "#fbbf24" }
+];
+
+const PLOT_STYLE = {
+  color: "#f8fafc",
+  fontFamily: "Geist, ui-sans-serif, system-ui, sans-serif",
+  background: "transparent"
+};
+
+function getPhases(row) {
+  if (row.phases) {
+    return row.phases;
+  }
+  const blocks = row.builds_detail || [];
+  const sum = (key) => blocks.reduce((total, block) => total + (block[key] || 0), 0);
+  const phases = {
+    io_read_s: sum("io_read_s"),
+    parse_s: sum("parse_s"),
+    resolve_module_s: sum("resolve_module_s"),
+    resolve_type_reference_s: sum("resolve_type_reference_s"),
+    resolve_library_s: sum("resolve_library_s"),
+    bind_s: sum("bind_s"),
+    check_s: sum("check_s"),
+    print_s: sum("print_s"),
+    io_write_s: sum("io_write_s"),
+    emit_s: sum("emit_s"),
+    other_s: 0
+  };
+  const accounted = COMPILER_PHASES
+    .filter((phase) => phase.key !== "other_s")
+    .reduce((total, phase) => total + phases[phase.key], 0);
+  phases.other_s = Math.max(0, row.total_s - accounted);
+  return phases;
+}
+
+function basePlotOptions(containerId, extra = {}) {
+  return {
+    width: plotWidth(containerId),
+    height: 360,
+    marginLeft: 56,
+    marginRight: 20,
+    marginTop: 12,
+    marginBottom: 56,
+    style: PLOT_STYLE,
+    ...extra
+  };
+}
+
+function fromAggregatedReport(input) {
+  const reports = Array.isArray(input?.reports) ? input.reports : [];
+  const labels = reportLabels(reports);
+
+  const rows = reports.map((report, index) => {
+    const metrics = report.metrics ?? {};
+    const totalS = toSeconds(metrics.totalTime);
+    const checkS = toSeconds(metrics.checkTime);
+    const programS = toSeconds(metrics.programTime);
+    const parseS = toSeconds(metrics.parseTime);
+    const bindS = toSeconds(metrics.bindTime);
+    const emitS = toSeconds(metrics.emitTime);
+    const ioReadS = toSeconds(metrics.iOReadTime ?? metrics.iORead ?? metrics.ioRead);
+    const ioWriteS = toSeconds(metrics.iOWriteTime ?? metrics.iOWrite ?? metrics.ioWrite);
+    const resolveLibraryS = toSeconds(metrics.resolveLibraryTime);
+    const resolveModuleS = toSeconds(metrics.resolveModuleTime);
+    const resolveTypeReferenceS = toSeconds(metrics.resolveTypeReferenceTime);
+
+    const phaseTotal =
+      ioReadS +
+      parseS +
+      resolveModuleS +
+      resolveTypeReferenceS +
+      resolveLibraryS +
+      bindS +
+      checkS +
+      ioWriteS +
+      emitS;
+
+    return {
+      config: labels[index],
+      total_s: totalS,
+      check_s: checkS,
+      program_s: programS,
+      bind_s: bindS,
+      files: toCount(metrics.files),
+      types: toCount(metrics.types),
+      instantiations: toCount(metrics.instantiations),
+      memory_mb: Math.round(toMiB(metrics.memoryUsed ?? metrics.memory)),
+      generated_at: report.generatedAt ?? report.finishedAt ?? "",
+      report_index: index,
+      phases: {
+        io_read_s: ioReadS,
+        parse_s: parseS,
+        resolve_module_s: resolveModuleS,
+        resolve_type_reference_s: resolveTypeReferenceS,
+        resolve_library_s: resolveLibraryS,
+        bind_s: bindS,
+        check_s: checkS,
+        print_s: 0,
+        io_write_s: ioWriteS,
+        emit_s: emitS,
+        other_s: Math.max(0, totalS - phaseTotal)
+      },
+      lines: {
+        library: toCount(metrics.linesOfLibrary),
+        definitions: toCount(metrics.linesOfDefinitions),
+        typescript: toCount(metrics.linesOfTypeScript),
+        javascript: toCount(metrics.linesOfJavaScript),
+        json: toCount(metrics.linesOfJSON),
+        other: toCount(metrics.linesOfOther)
+      },
+      caches: {
+        assignability: toCount(metrics.assignabilityCacheSize),
+        identity: toCount(metrics.identityCacheSize),
+        subtype: toCount(metrics.subtypeCacheSize),
+        strictSubtype: toCount(metrics.strictSubtypeCacheSize)
+      }
+    };
+  });
+
+  const bySlowest = [...rows].sort((a, b) => b.total_s - a.total_s);
+  const slowest = bySlowest.slice(0, rows.length);
+  const additional = bySlowest.slice(rows.length);
+  const sumTotal = rows.reduce((sum, row) => sum + row.total_s, 0);
+  const sumCheck = rows.reduce((sum, row) => sum + row.check_s, 0);
+  const peakMemory = rows.reduce((max, row) => Math.max(max, row.memory_mb), 0);
+
+  return {
+    summary: {
+      total_configs: rows.length,
+      solutions_with_diagnostics: rows.length,
+      sum_total_time_seconds: sumTotal,
+      sum_check_time_seconds: sumCheck,
+      check_time_share_percent: sumTotal > 0 ? (sumCheck / sumTotal) * 100 : 0,
+      peak_single_project_memory_mb: peakMemory,
+      typescript_version: "unknown",
+      generated_at: input?.generatedAt ?? new Date().toISOString()
+    },
+    slowest_solutions: slowest,
+    additional_solutions: additional,
+    notes: [
+      "Embedded data from ts-diagnostics aggregate output.",
+      `Reports included: ${rows.length}.`
+    ],
+    config_check: null
+  };
+}
+
+function renderCards(summary) {
+  const cards = [
+    ["Total configs", summary.total_configs],
+    ["Diagnostics aggregate", `${summary.solutions_with_diagnostics ?? summary.solutions_with_diagnostics_aggregate} / ${summary.total_configs}`],
+    ["Summed total time", `${fmt(summary.sum_total_time_seconds)} s`],
+    ["Summed check time", `${fmt(summary.sum_check_time_seconds)} s`],
+    ["Check-time share", `${fmt(summary.check_time_share_percent)}%`],
+    ["Peak memory", `${fmt(summary.peak_single_project_memory_mb, 0)} MB`]
+  ];
+  document.getElementById("cards").innerHTML = cards.map(([label, value]) =>
+    `<article class="pb-card pb-summary-card"><div class="pb-card-label">${label}</div><div class="pb-card-value">${value}</div></article>`
+  ).join("");
+}
+
+function renderTimeChart(rows) {
+  const metric = document.getElementById("timeChartMetric").value;
+  const configOrder = rows.map((row) => row.config);
+
+  if (metric === "size") {
+    const lineData = rows.flatMap((row) =>
+      LINE_DEFS.map((def) => ({ config: row.config, kind: def.label, lines: row.lines[def.key] || 0 }))
+        .filter((entry) => entry.lines > 0)
+    );
+    mountPlot("timeChart", Plot.plot({
+      ...basePlotOptions("timeChart", { marginBottom: 90, height: 420 }),
+      x: { label: null, domain: configOrder, tickRotate: -35 },
+      y: { label: "Lines", grid: true, tickFormat: "s" },
+      color: { domain: LINE_DEFS.map((def) => def.label), range: LINE_DEFS.map((def) => def.color), legend: true },
+      marks: [
+        Plot.barY(lineData, { x: "config", y: "lines", fill: "kind", tip: { ...TIP_STYLE, format: { x: true, y: (value) => value.toLocaleString(), fill: true } } }),
+        Plot.ruleY([0])
+      ]
+    }));
+    return;
+  }
+
+  if (metric === "memory") {
+    const cacheData = rows.flatMap((row) =>
+      CACHE_DEFS.map((def) => ({ config: row.config, kind: def.label, entries: row.caches[def.key] || 0 }))
+        .filter((entry) => entry.entries > 0)
+    );
+    mountPlot("timeChart", Plot.plot({
+      ...basePlotOptions("timeChart", { marginBottom: 90, height: 420 }),
+      x: { label: null, domain: configOrder, tickRotate: -35 },
+      y: { label: "Cache entries", grid: true, tickFormat: "s" },
+      color: { domain: CACHE_DEFS.map((def) => def.label), range: CACHE_DEFS.map((def) => def.color), legend: true },
+      marks: [
+        Plot.barY(cacheData, { x: "config", y: "entries", fill: "kind", tip: { ...TIP_STYLE, format: { x: true, y: (value) => value.toLocaleString(), fill: true } } }),
+        Plot.ruleY([0])
+      ]
+    }));
+    return;
+  }
+
+  const phaseData = rows.flatMap((row) => {
+    const phases = getPhases(row);
+    return COMPILER_PHASES.map((phase) => ({
+      config: row.config,
+      phase: phase.label,
+      seconds: phases[phase.key] || 0
+    })).filter((entry) => entry.seconds > 0.001);
+  });
+
+  mountPlot("timeChart", Plot.plot({
+    ...basePlotOptions("timeChart", { marginBottom: 90, height: 420 }),
+    x: {
+      label: null,
+      domain: configOrder,
+      tickRotate: -35
+    },
+    y: { label: "Seconds", grid: true, tickFormat: "s" },
+    color: {
+      domain: COMPILER_PHASES.map((phase) => phase.label),
+      range: COMPILER_PHASES.map((phase) => phase.color),
+      legend: true
+    },
+    marks: [
+      Plot.barY(phaseData, {
+        x: "config",
+        y: "seconds",
+        fill: "phase",
+        tip: {
+          ...TIP_STYLE,
+          format: {
+            x: true,
+            y: (value) => `${value.toFixed(2)}s`,
+            fill: true
+          }
+        }
+      }),
+      Plot.ruleY([0])
+    ]
+  }));
+}
+
+// ---- Phase timings rollup: always summed across every solution in the
+// current report, driven by the same #timeChartMetric select as the chart above. ----
+const TIME_OVERVIEW = [
+  { key: "program_s", label: "Program", color: "#875bf7" },
+  { key: "bind_s", label: "Bind", color: "#fbbf24" },
+  { key: "check_s", label: "Check", color: "#d70033" },
+  { key: "emit_s", label: "Emit", color: "#22c55e" }
+];
+
+function sumRows(rows, get) {
+  return rows.reduce((total, row) => total + (Number(get(row)) || 0), 0);
+}
+
+const PHASE_VIEWS = {
+  time: {
+    title: "Phase timings",
+    subtitle: "Program → Bind → Check → Emit",
+    totalLabel: "total time",
+    format: (v) => `${Math.round(v * 1000)} ms`,
+    overview: TIME_OVERVIEW,
+    getOverviewValue: (rows, key) => key === "program_s" ? sumRows(rows, (r) => r.program_s) : sumRows(rows, (r) => r.phases[key]),
+    getTotal: (rows) => sumRows(rows, (r) => r.total_s)
+  },
+  size: {
+    title: "Source composition",
+    subtitle: "Library → Definitions → TypeScript → JavaScript → JSON → Other",
+    totalLabel: "total lines",
+    format: (v) => fmtNumber.format(Math.round(v)),
+    overview: LINE_DEFS,
+    getOverviewValue: (rows, key) => sumRows(rows, (r) => r.lines[key]),
+    getTotal: (rows) => LINE_DEFS.reduce((sum, def) => sum + sumRows(rows, (r) => r.lines[def.key]), 0)
+  },
+  memory: {
+    title: "Cache breakdown",
+    subtitle: "Assignability → Identity → Subtype → Strict subtype",
+    totalLabel: "total cache entries",
+    format: (v) => fmtNumber.format(Math.round(v)),
+    overview: CACHE_DEFS,
+    getOverviewValue: (rows, key) => sumRows(rows, (r) => r.caches[key]),
+    getTotal: (rows) => CACHE_DEFS.reduce((sum, def) => sum + sumRows(rows, (r) => r.caches[def.key]), 0)
+  }
+};
+
+function renderPhasePanel(rows) {
+  const metric = document.getElementById("timeChartMetric").value;
+  const view = PHASE_VIEWS[metric] ?? PHASE_VIEWS.time;
+
+  document.getElementById("phasePanelTitle").textContent = view.title;
+  document.getElementById("phasePanelSubtitle").textContent = view.subtitle;
+  document.getElementById("phaseTotalLabel").textContent = view.totalLabel;
+
+  const total = view.getTotal(rows);
+  document.getElementById("phaseTotalValue").textContent = view.format(total);
+
+  const overviewData = view.overview.map((def) => ({ phase: def.label, value: view.getOverviewValue(rows, def.key) }));
+  const overviewColors = Object.fromEntries(view.overview.map((def) => [def.label, def.color]));
+
+  document.getElementById("phasePlot").replaceChildren();
+  const phasePlot = Plot.plot({
+    width: 800, height: 32, marginLeft: 0, marginRight: 0, marginTop: 0, marginBottom: 0,
+    style: { background: "transparent" },
+    color: { legend: false, domain: Object.keys(overviewColors), range: Object.values(overviewColors) },
+    x: { axis: null }, y: { axis: null },
+    marks: [Plot.barX(overviewData, { y: () => "Phases", x: "value", fill: "phase", tip: true, rx: 6 })]
+  });
+  document.getElementById("phasePlot").append(phasePlot);
+
+  document.getElementById("phaseLegend").innerHTML = overviewData.map((d) => `
+    <span style="display:inline-flex; align-items:center; gap:.4rem; font-size:.8rem; white-space:nowrap; color: var(--pb-text-muted);">
+      <span style="height:.5rem; width:.5rem; border-radius:999px; background:${overviewColors[d.phase]}; flex-shrink:0;"></span>
+      <span style="font-weight:600; color: var(--pb-text-inverse);">${d.phase}</span>
+      ${view.format(d.value)} <span style="color: var(--pb-text-muted);">(${fmtPercent.format(total ? d.value / total : 0)})</span>
+    </span>
+  `).join("");
+}
+
+function renderConfigCheck(configCheck) {
+  const section = document.getElementById("configCheck");
+  if (!configCheck) {
+    section.innerHTML = "";
+    return;
+  }
+
+  const summary = configCheck.summary;
+  const issueRows = (configCheck.configs ?? []).flatMap((config) =>
+    config.findings
+      .filter((finding) => ["error", "warn", "info"].includes(finding.severity))
+      .map((finding) => ({ config, finding }))
+  );
+
+  const sortedIssues = issueRows.sort((a, b) => {
+    const rank = { error: 0, warn: 1, info: 2 };
+    return rank[a.finding.severity] - rank[b.finding.severity];
+  });
+
+  const cardTone = { error: "pb-card--bad", warn: "pb-card--mid", pass: "pb-card--good" };
+
+  section.innerHTML = `
+    <div class="pb-card">
+      <h2 class="mb-3.5" style="font-size: var(--pb-font-size-h2); font-weight: var(--pb-font-weight-bold); color: var(--pb-text-inverse);">Tsconfig performance check</h2>
+      <div class="grid gap-3 sm:grid-cols-3 xl:grid-cols-5 mb-4">
+        <div class="pb-card ${cardTone.error}"><div class="pb-card-label">Errors</div><div class="pb-card-value">${summary.errors}</div></div>
+        <div class="pb-card ${cardTone.warn}"><div class="pb-card-label">Warnings</div><div class="pb-card-value">${summary.warnings}</div></div>
+        <div class="pb-card"><div class="pb-card-label">Infos</div><div class="pb-card-value">${summary.infos}</div></div>
+        <div class="pb-card ${cardTone.pass}"><div class="pb-card-label">Passed checks</div><div class="pb-card-value">${summary.passed_checks}</div></div>
+        <div class="pb-card"><div class="pb-card-label">Configs audited</div><div class="pb-card-value">${summary.configs_checked}</div></div>
+      </div>
+      <ol class="mb-4 pl-5" style="color: var(--pb-text-muted); line-height: 1.6;">
+        ${(configCheck.workflow ?? []).map((step) => `<li>${escapeHtml(step)}</li>`).join("")}
+      </ol>
+      <table class="pb-table">
+        <thead>
+          <tr>
+            <th>Severity</th>
+            <th>Config</th>
+            <th>Finding</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${sortedIssues.map(({ config, finding }) => `
+            <tr>
+              <td><span class="${badgeClass(finding.severity)}">${escapeHtml(finding.severity)}</span></td>
+              <td><code class="pb-mono">${escapeHtml(config.config)}</code><div class="pb-card-hint">${escapeHtml(config.role)}</div></td>
+              <td>
+                ${escapeHtml(finding.message)}
+                ${finding.recommendation ? `<div class="pb-card-hint">→ ${escapeHtml(finding.recommendation)}</div>` : ""}
+              </td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+// ---- Report detail: per-run drill-down, mirrors detail-layout.html, driven
+// by the #reportDetailSelect dropdown (defaults to the slowest report). ----
+function detailTimingChartConfig(report, metric) {
+  const m = report.metrics;
+
+  if (metric === "size") {
+    const data = [
+      ["Definitions", m.linesOfDefinitions?.value ?? 0],
+      ["Library", m.linesOfLibrary?.value ?? 0],
+      ["TypeScript", m.linesOfTypeScript?.value ?? 0],
+      ["JavaScript", m.linesOfJavaScript?.value ?? 0],
+      ["JSON", m.linesOfJSON?.value ?? 0],
+      ["Other", m.linesOfOther?.value ?? 0]
+    ].map(([phase, lines]) => ({ phase, value: lines })).filter((d) => d.value > 0);
+    return {
+      title: "Source lines breakdown",
+      data,
+      axisLabel: "lines →",
+      format: (v) => fmtNumber.format(v),
+      hint: "Declaration files (library + definitions) account for most of the source analyzed by the compiler.",
+      badge: { text: "Info", tone: "info" }
+    };
+  }
+
+  if (metric === "memory") {
+    const data = [
+      ["Assignability cache", m.assignabilityCacheSize?.value ?? 0],
+      ["Identity cache", m.identityCacheSize?.value ?? 0],
+      ["Subtype cache", m.subtypeCacheSize?.value ?? 0],
+      ["Strict subtype cache", m.strictSubtypeCacheSize?.value ?? 0]
+    ].map(([phase, entries]) => ({ phase, value: entries })).filter((d) => d.value > 0);
+    return {
+      title: "Type cache breakdown",
+      data,
+      axisLabel: "cache entries →",
+      format: (v) => fmtNumber.format(v),
+      hint: `Peak memory usage was ${((m.memoryUsed?.value ?? 0) / 1024).toFixed(1)} MiB across ${fmtNumber.format(m.files?.value ?? 0)} files.`,
+      badge: { text: "Info", tone: "info" }
+    };
+  }
+
+  const data = [
+    ["I/O Read", m.iOReadTime?.value ?? 0],
+    ["Parse", m.parseTime?.value ?? 0],
+    ["Resolve modules", m.resolveModuleTime?.value ?? 0],
+    ["Resolve type reference", m.resolveTypeReferenceTime?.value ?? 0],
+    ["Resolve libraries", m.resolveLibraryTime?.value ?? 0],
+    ["Program", m.programTime?.value ?? 0],
+    ["Bind", m.bindTime?.value ?? 0],
+    ["Check", m.checkTime?.value ?? 0],
+    ["Print", m.printTimeTime?.value ?? 0],
+    ["Emit", m.emitTime?.value ?? 0]
+  ].map(([phase, seconds]) => ({ phase, value: seconds * 1000 })).filter((d) => d.value > 0);
+  const checkShare = (m.checkTime?.value ?? 0) / (m.totalTime?.value ?? 0.001);
+  return {
+    title: "Compiler phase timings",
+    data,
+    axisLabel: "milliseconds →",
+    format: (v) => `${v.toFixed(0)} ms`,
+    hint: checkShare > 0.4
+      ? "Type checking dominates this run."
+      : "The run is dominated by program construction and parsing—not type checking.",
+    badge: checkShare > 0.4 ? { text: "Check-heavy", tone: "mid" } : { text: "Healthy", tone: "good" }
+  };
+}
+
+let currentDetailReport = null;
+
+function renderDetailTimingChart(report) {
+  const metric = document.getElementById("detailTimingChartMetric").value;
+  const config = detailTimingChartConfig(report, metric);
+
+  document.getElementById("detailTimingChartTitle").textContent = config.title;
+  document.getElementById("detailTimingChartHint").textContent = config.hint;
+  const badge = document.getElementById("detailTimingChartBadge");
+  badge.textContent = config.badge.text;
+  badge.className = `pb-badge pb-badge--${config.badge.tone}`;
+
+  const maxValue = Math.max(...config.data.map((d) => d.value), 0);
+  const timingPlot = Plot.plot({
+    width: 760,
+    height: 330,
+    marginLeft: 150,
+    marginRight: 30,
+    style: { background: "transparent", color: "#cbd5e1", fontFamily: "Geist, ui-sans-serif, sans-serif", fontSize: "12px" },
+    x: { label: config.axisLabel, grid: true, domain: [0, maxValue * 1.12] },
+    y: { label: null, domain: config.data.map((d) => d.phase) },
+    marks: [
+      Plot.ruleX([0], { stroke: "#475569" }),
+      Plot.barX(config.data, { x: "value", y: "phase", rx: 6, fill: "#875bf7", tip: true }),
+      Plot.text(config.data, { x: "value", y: "phase", text: (d) => config.format(d.value), dx: 8, textAnchor: "start", fill: "#f8fafc", fontWeight: 700 })
+    ]
+  });
+  timingPlot.setAttribute("aria-label", `Horizontal bar chart of TypeScript compiler ${metric} breakdown`);
+  document.getElementById("detailTimingPlot").replaceChildren(timingPlot);
+}
+
+function renderDetailReport(report) {
+  const m = report.metrics;
+  const traceAnalysis = report.traceAnalysis;
+  const totalSourceLines = (m.linesOfLibrary?.value ?? 0) + (m.linesOfDefinitions?.value ?? 0) + (m.linesOfTypeScript?.value ?? 0) + (m.linesOfJavaScript?.value ?? 0) + (m.linesOfJSON?.value ?? 0) + (m.linesOfOther?.value ?? 0);
+  const checkShare = (m.checkTime?.value ?? 0) / (m.totalTime?.value ?? 0.001);
+  const compilerVsWall = ((m.totalTime?.value ?? 0) * 1000) / (report.durationMs || 1);
+
+  document.getElementById("detailModeCliFlag").textContent = report.mode;
+
+  const cards = [
+    { label: "Wall duration", value: `${(report.durationMs ?? 0).toFixed(1)} ms`, hint: "Process start to finish", tone: "info" },
+    { label: "Compiler total", value: `${((m.totalTime?.value ?? 0) * 1000).toFixed(0)} ms`, hint: `${fmtPercent.format(compilerVsWall)} of wall time`, tone: "" },
+    { label: "Type check", value: `${((m.checkTime?.value ?? 0) * 1000).toFixed(0)} ms`, hint: `${fmtPercent.format(checkShare)} of compiler time`, tone: "good" },
+    { label: "Memory", value: `${((m.memoryUsed?.value ?? 0) / 1024).toFixed(1)} MiB`, hint: `${fmtNumber.format(m.files?.value ?? 0)} files loaded`, tone: "mid" }
+  ];
+
+  document.getElementById("detailSummaryCards").innerHTML = cards.map((card) => `
+    <article class="pb-card pb-summary-card ${card.tone ? `pb-card--${card.tone}` : ""}">
+      <p class="pb-card-label">${card.label}</p>
+      <div class="pb-summary-row">
+        <span class="pb-card-value">${card.value}</span>
+        <span class="pb-card-hint">${card.hint}</span>
+      </div>
+    </article>
+  `).join("");
+
+  currentDetailReport = report;
+  renderDetailTimingChart(report);
+
+  const lineData = [
+    { kind: "Definitions", lines: m.linesOfDefinitions?.value ?? 0 },
+    { kind: "Library", lines: m.linesOfLibrary?.value ?? 0 },
+    { kind: "TypeScript", lines: m.linesOfTypeScript?.value ?? 0 }
+  ];
+  document.getElementById("detailTotalSourceLinesValue").textContent = fmtNumber.format(totalSourceLines);
+
+  const linePlot = Plot.plot({
+    width: 480,
+    height: 32,
+    marginLeft: 0,
+    marginRight: 0,
+    marginTop: 0,
+    marginBottom: 0,
+    style: { background: "transparent" },
+    color: { legend: false, domain: ["Definitions", "Library", "TypeScript"], range: ["#875bf7", "#38bdf8", "#22c55e"] },
+    x: { axis: null },
+    y: { axis: null },
+    marks: [Plot.barX(lineData, { y: () => "Source", x: "lines", fill: "kind", tip: true, rx: 6 })]
+  });
+  linePlot.setAttribute("aria-label", "Stacked bar chart of source line composition");
+  document.getElementById("detailLinesPlot").replaceChildren(linePlot);
+
+  const legendColors = { Definitions: "#875bf7", Library: "#38bdf8", TypeScript: "#22c55e" };
+  document.getElementById("detailCompositionLegend").innerHTML = lineData.map((d) => `
+    <span class="inline-flex items-center gap-1.5 whitespace-nowrap text-xs" style="color: var(--pb-text-muted);">
+      <span class="h-2 w-2 shrink-0 rounded-full" style="background:${legendColors[d.kind]};"></span>
+      <span class="font-semibold" style="color: var(--pb-text-inverse);">${d.kind}</span>
+      ${fmtNumber.format(d.lines)} <span style="color: var(--pb-text-muted);">(${fmtPercent.format(totalSourceLines ? d.lines / totalSourceLines : 0)})</span>
+    </span>
+  `).join("");
+
+  const insights = [
+    { title: "No checker hotspot", body: `Check time is only ${((m.checkTime?.value ?? 0) * 1000).toFixed(0)} ms. This run does not indicate expensive conditional types, large unions, or generic-instantiation pressure.` },
+    { title: "Setup dominates", body: `Program creation, parsing, and binding consume ${fmtPercent.format(((m.programTime?.value ?? 0) + (m.bindTime?.value ?? 0)) / (m.totalTime?.value ?? 0.001))} of compiler time. For a tiny source file, fixed startup and dependency costs dominate.` },
+    { title: "Dependency-heavy workload", body: `${fmtPercent.format(totalSourceLines ? (m.linesOfDefinitions?.value ?? 0) / totalSourceLines : 0)} of analyzed lines are declaration files, while the project itself has only ${fmtNumber.format(m.linesOfTypeScript?.value ?? 0)} TypeScript lines.` },
+    { title: "Treat as a baseline", body: `The measurement is fast enough that OS scheduling and process startup can noticeably affect results. Compare medians across repeated clean runs rather than relying on one sample.` }
+  ];
+  document.getElementById("detailInsights").innerHTML = insights.map((x, i) => `
+    <div class="rounded-xl p-4" style="border: 1px solid var(--pb-panel-border); background: rgba(0,0,0,.15);">
+      <div class="mb-2 flex items-center gap-2"><span class="flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold" style="background: rgba(248,250,252,.08); color: var(--pb-secondary-400);">${i + 1}</span><h3 class="font-bold" style="color: var(--pb-text-inverse);">${x.title}</h3></div>
+      <p class="text-sm leading-6" style="color: var(--pb-text-muted);">${x.body}</p>
+    </div>
+  `).join("");
+
+  const generated = new Date(report.generatedAt ?? report.finishedAt ?? Date.now());
+  const metadata = [
+    ["Target", report.targetName],
+    ["Mode", report.mode],
+    ["Exit code", String(report.exitCode)],
+    ["Generated", generated.toLocaleString()],
+    ["Working directory", report.cwd],
+    ["Command", (report.command ?? []).slice(1).map((x) => x.includes("/") ? x.split("/").pop() : x).join(" ")]
+  ];
+  document.getElementById("detailMetadata").innerHTML = metadata.map(([key, value]) => `
+    <div>
+      <dt class="pb-card-label">${escapeHtml(key)}</dt>
+      <dd class="mt-1 break-all font-medium" style="color: var(--pb-text-inverse);">${escapeHtml(value)}</dd>
+    </div>
+  `).join("");
+
+  const traceSection = document.getElementById("detailTraceAnalysisSection");
+  if (traceAnalysis) {
+    traceSection.classList.remove("hidden");
+    document.getElementById("detailTraceAnalysisMeta").textContent = `Command: ${(traceAnalysis.command || []).join(" ")} | Exit: ${traceAnalysis.exitCode ?? "n/a"}${traceAnalysis.outputFile ? ` | Saved: ${traceAnalysis.outputFile}` : ""}`;
+    document.getElementById("detailTraceAnalysisOutput").textContent = traceAnalysis.error
+      ? `Error: ${traceAnalysis.error}`
+      : (traceAnalysis.output || "(No analyze-trace output)");
+  } else {
+    traceSection.classList.add("hidden");
+  }
+
+  const metricRows = Object.entries(m).map(([key, metric]) => ({ key, label: labelize(key), value: formatMetric(metric), raw: metric.raw, unit: metric.unit }));
+  document.getElementById("detailMetricsTable").innerHTML = `
+    <table class="pb-table w-full min-w-[680px]">
+      <thead><tr><th>Metric</th><th>Display value</th><th>Raw</th><th>Unit</th></tr></thead>
+      <tbody>${metricRows.map((row) => `<tr><td class="font-medium" style="color: var(--pb-text-inverse);">${escapeHtml(row.label)}</td><td class="font-semibold" style="color: var(--pb-secondary-400);">${escapeHtml(row.value)}</td><td class="pb-mono text-xs">${escapeHtml(row.raw)}</td><td class="pb-card-hint">${escapeHtml(row.unit ?? "")}</td></tr>`).join("")}</tbody>
+    </table>`;
+}
+
+function reportLabel(report, name = report.targetName) {
+  return `${name}${report.project ? `/${report.project}` : ""}`;
+}
+
+// One distinct label per report. Projects in different folders can share a
+// targetName (apps/web and libs/web are both "web"), so labels that collide
+// get as many trailing targetRoot folders as it takes to tell them apart.
+function reportLabels(reports) {
+  const labels = reports.map((report) => reportLabel(report));
+  const groups = new Map();
+  labels.forEach((label, index) => groups.set(label, [...(groups.get(label) ?? []), index]));
+
+  for (const indexes of groups.values()) {
+    if (indexes.length < 2) continue;
+    const folders = indexes.map((index) => String(reports[index].targetRoot ?? "").split(/[\\/]+/).filter(Boolean));
+    const maxDepth = Math.max(...folders.map((parts) => parts.length));
+    for (let depth = 2; depth <= maxDepth; depth++) {
+      const candidates = indexes.map((index, i) =>
+        reportLabel(reports[index], folders[i].length ? folders[i].slice(-depth).join("/") : reports[index].targetName));
+      if (new Set(candidates).size === candidates.length) {
+        indexes.forEach((index, i) => { labels[index] = candidates[i]; });
+        break;
+      }
+    }
+  }
+
+  // Last resort (identical roots, e.g. hand-built input): number the repeats.
+  const seen = new Map();
+  return labels.map((label) => {
+    const count = (seen.get(label) ?? 0) + 1;
+    seen.set(label, count);
+    return count === 1 ? label : `${label} (${count})`;
+  });
+}
+
+let currentDetailReports = [];
+
+function populateReportDetailSelect(reports) {
+  const select = document.getElementById("reportDetailSelect");
+  const labels = reportLabels(reports);
+  const ordered = reports
+    .map((report, index) => ({ report, index, totalS: toSeconds(report.metrics?.totalTime) }))
+    .sort((a, b) => b.totalS - a.totalS);
+
+  select.innerHTML = ordered.map(({ index }) => `<option value="${index}">${escapeHtml(labels[index])}</option>`).join("");
+
+  const slowestIndex = ordered[0]?.index ?? 0;
+  select.value = String(slowestIndex);
+  if (reports[slowestIndex]) renderDetailReport(reports[slowestIndex]);
+}
+
+function loadReportDetail(reports) {
+  currentDetailReports = Array.isArray(reports) ? reports : [];
+  if (currentDetailReports.length) populateReportDetailSelect(currentDetailReports);
+}
+
+document.getElementById("detailTimingChartMetric").addEventListener("change", () => {
+  if (currentDetailReport) renderDetailTimingChart(currentDetailReport);
+});
+
+document.getElementById("reportDetailSelect").addEventListener("change", (event) => {
+  const report = currentDetailReports[Number(event.target.value)];
+  if (report) renderDetailReport(report);
+});
+
+let currentRows = [];
+
+function render(data) {
+  renderCards(data.summary);
+  renderConfigCheck(data.config_check);
+
+  const rows = [...data.slowest_solutions, ...data.additional_solutions];
+  currentRows = rows;
+  renderTimeChart(rows);
+  renderPhasePanel(rows);
+
+  document.getElementById("notes").innerHTML = data.notes.map((n) => `<div class="pb-card" style="color: var(--pb-text-muted); line-height: 1.5;">${n}</div>`).join("");
+  document.getElementById("status").textContent =
+    `Loaded ts-extended-diagnostics.json · TypeScript ${data.summary.typescript_version} · generated ${new Date(data.summary.generated_at).toLocaleString()}`;
+  document.getElementById("footerGeneratedAt").textContent = new Date(data.summary.generated_at).toLocaleString();
+}
+
+let cachedData = null;
+try {
+  cachedData = fromAggregatedReport(embeddedAggregatedReport);
+  render(cachedData);
+  loadReportDetail(embeddedAggregatedReport?.reports ?? []);
+} catch (err) {
+  document.getElementById("status").textContent =
+    `Could not render embedded JSON (${err?.message || err}).`;
+}
+
+window.addEventListener("resize", () => {
+  if (cachedData) render(cachedData);
+});
+
+document.getElementById("timeChartMetric").addEventListener("change", () => {
+  if (!currentRows.length) return;
+  renderTimeChart(currentRows);
+  renderPhasePanel(currentRows);
+});
+
+document.getElementById("loadDemoButton").addEventListener("click", () => {
+  try {
+    cachedData = fromAggregatedReport(DEMO_AGGREGATED_REPORT);
+    render(cachedData);
+    loadReportDetail(DEMO_AGGREGATED_REPORT.reports ?? []);
+  } catch (err) {
+    document.getElementById("status").textContent = `Could not render demo data (${err?.message || err}).`;
+  }
+});
+</script>
+</body>
+</html>
