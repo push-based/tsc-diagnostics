@@ -552,21 +552,21 @@ npm test        # builds, then runs the test suite against dist/
 
 ### Releasing
 
-Pushing a version tag runs the [Publish workflow](.github/workflows/publish.yml), which publishes the package to npm. The workflow uses npm trusted publishing, so the repository stores no npm token.
+Releases use [Nx Release](https://nx.dev/features/manage-releases) and two workflows that you start by hand from the Actions tab:
 
-1. Bump `version` in `package.json`, move the `CHANGELOG.md` entry out of "unreleased", run `npm run build`, and merge to `main`.
-2. Tag that commit with the same version and push the tag:
+1. **[Release](.github/workflows/release.yml)** works out the next version from the [conventional commits](https://www.conventionalcommits.org/) since the last `v*` tag: `fix:` bumps the patch version, `feat:` bumps the minor version, and `feat!:` or a `BREAKING CHANGE:` footer bumps the major version. It updates `package.json` and `CHANGELOG.md`, commits `release: <version>`, tags it `v<version>`, pushes to `main` and creates a GitHub release. It pushes as the PushBased Bot GitHub App.
+2. **[Publish](.github/workflows/publish.yml)** runs `nx release publish` on that tagged commit. `prepublishOnly` runs the tests first. The workflow uses npm trusted publishing, so the repository stores no npm token.
 
-```bash
-git tag v1.0.0
-git push origin v1.0.0
-```
+Commits that are not conventional, such as `Update readme`, do not count towards a version bump. Use conventional commit titles, or squash-merge pull requests with one.
 
-The workflow checks that the tag matches `package.json`, runs the tests, and publishes. Afterwards consumers can install `@push-based/tsc-diagnostics@1.0.0` or pin the GitHub tag `github:push-based/tsc-diagnostics#v1.0.0`.
+To preview a release locally, run `npx nx release --dry-run --skip-publish`.
+
+Afterwards consumers can install `@push-based/tsc-diagnostics@<version>` or pin the GitHub tag `github:push-based/tsc-diagnostics#v<version>`.
 
 #### One-time setup
 
-- In the GitHub repository settings, create an environment named `release` under Environments. Ideally, limit it to `v*` tags or require approval.
+- Install the PushBased Bot GitHub App on this repository. If `main` requires pull requests, add `push-based-bot` to the actors allowed to bypass that rule, or the Release workflow cannot push.
+- Create an environment named `release` under Settings > Environments. Add the variable `GH_APP_ID` (`2781189`) and the secret `GH_APP_PRIVATE_KEY` (ask the engineering manager) to it. Both workflows run in this environment.
+- Publish the first version by hand, because npm only lets you add a trusted publisher once the package exists: run `npm login`, then `npx nx release publish --first-release` from a clean checkout of `main`. Then tag that commit `v1.0.0`, push the tag and create a GitHub release from the 1.0.0 entry in `CHANGELOG.md`, so the next Release run starts from it.
 - On npm, open the package's settings page and add a trusted publisher for GitHub Actions with organization `push-based`, repository `tsc-diagnostics`, workflow `publish.yml` and environment `release`. If no publish succeeds through a new trusted publisher within 48 hours, it expires and you have to create it again.
-- If npm does not let you add a trusted publisher before the package exists, publish the first version by hand with `npm publish` from a clean checkout of the tag. `prepublishOnly` runs the tests first, and `publishConfig.access` is already `public`.
 - npm only generates provenance for packages published from a public repository. While this repository is private, packages go out without it.

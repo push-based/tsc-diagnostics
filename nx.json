@@ -1,0 +1,35 @@
+{
+  "$schema": "./node_modules/nx/schemas/nx-schema.json",
+  "targetDefaults": {
+    "nx-release-publish": {
+      "executor": "@nx/js:release-publish",
+      "options": {
+        "packageRoot": "{projectRoot}",
+        "registry": "https://registry.npmjs.org/"
+      }
+    }
+  },
+  "release": {
+    "projects": ["@push-based/tsc-diagnostics"],
+    "changelog": {
+      "automaticFromRef": true,
+      "projectChangelogs": false,
+      "workspaceChangelog": {
+        "createRelease": "github"
+      }
+    },
+    "git": {
+      "commit": true,
+      "push": true,
+      "pushRemote": "origin",
+      "tag": true,
+      "commitMessage": "release: {version}"
+    },
+    "version": {
+      "conventionalCommits": true
+    },
+    "releaseTag": {
+      "pattern": "v{version}"
+    }
+  }
+}

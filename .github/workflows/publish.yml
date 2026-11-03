@@ -1,9 +1,7 @@
 name: Publish
 
 on:
-  push:
-    tags:
-      - 'v*.*.*'
+  workflow_dispatch:
 
 concurrency:
   group: publish
@@ -27,6 +25,8 @@ jobs:
     steps:
       - name: Clone the repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -44,11 +44,13 @@ jobs:
             if (!ok) { console.error(`npm ${process.argv[1]} is too old for trusted publishing (needs 11.5.1+).`); process.exit(1); }
           ' "$npm_version"
 
-      - name: Check the tag matches package.json
+      # Publishing a commit that the Release workflow did not tag would ship
+      # unreleased changes under an old version number.
+      - name: Check this commit is the release of its version
         run: |
-          version="$(node -p "require('./package.json').version")"
-          if [ "$GITHUB_REF_NAME" != "v$version" ]; then
-            echo "::error::Tag $GITHUB_REF_NAME does not match package.json version $version."
+          tag="v$(node -p "require('./package.json').version")"
+          if ! git tag --points-at HEAD | grep -qx "$tag"; then
+            echo "::error::HEAD is not tagged $tag. Run the Release workflow first, or run Publish on the $tag tag."
             exit 1
           fi
 
@@ -58,4 +60,4 @@ jobs:
       # `prepublishOnly` runs `npm test`, which rebuilds dist/ from the sources
       # and runs the test suite before anything is uploaded.
       - name: Publish to npm
-        run: npm publish
+        run: npx nx release publish

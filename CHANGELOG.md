@@ -1,6 +1,4 @@
-# Changelog
-
-## 1.0.0 (unreleased)
+## 1.0.0 (2026-11-03)
 
 First standalone release, extracted from `push-based/ts-perf-experiments`.
 
