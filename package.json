@@ -56,6 +56,8 @@
     "typescript": "^5.0.0"
   },
   "devDependencies": {
-    "@types/node": "^20.19.0"
+    "@nx/js": "23.3.1",
+    "@types/node": "^20.19.0",
+    "nx": "23.3.1"
   }
 }

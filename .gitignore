@@ -5,3 +5,5 @@ node_modules
 .DS_Store
 .idea
 ts-diagnostics/
+.nx/cache
+.nx/workspace-data
