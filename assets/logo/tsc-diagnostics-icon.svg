@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-labelledby="i-t i-d">
+  <title id="i-t">tsc-diagnostics logo</title>
+  <desc id="i-d">Code angle brackets framing a heartbeat line</desc>
+  <g id="icon">
+    <defs>
+      <linearGradient id="tile" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="128" y2="128"><stop offset="0" stop-color="#1C3D72"/><stop offset="1" stop-color="#0B1F3A"/></linearGradient>
+      <linearGradient id="br" gradientUnits="userSpaceOnUse" x1="0" y1="34" x2="0" y2="94"><stop offset="0" stop-color="#6CB4FF"/><stop offset="1" stop-color="#2F6FC0"/></linearGradient>
+      <linearGradient id="pl" gradientUnits="userSpaceOnUse" x1="36" y1="0" x2="92" y2="0"><stop offset="0" stop-color="#FF4F8B"/><stop offset="1" stop-color="#FF9A3D"/></linearGradient>
+      <linearGradient id="shine" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".16"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <radialGradient id="glow" gradientUnits="userSpaceOnUse" cx="64" cy="62" r="52"><stop offset="0" stop-color="#FF4F8B" stop-opacity=".38"/><stop offset="1" stop-color="#FF4F8B" stop-opacity="0"/></radialGradient>
+      <filter id="blur" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="4"/></filter>
+    </defs>
+    <rect width="128" height="128" rx="24" fill="url(#tile)"/>
+    <rect width="128" height="128" rx="24" fill="url(#glow)"/>
+    <rect width="128" height="128" rx="24" fill="url(#shine)"/>
+    <rect x=".75" y=".75" width="126.5" height="126.5" rx="23.25" fill="none" stroke="#fff" stroke-opacity=".14" stroke-width="1.5"/>
+    <path d="M34 36L14 64L34 92M94 36L114 64L94 92" fill="none" stroke="url(#br)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M36 64H48L55 50L64 84L73 38L80 64H92" fill="none" stroke="#FF4F8B" stroke-opacity=".7" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" filter="url(#blur)"/>
+    <path d="M36 64H48L55 50L64 84L73 38L80 64H92" fill="none" stroke="url(#pl)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="73" cy="38" r="8" fill="#FF9A3D" opacity=".8" filter="url(#blur)"/>
+    <circle cx="73" cy="38" r="4.5" fill="#fff"/>
+  </g>
+</svg>

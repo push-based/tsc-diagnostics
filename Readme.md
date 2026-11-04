@@ -1,3 +1,10 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./assets/logo/tsc-diagnostics-horizontal-dark.svg">
+    <img src="./assets/logo/tsc-diagnostics-horizontal.svg" alt="tsc-diagnostics logo" width="420">
+  </picture>
+</p>
+
 # tsc-diagnostics
 
 A CLI that runs TypeScript compiler diagnostics and writes the results to JSON and HTML reports, so you can compare compile performance across projects and over time.

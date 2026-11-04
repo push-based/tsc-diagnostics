@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-labelledby="im-t im-d">
+  <title id="im-t">tsc-diagnostics logo</title>
+  <desc id="im-d">Code angle brackets framing a heartbeat line</desc>
+  <g id="icon">
+    <rect width="128" height="128" rx="24" fill="#0B1F3A"/>
+    <path d="M34 36L14 64L34 92M94 36L114 64L94 92" fill="none" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M36 64H48L55 50L64 84L73 38L80 64H92" fill="none" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>
